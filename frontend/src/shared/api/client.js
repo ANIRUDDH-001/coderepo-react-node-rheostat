@@ -54,6 +54,7 @@ export async function request(path, options = {}) {
 		}
 		throw new ApiError(response.status, code, message, payload?.error?.details);
 	}
-	if (!payload || !("data" in payload)) throw new ApiError(response.status, "INVALID_RESPONSE", "Rheostat service returned an invalid response.");
+	if (!payload || !("data" in payload))
+		throw new ApiError(response.status, "INVALID_RESPONSE", "Rheostat service returned an invalid response.");
 	return payload.data;
 }
