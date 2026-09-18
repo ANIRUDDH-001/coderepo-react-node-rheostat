@@ -55,7 +55,9 @@ describe("permissions", () => {
 	});
 
 	test("assertCan throws 403 FORBIDDEN with the action in details", () => {
-		expect(() => assertCan({ role: "viewer" }, "flag:create")).toThrow(expect.objectContaining({ statusCode: 403, code: "FORBIDDEN", details: { action: "flag:create" } }));
+		expect(() => assertCan({ role: "viewer" }, "flag:create")).toThrow(
+			expect.objectContaining({ statusCode: 403, code: "FORBIDDEN", details: { action: "flag:create" } }),
+		);
 		expect(() => assertCan({ role: "developer" }, "flag:create")).not.toThrow();
 	});
 

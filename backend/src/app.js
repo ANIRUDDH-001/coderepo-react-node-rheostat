@@ -19,7 +19,9 @@ export function createApp() {
 	app.use(express.static(publicDirectory));
 	app.get("/api/v1/health", (request, response) => {
 		const database = mongoose.connection.readyState === 1 ? "connected" : "disconnected";
-		response.status(database === "connected" ? 200 : 503).json({ data: { status: database === "connected" ? "ok" : "degraded", database } });
+		response
+			.status(database === "connected" ? 200 : 503)
+			.json({ data: { status: database === "connected" ? "ok" : "degraded", database } });
 	});
 	app.use("/api/v1/auth", authRouter);
 	app.use("/api/v1/profiles", requireWorkspaceAuth, profileRouter);

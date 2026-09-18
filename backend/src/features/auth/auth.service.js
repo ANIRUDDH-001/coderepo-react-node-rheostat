@@ -45,10 +45,15 @@ export const authService = {
 		return { account, payload };
 	},
 	session(account, profile) {
-		return { account: publicAccount(account), profile: profile ? publicPerson(profile) : null, permissions: profile ? permissionsFor(profile.role) : [] };
+		return {
+			account: publicAccount(account),
+			profile: profile ? publicPerson(profile) : null,
+			permissions: profile ? permissionsFor(profile.role) : [],
+		};
 	},
 	async switchProfile(account, profileId) {
-		if (!allows(account, profileId)) throw new AppError(403, "PROFILE_FORBIDDEN", "This profile is not available in the current workspace.");
+		if (!allows(account, profileId))
+			throw new AppError(403, "PROFILE_FORBIDDEN", "This profile is not available in the current workspace.");
 		const profile = await personService.findProfileById(profileId);
 		if (!profile) throw new AppError(404, "PROFILE_NOT_FOUND", "This Rheostat profile is no longer available.");
 		return { profile: publicPerson(profile), permissions: permissionsFor(profile.role), token: sign(account, profileId) };

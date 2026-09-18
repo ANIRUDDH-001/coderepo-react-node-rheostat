@@ -4,7 +4,13 @@ import { personService } from "../people/person.service.js";
 import { authService } from "./auth.service.js";
 
 const loginSchema = z
-	.object({ email: z.email().max(254).transform((value) => value.toLowerCase()), password: z.string().min(1).max(200) })
+	.object({
+		email: z
+			.email()
+			.max(254)
+			.transform((value) => value.toLowerCase()),
+		password: z.string().min(1).max(200),
+	})
 	.strict();
 const switchSchema = z.object({ profileId: objectIdSchema }).strict();
 
