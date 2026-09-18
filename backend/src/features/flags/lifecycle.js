@@ -2,7 +2,8 @@
 export const STALE_AFTER_DAYS = 14;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-const servesSingleVariation = (config) => !config.enabled || ((config.rules || []).length === 0 && Boolean(config.fallthrough?.variationId));
+const servesSingleVariation = (config) =>
+	!config.enabled || ((config.rules || []).length === 0 && Boolean(config.fallthrough?.variationId));
 
 export function isFullyRolledOut(flag) {
 	return Object.values(flag.environments || {}).every(servesSingleVariation);

@@ -1,10 +1,20 @@
 // Deterministic structural diff of environment configurations. Shared by change requests, history, promotion, and rollouts.
 
-const normalizeClause = (clause) => ({ attribute: clause.attribute, operator: clause.operator, values: [...(clause.values || [])].map(String), negate: Boolean(clause.negate) });
+const normalizeClause = (clause) => ({
+	attribute: clause.attribute,
+	operator: clause.operator,
+	values: [...(clause.values || [])].map(String),
+	negate: Boolean(clause.negate),
+});
 
 export const normalizeServe = (serve) =>
 	serve?.rollout
-		? { rollout: { bucketBy: serve.rollout.bucketBy || "key", weights: (serve.rollout.weights || []).map((entry) => ({ variationId: entry.variationId, weight: entry.weight })) } }
+		? {
+				rollout: {
+					bucketBy: serve.rollout.bucketBy || "key",
+					weights: (serve.rollout.weights || []).map((entry) => ({ variationId: entry.variationId, weight: entry.weight })),
+				},
+			}
 		: { variationId: serve?.variationId ?? null };
 
 export const normalizeRule = (rule) => ({
@@ -48,14 +58,16 @@ export function diffEnvConfig(beforeConfig, afterConfig) {
 	const after = normalizeConfig(afterConfig);
 	const entries = [];
 	if (before.enabled !== after.enabled) entries.push(changed("enabled", before.enabled, after.enabled));
-	if (before.offVariationId !== after.offVariationId) entries.push(changed("offVariationId", before.offVariationId, after.offVariationId));
+	if (before.offVariationId !== after.offVariationId)
+		entries.push(changed("offVariationId", before.offVariationId, after.offVariationId));
 	const beforeById = new Map(before.rules.map((rule) => [rule.id, rule]));
 	const afterById = new Map(after.rules.map((rule) => [rule.id, rule]));
 	for (const rule of before.rules) {
 		if (!afterById.has(rule.id)) entries.push({ path: `rules.${rule.id}`, kind: "removed", before: rule, after: null });
 		else diffRule(`rules.${rule.id}`, rule, afterById.get(rule.id), entries);
 	}
-	for (const rule of after.rules) if (!beforeById.has(rule.id)) entries.push({ path: `rules.${rule.id}`, kind: "added", before: null, after: rule });
+	for (const rule of after.rules)
+		if (!beforeById.has(rule.id)) entries.push({ path: `rules.${rule.id}`, kind: "added", before: null, after: rule });
 	const beforeOrder = before.rules.map((rule) => rule.id).filter((id) => afterById.has(id));
 	const afterOrder = after.rules.map((rule) => rule.id).filter((id) => beforeById.has(id));
 	if (!same(beforeOrder, afterOrder)) entries.push(changed("rules.order", beforeOrder, afterOrder));

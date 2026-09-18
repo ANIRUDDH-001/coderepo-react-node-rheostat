@@ -19,11 +19,28 @@ const base = () => ({
 
 describe("normalizeConfig", () => {
 	test("strips bookkeeping fields and Mongoose ids, keeps decision fields", () => {
-		const normalized = normalizeConfig({ ...base(), _id: "x", rules: [{ ...rule("r1", ["pro"]), _id: "y", clauses: [{ _id: "z", attribute: "plan", operator: "in", values: ["pro"], negate: false }] }] });
+		const normalized = normalizeConfig({
+			...base(),
+			_id: "x",
+			rules: [
+				{
+					...rule("r1", ["pro"]),
+					_id: "y",
+					clauses: [{ _id: "z", attribute: "plan", operator: "in", values: ["pro"], negate: false }],
+				},
+			],
+		});
 		expect(normalized).toEqual({
 			enabled: true,
 			offVariationId: "v_off",
-			rules: [{ id: "r1", description: "Rule r1", clauses: [{ attribute: "plan", operator: "in", values: ["pro"], negate: false }], serve: { variationId: "v_on" } }],
+			rules: [
+				{
+					id: "r1",
+					description: "Rule r1",
+					clauses: [{ attribute: "plan", operator: "in", values: ["pro"], negate: false }],
+					serve: { variationId: "v_on" },
+				},
+			],
 			fallthrough: { variationId: "v_on" },
 		});
 	});
@@ -36,23 +53,36 @@ describe("diffEnvConfig", () => {
 	});
 
 	test("enabled change", () => {
-		expect(diffEnvConfig(base(), { ...base(), enabled: false })).toEqual([{ path: "enabled", kind: "changed", before: true, after: false }]);
+		expect(diffEnvConfig(base(), { ...base(), enabled: false })).toEqual([
+			{ path: "enabled", kind: "changed", before: true, after: false },
+		]);
 	});
 
 	test("off variation change", () => {
-		expect(diffEnvConfig(base(), { ...base(), offVariationId: "v_on" })).toEqual([{ path: "offVariationId", kind: "changed", before: "v_off", after: "v_on" }]);
+		expect(diffEnvConfig(base(), { ...base(), offVariationId: "v_on" })).toEqual([
+			{ path: "offVariationId", kind: "changed", before: "v_off", after: "v_on" },
+		]);
 	});
 
 	test("rule added and removed", () => {
 		const added = diffEnvConfig(base(), { ...base(), rules: [rule("r1", ["pro"]), rule("r9", ["free"])] });
-		expect(added).toEqual([{ path: "rules.r9", kind: "added", before: null, after: normalizeConfig({ ...base(), rules: [rule("r9", ["free"])] }).rules[0] }]);
+		expect(added).toEqual([
+			{
+				path: "rules.r9",
+				kind: "added",
+				before: null,
+				after: normalizeConfig({ ...base(), rules: [rule("r9", ["free"])] }).rules[0],
+			},
+		]);
 		const removed = diffEnvConfig(base(), { ...base(), rules: [] });
 		expect(removed).toEqual([{ path: "rules.r1", kind: "removed", before: normalizeConfig(base()).rules[0], after: null }]);
 	});
 
 	test("clause value change is reported at clause level", () => {
 		const after = { ...base(), rules: [rule("r1", ["pro", "enterprise"])] };
-		expect(diffEnvConfig(base(), after)).toEqual([{ path: "rules.r1.clauses.0.values", kind: "changed", before: ["pro"], after: ["pro", "enterprise"] }]);
+		expect(diffEnvConfig(base(), after)).toEqual([
+			{ path: "rules.r1.clauses.0.values", kind: "changed", before: ["pro"], after: ["pro", "enterprise"] },
+		]);
 	});
 
 	test("rule serve change and description change", () => {
@@ -64,8 +94,18 @@ describe("diffEnvConfig", () => {
 	});
 
 	test("fallthrough fixed to rollout", () => {
-		const rollout = { rollout: { bucketBy: "key", weights: [{ variationId: "v_on", weight: 25000 }, { variationId: "v_off", weight: 75000 }] } };
-		expect(diffEnvConfig(base(), { ...base(), fallthrough: rollout })).toEqual([{ path: "fallthrough", kind: "changed", before: { variationId: "v_on" }, after: rollout }]);
+		const rollout = {
+			rollout: {
+				bucketBy: "key",
+				weights: [
+					{ variationId: "v_on", weight: 25000 },
+					{ variationId: "v_off", weight: 75000 },
+				],
+			},
+		};
+		expect(diffEnvConfig(base(), { ...base(), fallthrough: rollout })).toEqual([
+			{ path: "fallthrough", kind: "changed", before: { variationId: "v_on" }, after: rollout },
+		]);
 	});
 
 	test("rule reorder is a single order change", () => {
