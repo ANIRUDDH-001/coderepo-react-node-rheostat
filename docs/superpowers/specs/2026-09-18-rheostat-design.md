@@ -175,7 +175,7 @@ At most one plan in `{scheduled, running, paused, stalled}` per flag × environm
 
 ### 4.11 AuditEntry
 
-`projectId?, actorId, action (dotted, e.g. flag.killSwitch.activated), entityType, entityId, entityLabel, summary, metadata (small object), at`. Every mutating service writes exactly one entry per user-visible action.
+`projectId?, actorId, action (dotted, e.g. flag.killSwitch.activated), entityType, entityId, entityLabel, summary, metadata (small object), idempotencyKey? (unique sparse index), at`. Every mutating service writes exactly one entry per user-visible action (§5.13 defines which action owns it). `auditService.recordOnce(entry)` requires `idempotencyKey` and treats a duplicate-key error as success; it is used only by rollout step application and recovery.
 
 ### 4.12 SavedView
 
@@ -234,13 +234,14 @@ Bucketing: `bucket = parseInt(sha1(`${flag.key}.${environmentKey}.${value}`).sli
 - `weightsForPercent(plan, percent)` → `[{ target, p×1000 }, { baseline, 100000 − p×1000 }, { every other variation, 0 }]`.
 - `dueSteps(plan, now)` → pending steps with `startAt ≤ now`, in order.
 - `shiftForResume(plan, now)` → pending steps moved forward by `now − pausedAt`.
+- `compatibilityIssue(plan, config)` → `null` or a reason string (used on resume from `stalled`; see Semantics).
 
 A step writes **only** `fallthrough` (and bumps `version`/`lastEffectiveChangeAt`). Drift is not detected structurally; it is detected by version (§5.5).
 
 Semantics:
 
 - **Pause**: future steps stop; live config untouched.
-- **Resume** from `paused`: remaining steps continue from the shifted schedule. Resume from `stalled`: the operator is shown the diff between the config at `expectedVersion` and the current config, and on confirmation the plan adopts the current version as `expectedVersion` and continues; the next step overwrites only `fallthrough`. No configuration is written by the resume itself.
+- **Resume** from `paused`: remaining steps continue from the shifted schedule. Resume from `stalled` (either reason): the operator is shown the diff between the config at `expectedVersion` and the current config; the service first runs `compatibilityIssue(plan, currentConfig)` — the environment must be `enabled` and its fallthrough must be a fixed variation in `{baselineVariationId, targetVariationId}` or a rollout whose non-zero weights cover only that pair. Any issue → `422 ROLLOUT_INCOMPATIBLE` with the reason ("Production now serves `v_legacy`, which is not part of this rollout"); the operator aborts or fixes the configuration first. Compatible → on confirmation the plan adopts the current version as `expectedVersion` and continues; the next step overwrites only `fallthrough`. No configuration is written by the resume itself. Creation keeps the stricter precondition above (baseline must equal the *currently served* variation); resume applies the pair-compatibility check because an outside change may legitimately have moved the percentage.
 - **Abort**: terminal; live config untouched; remaining pending steps are marked `skipped`. The UI offers *Rollback to version N* (`startedFromVersion`) as a separate, auditable action.
 - **Completed**: no pending steps remain, whatever the final percentage (a plan may deliberately stop at 50%).
 - **Rollback** is never implicit.
@@ -253,15 +254,15 @@ Idempotent and safe to call concurrently. For each plan in `{scheduled, running}
 2. Claim the step: `findOneAndUpdate({ _id, "steps.id": stepId, "steps.status": "pending" }, { "steps.$.status": "applying" })`. Zero matches means another pass owns it; stop.
 3. Write the environment config with the version guard: `findOneAndUpdate({ _id: flagId, "environments.<env>.version": plan.expectedVersion }, { $set: fallthrough = weightsForPercent(step), lastEffectiveChangeAt, lastChangedBy: plan.createdBy; $inc: version })`. This single guarded write is both the concurrency control and the drift check.
 4. Zero matches → read the current version. If it differs from `plan.expectedVersion`, the configuration was changed outside the rollout: release the claim to `pending` and set the plan `stalled` with `stallReason: "CONFIG_CHANGED_OUTSIDE_ROLLOUT"` (audit `rollout.stalled`). If it is equal, another pass raced this one: release the claim and stop (retried next pass).
-5. Success → insert `FlagVersion(source: rollout, rolloutPlanId, stepId)` and an `AuditEntry`; mark the step `applied` with `appliedVersion`; set `plan.expectedVersion = appliedVersion` and `lastAppliedStepId`; set plan `running`, or `completed` when no pending steps remain.
+5. Success → insert `FlagVersion(source: rollout, rolloutPlanId, stepId)`, then `auditService.recordOnce` (`rollout.stepApplied`, `idempotencyKey = rollout:<planId>:<stepId>:applied`); mark the step `applied` with `appliedVersion`; set `plan.expectedVersion = appliedVersion` and `lastAppliedStepId`; set plan `running`, or `completed` when no pending steps remain.
 
 `expectedVersion` is authoritative for drift. It is set to the environment's current version at plan creation, to the written version after each step, and to the current version on a confirmed resume from `stalled`.
 
 **Crash recovery.** `applying` is a claim with a timestamp, not a terminal state. Before processing due steps, `reconcileDue(now)` looks for steps with `status: applying` and `claimedAt < now − 120 s` (a live pass finishes in milliseconds; two minutes is far beyond any legitimate claim) and resolves each one deterministically:
 
-1. A `FlagVersion` with this `(rolloutPlanId, stepId)` exists → the write and the snapshot both happened; only finalization was lost. Mark the step `applied` with that version, set `expectedVersion` to it, and continue as in step 5 above.
+1. A `FlagVersion` with this `(rolloutPlanId, stepId)` exists → the write and the snapshot both happened; only the audit entry and/or finalization may be lost. Call `auditService.recordOnce` with `idempotencyKey = rollout:<planId>:<stepId>:applied` (a duplicate is a no-op), then mark the step `applied` with that version, set `expectedVersion` to it, and continue as in step 5 above.
 2. No such version and the environment's current version equals `plan.expectedVersion` → the flag write never happened. Release the step to `pending`; it is applied normally in the same pass.
-3. No such version, current version equals `plan.expectedVersion + 1`, and the current `fallthrough` is equivalent (§5.2) to `weightsForPercent(step)` with `enabled: true` → the flag write happened but the snapshot insert was lost. Insert the `FlagVersion` now (idempotent via the unique index), then finalize as in case 1.
+3. No such version, current version equals `plan.expectedVersion + 1`, and the current `fallthrough` is equivalent (§5.2) to `weightsForPercent(step)` with `enabled: true` → the flag write happened but the snapshot insert was lost. Insert the `FlagVersion` now (idempotent via the unique index), then finalize as in case 1 (which also makes the audit entry idempotent).
 4. Anything else → `stalled` with `stallReason: RECOVERY_AMBIGUOUS`; the operator resolves it through the same resume-with-diff flow as drift, or aborts.
 
 The single-process backend makes a stale claim rare (a crash between the claim and finalization), but the rule guarantees a plan can never strand with the flag already advanced.
@@ -332,7 +333,16 @@ audit  →  (nothing)      every mutating service  →  audit
 people, projects, auth  →  (no feature dependencies beyond people ← auth)
 ```
 
-Consequences: `flagService` is persistence and metadata only (create, list, detail, metadata patch, archive/restore, kill switch, version listing, the guarded config write); it never imports change-requests, rollouts, or segments. `validateEnvConfig(config, flag, segmentKeys)` receives segment keys from its caller. The flag detail's `activeRollout` is composed in the flag controller from `flagService.getByKey` and `rolloutService.activeForFlag`. Every configuration-changing HTTP entry point (`PATCH .../environments/:env`, `promote`, `rollback`, and change-request `apply`) goes through `governanceService` or `changeRequestService`, which apply protection, the active-rollout guard, and then call `flagService.writeVersion`.
+Consequences: `flagService` is persistence and metadata only (create, list, detail, metadata patch, archive/restore, kill switch, version listing, the guarded config write); it never imports change-requests, rollouts, or segments.
+
+**Environment mutation primitive.** `flagRepository.mutateEnvironment(flagId, envKey, expectedVersion, fields, actorId, now) → updatedFlag | null` is the **only** database write that changes an environment configuration: it matches on `environments.<env>.version === expectedVersion`, `$set`s the given fields (full config, or `fallthrough` only for rollout steps) plus `lastEffectiveChangeAt` and `lastChangedBy`, and `$inc`s the version. Two flows compose it:
+
+- `flagService.writeVersion(flag, envKey, config, { actorId, source, reason, audit, changeRequestId?, expectedVersion })` — mutate → insert `FlagVersion` → **await** `auditService.record` when `audit` is a descriptor `{ action, summary, metadata }`; skip when `audit === false`. `audit` is a required parameter with no default, so no caller can accidentally produce a second entry.
+- The rollout reconciler (§5.5) calls `mutateEnvironment` (fallthrough only), `flagVersionRepository.insert`, and `auditService.recordOnce` as separate steps so recovery can resume at any point.
+
+**One audit entry per user action.** The outermost user action owns the audit entry: direct edit → `flag.config.updated` (via `writeVersion`); promotion → `flag.promoted`; rollback → `flag.rolledBack`; change-request apply → `writeVersion(..., audit: false)` plus exactly one `changeRequest.applied` with `metadata { flagKey, environment, appliedVersion }` (a version conflict on apply records `changeRequest.conflicted` and no version); rollout step → one `rollout.stepApplied` via `recordOnce`.
+
+**Version 1 exists.** `flagService.create` inserts the flag and, in the same operation, one `FlagVersion(version: 1, source: create, reason: "Flag created", actorId: creator)` per environment, so every environment's history starts with a snapshot, "roll back to v1" is possible, and the v2 diff has a base. The seed does the same for every seeded flag. `validateEnvConfig(config, flag, segmentKeys)` receives segment keys from its caller. The flag detail's `activeRollout` is composed in the flag controller from `flagService.getByKey` and `rolloutService.activeForFlag`. Every configuration-changing HTTP entry point (`PATCH .../environments/:env`, `promote`, `rollback`, and change-request `apply`) goes through `governanceService` or `changeRequestService`, which apply protection, the active-rollout guard, and then call `flagService.writeVersion`.
 
 ## 6. API surface
 
