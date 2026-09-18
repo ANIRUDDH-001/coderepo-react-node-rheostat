@@ -1,0 +1,21 @@
+{
+	"name": "rheostat",
+	"version": "1.0.0",
+	"private": true,
+	"description": "Rheostat feature flag and progressive delivery platform - MERN Stack Monorepo",
+	"workspaces": [
+		"frontend",
+		"backend"
+	],
+	"scripts": {
+		"prestart": "bash setup.sh --start",
+		"start": "concurrently \"bun run dev:backend\" \"bun run dev:frontend\"",
+		"dev:frontend": "cd frontend && bun run dev",
+		"dev:backend": "cd backend && bun run dev",
+		"seed": "cd backend && bun run seed",
+		"test": "bun test"
+	},
+	"devDependencies": {
+		"concurrently": "9.2.1"
+	}
+}
