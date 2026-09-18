@@ -42,7 +42,8 @@ async function seed() {
 		console.log(`  Profiles:  ${counts[0]}`);
 		console.log(`  Accounts:  ${counts[1]}`);
 		console.log("\nDemo accounts:");
-		for (const profile of people.profiles) console.log(`  Email: ${profile.email} | Password: ${DEMO_PASSWORD} | Role: ${profile.role}`);
+		for (const profile of people.profiles)
+			console.log(`  Email: ${profile.email} | Password: ${DEMO_PASSWORD} | Role: ${profile.role}`);
 		console.log("========================================\n");
 	} catch (error) {
 		console.error("\nSeeding failed:", error.message);

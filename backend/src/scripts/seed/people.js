@@ -22,7 +22,9 @@ export async function seedPeople() {
 	console.log("\nSeeding sign-in accounts...");
 	const passwordHash = await bcrypt.hash(DEMO_PASSWORD, PASSWORD_ROUNDS);
 	const allowedProfileIds = profiles.map((profile) => profile._id);
-	const accounts = await WorkspaceAccount.create(profiles.map((profile) => ({ name: profile.name, email: profile.email, passwordHash, allowedProfileIds })));
+	const accounts = await WorkspaceAccount.create(
+		profiles.map((profile) => ({ name: profile.name, email: profile.email, passwordHash, allowedProfileIds })),
+	);
 	console.log(`  Created ${accounts.length} accounts, each able to open any of the ${profiles.length} profiles`);
 
 	const byEmail = new Map(profiles.map((profile) => [profile.email, profile]));
