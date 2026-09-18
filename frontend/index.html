@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <script>document.documentElement.dataset.theme = localStorage.getItem("rheostat-theme") === "light" ? "light" : "dark";</script>
+        <meta charset="UTF-8" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="theme-color" content="#131314" media="(prefers-color-scheme: dark)" />
+        <meta name="theme-color" content="#f8fafd" media="(prefers-color-scheme: light)" />
+        <title>Rheostat</title>
+        <style>
+            html, body, #root { width: 100%; min-width: 320px; min-height: 100%; margin: 0; }
+            body { background: #131314; }
+            html[data-theme="light"] body, html[data-theme="light"] .initial-boot { background: #f8fafd; }
+            html[data-theme="light"] .initial-boot { color: #3c4043; }
+            .initial-boot { display: grid; position: fixed; inset: 0; place-content: center; gap: 24px; background: #131314; color: #e3e3e3; font-family: Arial, sans-serif; }
+            .initial-brand { display: flex; align-items: center; gap: 13px; font-size: 25px; }
+            .initial-mark { display: grid; width: 44px; height: 44px; place-items: center; border-radius: 10px; background: #0b57d0; }
+            .initial-progress { width: 154px; height: 3px; margin: 0 auto; overflow: hidden; border-radius: 2px; background: #394457; }
+            .initial-progress::after { display: block; width: 42%; height: 100%; border-radius: inherit; background: #8ab4f8; content: ""; animation: initial-progress 900ms ease-in-out infinite; }
+            @keyframes initial-progress { 0% { transform: translateX(-110%) scaleX(.75); } 50% { transform: translateX(95%) scaleX(1.15); } 100% { transform: translateX(310%) scaleX(.7); } }
+            @media (prefers-reduced-motion: reduce) { .initial-progress::after { animation: none; transform: translateX(70%); } }
+        </style>
+    </head>
+    <body>
+        <div id="root"><main class="initial-boot" aria-hidden="true"><div class="initial-brand"><span class="initial-mark"><svg viewBox="0 0 44 44" width="44" height="44"><path d="M12.1 32.9 A14 14 0 1 1 31.9 32.9" fill="none" stroke="#7fb5f5" stroke-width="4" stroke-linecap="round" opacity="0.45" /><path d="M12.1 32.9 A14 14 0 0 1 29.2 10.9" fill="none" stroke="#c2e7ff" stroke-width="4" stroke-linecap="round" /><line x1="22" y1="23" x2="29.2" y2="10.9" stroke="#fff" stroke-width="3.2" stroke-linecap="round" /><circle cx="22" cy="23" r="3.2" fill="#fff" /></svg></span><span>Rheostat</span></div><div class="initial-progress"></div></main></div>
+        <script type="module" src="/src/main.jsx"></script>
+    </body>
+</html>
