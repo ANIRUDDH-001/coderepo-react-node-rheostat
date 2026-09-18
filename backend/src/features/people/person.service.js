@@ -2,6 +2,7 @@ import { AppError } from "../../shared/errors/app-error.js";
 import { assertCan } from "../../shared/auth/permissions.js";
 import { ensureObjectId, sameId } from "../../shared/utils/object-id.js";
 import { escapeRegex } from "../../shared/utils/keys.js";
+import { auditService } from "../audit/audit.service.js";
 import { personRepository } from "./person.repository.js";
 
 export const publicPerson = (person) => ({
@@ -40,6 +41,21 @@ export const personService = {
 			throw new AppError(400, "SELF_DEMOTION", "Ask another admin to change your own role.");
 		}
 		const updated = await personRepository.updateRole(personId, role);
+		await auditService.record({
+			actor,
+			action: "person.roleChanged",
+			entityType: "person",
+			entityId: updated._id,
+			entityLabel: updated.name,
+			summary: `${actor.name} changed ${updated.name}'s role from ${person.role} to ${role}.`,
+			metadata: { from: person.role, to: role },
+		});
 		return publicPerson(updated);
+	},
+	// Attaches a public actor to records that carry an actorId (audit entries, versions, reviews).
+	async attachActors(records, field = "actorId", target = "actor") {
+		const people = await this.findMany(records.map((record) => record[field]).filter(Boolean));
+		const byId = new Map(people.map((person) => [person._id, person]));
+		return records.map((record) => ({ ...record, [target]: byId.get(String(record[field])) || null }));
 	},
 };
