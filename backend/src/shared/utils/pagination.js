@@ -4,4 +4,10 @@ export function paginate(query, { defaultSize = 25, maxSize = 100 } = {}) {
 	return { page, pageSize, skip: (page - 1) * pageSize };
 }
 
-export const pageResult = (items, total, page, pageSize) => ({ items, total, page, pageSize, pageCount: Math.max(1, Math.ceil(total / pageSize)) });
+export const pageResult = (items, total, page, pageSize) => ({
+	items,
+	total,
+	page,
+	pageSize,
+	pageCount: Math.max(1, Math.ceil(total / pageSize)),
+});

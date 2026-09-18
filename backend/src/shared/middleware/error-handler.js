@@ -7,7 +7,9 @@ export function notFoundHandler(request, response) {
 
 export function errorHandler(error, request, response, next) {
 	if (error instanceof ZodError) {
-		return response.status(400).json({ error: { code: "VALIDATION_ERROR", message: "Request validation failed.", details: error.flatten() } });
+		return response
+			.status(400)
+			.json({ error: { code: "VALIDATION_ERROR", message: "Request validation failed.", details: error.flatten() } });
 	}
 	if (error instanceof AppError) {
 		return response.status(error.statusCode).json({ error: { code: error.code, message: error.message, details: error.details } });
