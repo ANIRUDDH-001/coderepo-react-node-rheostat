@@ -1,0 +1,23 @@
+{
+    "name": "rheostat-backend",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "description": "Rheostat feature flag API",
+    "main": "src/index.js",
+    "scripts": {
+        "start": "bun src/index.js",
+        "dev": "bun --watch src/index.js",
+        "seed": "bun src/scripts/seed.js",
+        "test": "bun test"
+    },
+    "dependencies": {
+        "bcryptjs": "3.0.2",
+        "cors": "2.8.6",
+        "dotenv": "17.3.1",
+        "express": "5.2.1",
+        "jsonwebtoken": "9.0.2",
+        "mongoose": "8.24.1",
+        "zod": "4.3.6"
+    }
+}
