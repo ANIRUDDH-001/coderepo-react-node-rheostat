@@ -3,12 +3,17 @@ import { keySchema } from "../../shared/utils/keys.js";
 import { ENVIRONMENT_KEYS } from "./project.model.js";
 import { projectService } from "./project.service.js";
 
-const createSchema = z.object({ key: keySchema, name: z.string().trim().min(1).max(80), description: z.string().trim().max(500).default("") }).strict();
+const createSchema = z
+	.object({ key: keySchema, name: z.string().trim().min(1).max(80), description: z.string().trim().max(500).default("") })
+	.strict();
 const environmentPatchSchema = z
 	.object({
 		key: z.enum(ENVIRONMENT_KEYS),
 		name: z.string().trim().min(1).max(60).optional(),
-		color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+		color: z
+			.string()
+			.regex(/^#[0-9A-Fa-f]{6}$/)
+			.optional(),
 		protected: z.boolean().optional(),
 		requiredApprovals: z.number().int().min(1).max(3).optional(),
 	})

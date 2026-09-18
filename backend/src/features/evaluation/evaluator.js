@@ -6,7 +6,8 @@ export const REASONS = { KILL_SWITCH: "KILL_SWITCH", OFF: "OFF", RULE_MATCH: "RU
 
 const attributeValue = (context, attribute) => (attribute === "key" ? context.key : context.attributes?.[attribute]);
 const isPresent = (value) => value !== undefined && value !== null && value !== "";
-const asNumber = (value) => (typeof value === "number" ? value : typeof value === "string" && value.trim() !== "" ? Number(value) : Number.NaN);
+const asNumber = (value) =>
+	typeof value === "number" ? value : typeof value === "string" && value.trim() !== "" ? Number(value) : Number.NaN;
 const asTime = (value) => {
 	const time = new Date(value).getTime();
 	return Number.isNaN(time) ? null : time;
@@ -82,8 +83,15 @@ export function serveVariation(serve, flag, environmentKey, context) {
 function resolve(flag, variationId, reason) {
 	const variation = flag.variations.find((candidate) => candidate.id === variationId);
 	if (variation) return { variationId: variation.id, value: variation.value, reason };
-	const off = flag.variations.find((candidate) => candidate.id === flag.environments?.[reason.environmentKey]?.offVariationId) || flag.variations[1] || flag.variations[0];
-	return { variationId: off?.id ?? null, value: off?.value ?? null, reason: { kind: REASONS.ERROR, message: `Variation ${variationId} does not exist.` } };
+	const off =
+		flag.variations.find((candidate) => candidate.id === flag.environments?.[reason.environmentKey]?.offVariationId) ||
+		flag.variations[1] ||
+		flag.variations[0];
+	return {
+		variationId: off?.id ?? null,
+		value: off?.value ?? null,
+		reason: { kind: REASONS.ERROR, message: `Variation ${variationId} does not exist.` },
+	};
 }
 
 export function evaluate(flag, environmentKey, context, segmentsByKey = {}) {
@@ -106,5 +114,9 @@ export function evaluate(flag, environmentKey, context, segmentsByKey = {}) {
 		}
 	}
 	const served = serveVariation(config.fallthrough, flag, environmentKey, context);
-	return resolve(flag, served.variationId, { kind: REASONS.FALLTHROUGH, environmentKey, ...(served.bucket !== undefined ? { bucket: served.bucket } : {}) });
+	return resolve(flag, served.variationId, {
+		kind: REASONS.FALLTHROUGH,
+		environmentKey,
+		...(served.bucket !== undefined ? { bucket: served.bucket } : {}),
+	});
 }

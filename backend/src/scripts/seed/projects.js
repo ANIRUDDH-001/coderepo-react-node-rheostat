@@ -9,7 +9,9 @@ export const projectRows = [
 export async function seedProjects(people) {
 	console.log("\nSeeding projects...");
 	const admin = people.byEmail.get("priya.raman@rheostat.team");
-	const projects = await Project.create(projectRows.map((row) => ({ ...row, environments: defaultEnvironments(), createdBy: admin._id })));
+	const projects = await Project.create(
+		projectRows.map((row) => ({ ...row, environments: defaultEnvironments(), createdBy: admin._id })),
+	);
 	console.log(`  Created ${projects.length} projects with ${projects[0].environments.length} environments each`);
 	return { projects, byKey: new Map(projects.map((project) => [project.key, project])) };
 }

@@ -24,7 +24,10 @@ export function mergeEnvironmentPatches(current, patches = []) {
 	const byKey = new Map(current.map((environment) => [environment.key, { ...environment }]));
 	for (const patch of patches) {
 		const environment = byKey.get(patch.key);
-		if (!environment) throw new AppError(422, "INVALID_CONFIG", `Environment ${patch.key} does not exist in this project.`, { issues: [`Unknown environment ${patch.key}.`] });
+		if (!environment)
+			throw new AppError(422, "INVALID_CONFIG", `Environment ${patch.key} does not exist in this project.`, {
+				issues: [`Unknown environment ${patch.key}.`],
+			});
 		if (patch.name !== undefined) environment.name = patch.name;
 		if (patch.color !== undefined) environment.color = patch.color;
 		if (patch.protected !== undefined) environment.protected = patch.protected;
@@ -43,7 +46,12 @@ export const projectService = {
 	async create(input, actor) {
 		assertCan(actor, "project:manage");
 		const count = await projectRepository.count();
-		const project = await projectRepository.create({ ...input, environments: defaultEnvironments(), sortOrder: count + 1, createdBy: actor._id });
+		const project = await projectRepository.create({
+			...input,
+			environments: defaultEnvironments(),
+			sortOrder: count + 1,
+			createdBy: actor._id,
+		});
 		await auditService.record({
 			actor,
 			action: "project.created",

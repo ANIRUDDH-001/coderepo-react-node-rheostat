@@ -20,7 +20,10 @@ const clause = (attribute, operator, values, negate = false) => ({ attribute, op
 
 describe("evaluate precedence", () => {
 	test("kill switch wins over everything", () => {
-		const flag = boolFlag({ rules: [{ id: "r1", clauses: [clause("plan", "in", ["pro"])], serve: { variationId: "v_on" } }] }, { killSwitch: { active: true } });
+		const flag = boolFlag(
+			{ rules: [{ id: "r1", clauses: [clause("plan", "in", ["pro"])], serve: { variationId: "v_on" } }] },
+			{ killSwitch: { active: true } },
+		);
 		expect(evaluate(flag, "production", ctx("u1", { plan: "pro" }), {})).toMatchObject({
 			variationId: "v_off",
 			value: false,
@@ -42,17 +45,25 @@ describe("evaluate precedence", () => {
 		});
 		const result = evaluate(flag, "production", ctx("u1", { plan: "enterprise", country: "DE" }), {});
 		expect(result).toMatchObject({ variationId: "v_off", reason: { kind: "RULE_MATCH", ruleId: "r1", ruleIndex: 0 } });
-		expect(evaluate(flag, "production", ctx("u2", { plan: "free", country: "DE" }), {}).reason).toMatchObject({ ruleId: "r2", ruleIndex: 1 });
+		expect(evaluate(flag, "production", ctx("u2", { plan: "free", country: "DE" }), {}).reason).toMatchObject({
+			ruleId: "r2",
+			ruleIndex: 1,
+		});
 	});
 
 	test("falls through when no rule matches", () => {
 		const flag = boolFlag({ rules: [{ id: "r1", clauses: [clause("plan", "in", ["enterprise"])], serve: { variationId: "v_off" } }] });
-		expect(evaluate(flag, "production", ctx("u1", { plan: "free" }), {})).toMatchObject({ variationId: "v_on", reason: { kind: "FALLTHROUGH" } });
+		expect(evaluate(flag, "production", ctx("u1", { plan: "free" }), {})).toMatchObject({
+			variationId: "v_on",
+			reason: { kind: "FALLTHROUGH" },
+		});
 	});
 
 	test("a rule needs every clause to match", () => {
 		const flag = boolFlag({
-			rules: [{ id: "r1", clauses: [clause("plan", "in", ["pro"]), clause("country", "in", ["DE"])], serve: { variationId: "v_off" } }],
+			rules: [
+				{ id: "r1", clauses: [clause("plan", "in", ["pro"]), clause("country", "in", ["DE"])], serve: { variationId: "v_off" } },
+			],
 		});
 		expect(evaluate(flag, "production", ctx("u1", { plan: "pro", country: "FR" }), {}).reason.kind).toBe("FALLTHROUGH");
 		expect(evaluate(flag, "production", ctx("u1", { plan: "pro", country: "DE" }), {}).reason.kind).toBe("RULE_MATCH");
@@ -146,7 +157,8 @@ describe("rollouts", () => {
 		expect(evaluate(flag, "production", ctx("u7"), {})).toEqual(first);
 		expect(first.reason).toMatchObject({ kind: "FALLTHROUGH", bucket: expect.any(Number) });
 		let on = 0;
-		for (let index = 0; index < 5000; index += 1) if (evaluate(flag, "production", ctx(`u${index}`), {}).variationId === "v_on") on += 1;
+		for (let index = 0; index < 5000; index += 1)
+			if (evaluate(flag, "production", ctx(`u${index}`), {}).variationId === "v_on") on += 1;
 		expect(on / 5000).toBeGreaterThan(0.27);
 		expect(on / 5000).toBeLessThan(0.33);
 	});
@@ -170,7 +182,9 @@ describe("rollouts", () => {
 				},
 			},
 		});
-		expect(evaluate(flag, "production", ctx("u1", { company: "acme" }), {}).reason.bucket).toBe(bucketFor("new-checkout", "production", "acme"));
+		expect(evaluate(flag, "production", ctx("u1", { company: "acme" }), {}).reason.bucket).toBe(
+			bucketFor("new-checkout", "production", "acme"),
+		);
 		expect(evaluate(flag, "production", ctx("u1"), {}).reason.bucket).toBe(bucketFor("new-checkout", "production", "u1"));
 	});
 
@@ -221,7 +235,11 @@ describe("rollouts", () => {
 			fallthrough: { variationId: "v_off" },
 		});
 		const beta = evaluate(flag, "production", ctx("u-beta", { betaOptIn: true }), {});
-		expect(beta.reason).toMatchObject({ kind: "RULE_MATCH", ruleId: "r-beta", bucket: bucketFor("new-checkout", "production", "u-beta") });
+		expect(beta.reason).toMatchObject({
+			kind: "RULE_MATCH",
+			ruleId: "r-beta",
+			bucket: bucketFor("new-checkout", "production", "u-beta"),
+		});
 		expect(beta.variationId).toBe(beta.reason.bucket < 50000 ? "v_on" : "v_off");
 		expect(evaluate(flag, "production", ctx("u-beta", { betaOptIn: true }), {})).toEqual(beta);
 		expect(evaluate(flag, "production", ctx("u-plain"), {})).toMatchObject({ variationId: "v_off", reason: { kind: "FALLTHROUGH" } });

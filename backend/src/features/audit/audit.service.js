@@ -1,7 +1,18 @@
 import { AppError } from "../../shared/errors/app-error.js";
 import { auditRepository } from "./audit.repository.js";
 
-const toEntry = ({ actor, action, entityType, entityId, entityLabel = "", projectId = null, summary, metadata = {}, idempotencyKey, at }) => ({
+const toEntry = ({
+	actor,
+	action,
+	entityType,
+	entityId,
+	entityLabel = "",
+	projectId = null,
+	summary,
+	metadata = {},
+	idempotencyKey,
+	at,
+}) => ({
 	actorId: actor._id,
 	action,
 	entityType,
@@ -20,7 +31,10 @@ export const auditService = {
 		try {
 			return await auditRepository.insert(toEntry(input));
 		} catch (error) {
-			throw new AppError(500, "AUDIT_WRITE_FAILED", "The change was saved but its history entry could not be written.", { action: input.action, cause: error.message });
+			throw new AppError(500, "AUDIT_WRITE_FAILED", "The change was saved but its history entry could not be written.", {
+				action: input.action,
+				cause: error.message,
+			});
 		}
 	},
 	// Idempotent variant for automated rollout steps and their crash recovery.
@@ -30,7 +44,10 @@ export const auditService = {
 			return await auditRepository.insert(toEntry(input));
 		} catch (error) {
 			if (error?.code === 11000) return auditRepository.findByIdempotencyKey(input.idempotencyKey);
-			throw new AppError(500, "AUDIT_WRITE_FAILED", "The change was saved but its history entry could not be written.", { action: input.action, cause: error.message });
+			throw new AppError(500, "AUDIT_WRITE_FAILED", "The change was saved but its history entry could not be written.", {
+				action: input.action,
+				cause: error.message,
+			});
 		}
 	},
 	async list({ projectId = null, entityType, actorId, before, limit = 25 }) {
