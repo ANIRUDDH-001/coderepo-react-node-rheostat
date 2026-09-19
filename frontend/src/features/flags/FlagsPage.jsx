@@ -30,6 +30,9 @@ export function FlagsPage() {
 	const { notify } = useToast();
 	const [creating, setCreating] = useState(false);
 	const filters = readFilters(query);
+	// Default values stay out of the URL so shared links only carry what differs.
+	const applyFilters = (patch) =>
+		setQuery(Object.fromEntries(Object.entries(patch).map(([key, value]) => [key, value === DEFAULT_FILTERS[key] ? "" : value])));
 	const page = Math.max(1, Number(filters.page) || 1);
 	const pageSize = Math.min(100, Math.max(1, Number(filters.pageSize) || PAGE_SIZE));
 	const requestFilters = {
@@ -58,7 +61,7 @@ export function FlagsPage() {
 			<EmptyState
 				action={
 					filtered
-						? { label: "Clear filters", onClick: () => setQuery({ ...DEFAULT_FILTERS, page: "", pageSize: "" }) }
+						? { label: "Clear filters", onClick: () => applyFilters({ ...DEFAULT_FILTERS, page: "", pageSize: "" }) }
 						: can("flag:create")
 							? { label: "Create flag", onClick: () => setCreating(true) }
 							: null
@@ -97,7 +100,7 @@ export function FlagsPage() {
 					</button>
 				)}
 			</header>
-			<FlagFilters environments={project.environments} filters={filters} onChange={(patch) => setQuery(patch)} />
+			<FlagFilters environments={project.environments} filters={filters} onChange={applyFilters} />
 			{loading && data && <div className="page-progress" aria-hidden="true" />}
 			{body}
 			{creating && (

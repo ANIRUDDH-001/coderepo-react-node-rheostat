@@ -24,3 +24,6 @@ export function fieldErrors(error) {
 	const general = [...(details.formErrors || []), ...(details.issues || [])];
 	return { fields, general, message: error?.message || "" };
 }
+
+export const KEY_PATTERN = /^[a-z][a-z0-9-]{1,39}$/;
+export const keyError = (key) => (KEY_PATTERN.test(key) ? "" : "Use 2–40 lowercase letters, numbers, and hyphens, starting with a letter.");

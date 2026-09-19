@@ -13,7 +13,7 @@ import { useAsync } from "../../shared/hooks/useAsync.js";
 import { Link } from "../../shared/router/Link.jsx";
 import { buildPath } from "../../shared/router/match.js";
 import { navigate } from "../../shared/router/router.js";
-import { fieldErrors, slugify } from "../../shared/utils/format.js";
+import { fieldErrors, keyError, slugify } from "../../shared/utils/format.js";
 import { ClauseEditor } from "../flags/ClauseEditor.jsx";
 import { localId, newClause } from "../flags/config-draft.js";
 import { segmentApi } from "./segment.api.js";
@@ -117,8 +117,10 @@ export function SegmentEditorPage({ segmentKey }) {
 				if (!clause.values.length) general.push(`Rule ${index + 1}, condition ${position + 1}: add at least one value.`);
 			});
 		});
-		setErrors({ fields: {}, general });
-		return general.length === 0;
+		const fields = {};
+		if (isNew && keyError(draft.key.trim())) fields.key = keyError(draft.key.trim());
+		setErrors({ fields, general });
+		return general.length === 0 && !fields.key;
 	};
 
 	const submit = async (event) => {
@@ -229,7 +231,6 @@ export function SegmentEditorPage({ segmentKey }) {
 								{...props}
 								disabled={readOnly || !isNew}
 								maxLength={40}
-								pattern="[a-z][a-z0-9-]{1,39}"
 								required
 								spellCheck={false}
 								type="text"

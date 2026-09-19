@@ -6,7 +6,7 @@ import { MaterialIcon } from "../../shared/components/MaterialIcon.jsx";
 import { Modal } from "../../shared/components/Modal.jsx";
 import { SelectMenu } from "../../shared/components/SelectMenu.jsx";
 import { useSession } from "../../shared/context/SessionContext.jsx";
-import { fieldErrors, slugify } from "../../shared/utils/format.js";
+import { fieldErrors, keyError, slugify } from "../../shared/utils/format.js";
 import { PersonPicker } from "../people/PersonPicker.jsx";
 import { flagApi } from "./flag.api.js";
 import { serializeVariations, VariationsEditor } from "./VariationsEditor.jsx";
@@ -55,8 +55,9 @@ export function FlagCreateDialog({ onClose, onCreated, projectKey }) {
 	const submit = async (event) => {
 		event.preventDefault();
 		const { variations, errors: variationErrors } = serializeVariations(rows, type);
-		if (Object.keys(variationErrors).length) {
-			setErrors({ fields: {}, general: [], variations: variationErrors });
+		const keyProblem = keyError(key.trim());
+		if (Object.keys(variationErrors).length || keyProblem) {
+			setErrors({ fields: keyProblem ? { key: keyProblem } : {}, general: [], variations: variationErrors });
 			return;
 		}
 		setBusy(true);
@@ -127,7 +128,6 @@ export function FlagCreateDialog({ onClose, onCreated, projectKey }) {
 							<input
 								{...props}
 								maxLength={40}
-								pattern="[a-z][a-z0-9-]{1,39}"
 								required
 								spellCheck={false}
 								type="text"
