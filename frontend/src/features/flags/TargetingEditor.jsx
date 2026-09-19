@@ -205,38 +205,37 @@ export function TargetingEditor({ canEdit, config, environment, flag, mode = "di
 				/>
 			</section>
 
-			{canEdit && (
-				<footer className="editor-footer">
-					<label className="editor-reason" htmlFor={reasonId}>
-						<span>Reason</span>
-						<input
-							disabled={saving}
-							id={reasonId}
-							maxLength={200}
-							placeholder="Why this change? (optional, kept in history)"
-							type="text"
-							value={reason}
-							onChange={(event) => setReason(event.target.value)}
-						/>
-					</label>
-					<div className="editor-actions">
-						<button className="text-button" disabled={!dirty || saving} type="button" onClick={() => setDiscarding(true)}>
-							Discard
-						</button>
-						<button className="tonal-button" disabled={saving} type="button" onClick={previewImpact}>
-							<MaterialIcon size={18}>insights</MaterialIcon> Preview impact
-						</button>
-						<button
-							className="primary-button"
-							disabled={!dirty || saving || conflict}
-							type="button"
-							onClick={() => save(false)}
-						>
-							{saving ? "Saving…" : mode === "propose" ? "Propose change" : "Save"}
-						</button>
-					</div>
-				</footer>
-			)}
+			<footer className="editor-footer">
+				<label className="editor-reason" htmlFor={reasonId}>
+					<span>Reason</span>
+					<input
+						disabled={readOnly}
+						id={reasonId}
+						maxLength={200}
+						placeholder="Why this change? (optional, kept in history)"
+						type="text"
+						value={reason}
+						onChange={(event) => setReason(event.target.value)}
+					/>
+				</label>
+				<div className="editor-actions">
+					<button className="text-button" disabled={!dirty || readOnly} type="button" onClick={() => setDiscarding(true)}>
+						Discard
+					</button>
+					<button className="tonal-button" disabled={saving} type="button" onClick={previewImpact}>
+						<MaterialIcon size={18}>insights</MaterialIcon> Preview impact
+					</button>
+					<button
+						className="primary-button"
+						disabled={!dirty || readOnly || conflict}
+						title={!canEdit ? notice : undefined}
+						type="button"
+						onClick={() => save(false)}
+					>
+						{saving ? "Saving…" : mode === "propose" ? "Propose change" : "Save"}
+					</button>
+				</div>
+			</footer>
 
 			{discarding && (
 				<ConfirmationDialog

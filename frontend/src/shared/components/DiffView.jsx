@@ -23,15 +23,18 @@ const describeValue = (value, variationName) => {
 const describeClause = (clause) =>
 	`${clause.negate ? "NOT " : ""}${clause.attribute} ${clause.operator} [${(clause.values || []).join(", ")}]`;
 
-const describePath = (path) => {
-	const parts = path.split(".");
+// Rules are keyed by id in the diff; show the description when either side carries one.
+const describePath = (entry) => {
+	const parts = entry.path.split(".");
 	if (parts[0] === "rules") {
+		const description = entry.after?.description || entry.before?.description;
+		const label = description ? `Rule "${description}"` : `Rule ${parts[1]}`;
 		const rest = parts.slice(2);
-		if (rest.length === 0) return `Rule ${parts[1]}`;
-		if (rest[0] === "clauses") return `Rule ${parts[1]} · clause ${Number(rest[1]) + 1}${rest[2] ? ` · ${rest[2]}` : ""}`;
-		return `Rule ${parts[1]} · ${rest.join(" · ")}`;
+		if (rest.length === 0) return label;
+		if (rest[0] === "clauses") return `${label} · clause ${Number(rest[1]) + 1}${rest[2] ? ` · ${rest[2]}` : ""}`;
+		return `${label} · ${rest.join(" · ")}`;
 	}
-	return SECTION_LABELS[parts[0]] || path;
+	return SECTION_LABELS[parts[0]] || entry.path;
 };
 
 // Renders spec §5.2 diff entries grouped by section. `variations` maps ids to names when provided.
@@ -53,7 +56,7 @@ export function DiffView({ diff = [], variations = [] }) {
 						{entries.map((entry) => (
 							<li className={`diff-${entry.kind}`} key={entry.path}>
 								<span className="diff-kind">{entry.kind}</span>
-								<span className="diff-path">{describePath(entry.path)}</span>
+								<span className="diff-path">{describePath(entry)}</span>
 								<span className="diff-values">
 									{entry.kind !== "added" && <del>{describeValue(entry.before, variationName)}</del>}
 									{entry.kind !== "removed" && <ins>{describeValue(entry.after, variationName)}</ins>}
