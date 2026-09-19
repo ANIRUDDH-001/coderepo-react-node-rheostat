@@ -20,6 +20,7 @@ export function ChangeRequestComposer({
 	const [description, setDescription] = useState(initialDescription);
 	const [errors, setErrors] = useState({ fields: {}, general: [] });
 	const [busy, setBusy] = useState(false);
+	const editing = Boolean(initialTitle);
 	const submit = async (event) => {
 		event.preventDefault();
 		if (title.trim().length < 3) {
@@ -40,16 +41,20 @@ export function ChangeRequestComposer({
 		<Modal className="form-dialog form-dialog-narrow" labelledBy={titleId} onClose={() => !busy && onClose()}>
 			<form className="dialog-form" onSubmit={submit}>
 				<header className="dialog-header">
-					<h2 id={titleId}>Propose change to {environmentName}</h2>
+					<h2 id={titleId}>{editing ? `Update the proposal for ${environmentName}` : `Propose change to ${environmentName}`}</h2>
 					<button aria-label="Close" className="icon-button" disabled={busy} type="button" onClick={onClose}>
 						<MaterialIcon>close</MaterialIcon>
 					</button>
 				</header>
 				<div className="dialog-body">
-					<p>
-						{environmentName} is protected. Your targeting for <strong>{flagName}</strong> becomes a change request that a
-						reviewer must approve before it can be applied.
-					</p>
+					{editing ? (
+						<p>Your edited targeting replaces the proposal and clears its reviews.</p>
+					) : (
+						<p>
+							{environmentName} is protected. Your targeting for <strong>{flagName}</strong> becomes a change request that a
+							reviewer must approve before it can be applied.
+						</p>
+					)}
 					{errors.general.length > 0 && (
 						<div className="banner banner-danger" role="alert">
 							<MaterialIcon size={20}>error_outline</MaterialIcon>
