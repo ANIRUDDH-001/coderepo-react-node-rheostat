@@ -14,7 +14,8 @@ const describeValue = (value, variationName) => {
 	}
 	if (value.variationId !== undefined) return `Serve ${variationName(value.variationId)}`;
 	if (value.clauses) {
-		return `${value.description ? `${value.description}: ` : ""}${value.clauses.map((clause) => describeClause(clause)).join(" AND ")} → ${describeValue(value.serve, variationName)}`;
+		// The path label already names the rule, so the value shows only its conditions and outcome.
+		return `${value.clauses.map((clause) => describeClause(clause)).join(" AND ")} → ${describeValue(value.serve, variationName)}`;
 	}
 	if (value.attribute) return describeClause(value);
 	return JSON.stringify(value);
