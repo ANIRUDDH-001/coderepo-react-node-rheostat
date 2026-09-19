@@ -8,10 +8,15 @@ import { useToast } from "../../shared/components/Toast.jsx";
 import { useProject } from "../../shared/context/ProjectContext.jsx";
 import { useSession } from "../../shared/context/SessionContext.jsx";
 import { useAsync } from "../../shared/hooks/useAsync.js";
+import { Link } from "../../shared/router/Link.jsx";
 import { buildPath } from "../../shared/router/match.js";
 import { navigate, useRoute } from "../../shared/router/router.js";
-import { formatDateTime } from "../../shared/utils/date.js";
+import { formatDateTime, relativeTime } from "../../shared/utils/date.js";
+import { changeRequestApi } from "../change-requests/change-request.api.js";
+import { ChangeRequestComposer } from "../change-requests/ChangeRequestComposer.jsx";
+import { KindBadge, StatusBadge } from "../change-requests/StatusBadge.jsx";
 import { segmentApi } from "../segments/segment.api.js";
+import { EnvironmentCompare } from "./EnvironmentCompare.jsx";
 import { EnvironmentTabs } from "./EnvironmentTabs.jsx";
 import { flagApi } from "./flag.api.js";
 import { FlagHeader } from "./FlagHeader.jsx";
@@ -19,6 +24,31 @@ import { FlagMetadataDialog } from "./FlagMetadataDialog.jsx";
 import { KillSwitchDialog } from "./KillSwitchDialog.jsx";
 import { TargetingEditor } from "./TargetingEditor.jsx";
 import { VersionHistory } from "./VersionHistory.jsx";
+
+const TERMINAL = new Set(["applied", "rejected", "withdrawn"]);
+
+function OpenChangeRequests({ environmentName, items, projectKey }) {
+	if (!items.length) return null;
+	return (
+		<section className="open-change-requests" aria-label={`Open change requests for ${environmentName}`}>
+			<div className="editor-section-header">
+				<h3>Open change requests for {environmentName}</h3>
+			</div>
+			<ul className="open-change-request-list">
+				{items.map((item) => (
+					<li key={item._id}>
+						<StatusBadge status={item.status} />
+						<KindBadge kind={item.kind} />
+						<Link to={buildPath("changeRequest", { projectKey, id: item._id })}>{item.title}</Link>
+						<span className="muted">
+							{item.author?.name || "Unknown"} · {relativeTime(item.createdAt)} · {item.approvals} approval{item.approvals === 1 ? "" : "s"}
+						</span>
+					</li>
+				))}
+			</ul>
+		</section>
+	);
+}
 
 export function FlagDetailPage({ flagKey }) {
 	const { project } = useProject();
@@ -30,10 +60,15 @@ export function FlagDetailPage({ flagKey }) {
 	const [dialog, setDialog] = useState(null);
 	const [busy, setBusy] = useState(false);
 	const [dialogError, setDialogError] = useState("");
+	// `proposal` is a payload (or a rollback target) waiting for a title and description in the composer.
+	const [proposal, setProposal] = useState(null);
 
 	const environments = project.environments;
 	const environment = environments.find((candidate) => candidate.key === query.env) || environments[0];
 	const tab = query.tab === "history" ? "history" : "targeting";
+	// `?cr=<id>` opens an existing proposal for editing; it must belong to this flag and environment and still be editable.
+	const editingId = query.cr || "";
+	const editing = useAsync(() => (editingId ? changeRequestApi.get(editingId) : Promise.resolve(null)), [editingId]);
 
 	if (loading && !flag) return <Skeleton rows={8} />;
 	if (error?.code === "FLAG_NOT_FOUND") {
@@ -50,7 +85,7 @@ export function FlagDetailPage({ flagKey }) {
 
 	const config = flag.environments[environment.key];
 
-	// Every mutation re-fetches the decorated flag (owner, kill-switch actor, active rollouts) rather than patching locally.
+	// Every mutation re-fetches the decorated flag (owner, kill-switch actor, open change requests) rather than patching locally.
 	const run = async (action, successMessage) => {
 		setBusy(true);
 		setDialogError("");
@@ -69,13 +104,56 @@ export function FlagDetailPage({ flagKey }) {
 
 	const canKill = can("flag:killSwitch");
 	const canEditConfig = !flag.archived && !environment.protected && can("flag:editConfig:unprotected");
+	const canPropose = !flag.archived && environment.protected && can("changeRequest:create");
+	const editingRequest = editing.data;
+	const editable = Boolean(
+		editingRequest &&
+			editingRequest.flagKey === flag.key &&
+			editingRequest.environment === environment.key &&
+			editingRequest.kind === "manual" &&
+			!TERMINAL.has(editingRequest.status) &&
+			editingRequest.permissions.canEdit,
+	);
+	let editingProblem = "";
+	if (editingId && !editing.loading && !editable) {
+		if (editing.error) editingProblem = editing.error.message;
+		else if (editingRequest)
+			editingProblem = "That change request cannot be edited here: it belongs to another flag or environment, is not a manual proposal, or is closed.";
+	}
 	const notice = flag.archived
 		? "This flag is archived. Restore it to change targeting."
-		: environment.protected
-			? `${environment.name} changes require a change request${can("changeRequest:create") ? "" : ", which your role cannot open"}.`
-			: can("flag:editConfig:unprotected")
-				? ""
-				: "Your role can view targeting but not change it.";
+		: editable
+			? `Editing the proposal "${editingRequest.title}". Saving updates the change request and restarts its review.`
+			: environment.protected
+				? `${environment.name} is protected: saving opens a change request for review${can("changeRequest:create") ? "" : ", which your role cannot do"}.`
+				: can("flag:editConfig:unprotected")
+					? ""
+					: "Your role can view targeting but not change it.";
+	const openForEnvironment = (flag.openChangeRequests || []).filter((item) => item.environment === environment.key);
+
+	const submitProposal = async ({ title, description }) => {
+		if (proposal.kind === "rollback") {
+			const result = await flagApi.rollback(project.key, flag.key, environment.key, { version: proposal.version, title, description });
+			notify({ kind: "success", message: "Rollback proposed as a change request." });
+			navigate(buildPath("changeRequest", { projectKey: project.key, id: result.changeRequest._id }));
+			return;
+		}
+		if (editable) {
+			await changeRequestApi.edit(editingRequest._id, { proposedConfig: proposal.payload, title, description });
+			notify({ kind: "success", message: "Proposal updated; reviews start over." });
+			navigate(buildPath("changeRequest", { projectKey: project.key, id: editingRequest._id }));
+			return;
+		}
+		const created = await changeRequestApi.create(project.key, {
+			flagKey: flag.key,
+			environment: environment.key,
+			proposedConfig: proposal.payload,
+			title,
+			description,
+		});
+		notify({ kind: "success", message: "Change request opened." });
+		navigate(buildPath("changeRequest", { projectKey: project.key, id: created._id }));
+	};
 
 	const actions = (
 		<>
@@ -132,34 +210,88 @@ export function FlagDetailPage({ flagKey }) {
 			)}
 			<FlagHeader actions={actions} flag={flag} projectKey={project.key} />
 			<EnvironmentTabs
+				actions={
+					environments.length > 1 && !flag.archived ? (
+						<button className="text-button" type="button" onClick={() => setDialog("compare")}>
+							<MaterialIcon size={18}>compare_arrows</MaterialIcon> Compare &amp; promote
+						</button>
+					) : null
+				}
 				environment={environment}
 				environments={environments}
 				flag={flag}
-				onEnvironment={(env) => setQuery({ env })}
+				onEnvironment={(env) => setQuery({ env, cr: "" })}
 				onTab={(next) => setQuery({ tab: next === "targeting" ? "" : next })}
 				tab={tab}
 			/>
+			{editingProblem && (
+				<div className="banner banner-warning" role="alert">
+					<MaterialIcon size={20}>warning_amber</MaterialIcon>
+					<div className="banner-body">
+						<span>{editingProblem}</span>
+					</div>
+					<button className="text-button" type="button" onClick={() => setQuery({ cr: "" })}>
+						Dismiss
+					</button>
+				</div>
+			)}
 			{tab === "targeting" ? (
 				segmentsState.error ? (
 					<ErrorBanner message={`Segments could not be loaded: ${segmentsState.error.message}`} onRetry={segmentsState.reload} />
-				) : segmentsState.loading && !segmentsState.data ? (
+				) : (segmentsState.loading && !segmentsState.data) || (editingId && editing.loading && !editing.data) ? (
 					<Skeleton rows={5} />
 				) : (
-					<TargetingEditor
-						canEdit={canEditConfig}
-						config={config}
-						environment={environment}
-						flag={flag}
-						key={`${environment.key}:${config.version}`}
-						notice={notice}
-						onSaved={() => reload()}
-						segments={segmentsState.data}
-					/>
+					<>
+						{!editable && <OpenChangeRequests environmentName={environment.name} items={openForEnvironment} projectKey={project.key} />}
+						<TargetingEditor
+							canEdit={canEditConfig || canPropose}
+							config={config}
+							environment={environment}
+							flag={flag}
+							initialDraft={editable ? editingRequest.proposedConfig : null}
+							key={`${environment.key}:${config.version}:${editable ? editingRequest._id : ""}`}
+							mode={environment.protected ? "propose" : "direct"}
+							notice={notice}
+							onPropose={(payload) => setProposal({ kind: "config", payload })}
+							onSaved={() => reload()}
+							proposeLabel={editable ? "Update proposal" : "Propose change"}
+							segments={segmentsState.data}
+						/>
+					</>
 				)
 			) : (
-				<VersionHistory environment={environment} flag={flag} onRolledBack={() => reload()} />
+				<VersionHistory
+					environment={environment}
+					flag={flag}
+					onProposeRollback={canPropose ? (entry) => setProposal({ kind: "rollback", version: entry.version }) : null}
+					onRolledBack={() => reload()}
+				/>
 			)}
 
+			{proposal && (
+				<ChangeRequestComposer
+					environmentName={environment.name}
+					flagName={flag.name}
+					initialDescription={editable ? editingRequest.description : ""}
+					initialTitle={
+						editable ? editingRequest.title : proposal.kind === "rollback" ? `Roll back ${flag.key} in ${environment.name} to v${proposal.version}` : ""
+					}
+					onClose={() => setProposal(null)}
+					onSubmit={submitProposal}
+					submitLabel={editable ? "Update proposal" : proposal.kind === "rollback" ? "Propose rollback" : "Propose change"}
+				/>
+			)}
+			{dialog === "compare" && (
+				<EnvironmentCompare
+					environment={environment}
+					flag={flag}
+					onClose={() => setDialog(null)}
+					onPromoted={() => {
+						setDialog(null);
+						reload();
+					}}
+				/>
+			)}
 			{dialog === "edit" && (
 				<FlagMetadataDialog
 					flag={flag}
