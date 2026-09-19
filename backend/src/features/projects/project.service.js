@@ -38,6 +38,11 @@ export function mergeEnvironmentPatches(current, patches = []) {
 
 export const projectService = {
 	list: () => projectRepository.list(),
+	async getById(id) {
+		const project = await projectRepository.findById(id);
+		if (!project) throw PROJECT_NOT_FOUND();
+		return project;
+	},
 	async getByKey(key) {
 		const project = await projectRepository.findByKey(key);
 		if (!project) throw PROJECT_NOT_FOUND();

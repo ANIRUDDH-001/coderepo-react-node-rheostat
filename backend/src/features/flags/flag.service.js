@@ -124,6 +124,11 @@ export const flagService = {
 		if (!flag) throw FLAG_NOT_FOUND();
 		return flag;
 	},
+	async getById(id) {
+		const flag = await flagRepository.findById(id);
+		if (!flag) throw FLAG_NOT_FOUND();
+		return flag;
+	},
 	findActiveByProject: (projectId) => flagRepository.findActiveByProject(projectId),
 	findAllByProject: (projectId) => flagRepository.findAllByProject(projectId),
 	countReferencingSegment: (projectId, segmentKey) => flagRepository.countReferencingSegment(projectId, segmentKey),

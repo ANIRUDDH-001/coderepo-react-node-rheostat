@@ -5,6 +5,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { auditRouter } from "./features/audit/audit.routes.js";
 import { authRouter } from "./features/auth/auth.routes.js";
+import { changeRequestRouter, projectChangeRequestRouter } from "./features/change-requests/change-request.routes.js";
 import { audienceRouter, evaluateRouter } from "./features/evaluation/evaluation.routes.js";
 import { flagRouter } from "./features/flags/flag.routes.js";
 import { governanceRouter } from "./features/governance/governance.routes.js";
@@ -40,6 +41,8 @@ export function createApp() {
 	app.use("/api/v1/projects/:projectKey/segments", segmentRouter);
 	app.use("/api/v1/projects/:projectKey/evaluate", evaluateRouter);
 	app.use("/api/v1/projects/:projectKey/audience", audienceRouter);
+	app.use("/api/v1/projects/:projectKey/change-requests", projectChangeRequestRouter);
+	app.use("/api/v1/change-requests", changeRequestRouter);
 	app.use("/api/v1/audit", auditRouter);
 	app.use(notFoundHandler);
 	app.use(errorHandler);

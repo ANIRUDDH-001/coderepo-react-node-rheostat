@@ -1,6 +1,7 @@
 import { AppError } from "../../shared/errors/app-error.js";
 import { assertCan, can } from "../../shared/auth/permissions.js";
 import { shortId } from "../../shared/utils/keys.js";
+import { assertNoActiveRollout } from "../../shared/utils/rollout-guard.js";
 import { diffEnvConfig, isEquivalent, normalizeConfig } from "../flags/config-diff.js";
 import { validateEnvConfig } from "../flags/config-validation.js";
 import { flagService } from "../flags/flag.service.js";
@@ -16,19 +17,7 @@ const CHANGE_REQUEST_REQUIRED = (environment) =>
 
 // --- Pure decision helpers (tested without a database) ---
 
-export function assertNoActiveRollout(activePlan, acknowledged) {
-	if (!activePlan || acknowledged === true) return;
-	throw new AppError(
-		409,
-		"ROLLOUT_ACTIVE",
-		"A rollout is active in this environment. Acknowledge it to save anyway; the rollout will stall.",
-		{
-			planId: String(activePlan._id),
-			currentPercent: activePlan.currentPercent ?? 0,
-			status: activePlan.status,
-		},
-	);
-}
+export { assertNoActiveRollout };
 
 export function routeForWrite(environment, profile) {
 	if (environment.protected) return "changeRequest";
