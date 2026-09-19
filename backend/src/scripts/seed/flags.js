@@ -83,17 +83,20 @@ function buildFlag(definition, project, segmentKeys, people) {
 			createdAt: at,
 			updatedAt: at,
 		});
-		audit.push({
-			projectId: project._id,
-			actorId: actor._id,
-			action: VERSION_ACTIONS[entry.source],
-			entityType: "flag",
-			entityId: String(flagId),
-			entityLabel: definition.key,
-			summary: `${actor.name} ${describe(entry.source)} ${definition.key} in ${envName(project, entry.env)}: ${entry.reason}`,
-			metadata: { environment: entry.env, version, reason: entry.reason },
-			at,
-		});
+		// Change-request applies own their single audit entry (recorded by the change-request seeder).
+		if (entry.source !== "changeRequest") {
+			audit.push({
+				projectId: project._id,
+				actorId: actor._id,
+				action: VERSION_ACTIONS[entry.source],
+				entityType: "flag",
+				entityId: String(flagId),
+				entityLabel: definition.key,
+				summary: `${actor.name} ${describe(entry.source)} ${definition.key} in ${envName(project, entry.env)}: ${entry.reason}`,
+				metadata: { environment: entry.env, version, reason: entry.reason },
+				at,
+			});
+		}
 		if (at > updatedAt) updatedAt = at;
 	}
 
@@ -183,5 +186,12 @@ export async function seedFlags(projects, segments, people) {
 	const flags = await Flag.insertMany(built.map((item) => item.flag));
 	const versions = await FlagVersion.insertMany(built.flatMap((item) => item.versions));
 	console.log(`  Created ${flags.length} flags and ${versions.length} flag versions`);
-	return { flags, versions, audit: built.flatMap((item) => item.audit), byKey: new Map(flags.map((flag) => [flag.key, flag])) };
+	return {
+		flags,
+		versions,
+		audit: built.flatMap((item) => item.audit),
+		byKey: new Map(flags.map((flag) => [flag.key, flag])),
+		versionOf: (flagKey, environment, version) =>
+			versions.find((candidate) => candidate.flagId.equals(flags.find((flag) => flag.key === flagKey)._id) && candidate.environment === environment && candidate.version === version),
+	};
 }

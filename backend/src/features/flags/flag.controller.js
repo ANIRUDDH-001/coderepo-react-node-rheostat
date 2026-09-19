@@ -3,6 +3,7 @@ import { keySchema, objectIdSchema } from "../../shared/utils/keys.js";
 import { paginate } from "../../shared/utils/pagination.js";
 import { ENVIRONMENT_KEYS } from "../projects/project.model.js";
 import { projectService } from "../projects/project.service.js";
+import { changeRequestService } from "../change-requests/change-request.service.js";
 import { personService } from "../people/person.service.js";
 import { FLAG_TYPES, variationValueSchema } from "./env-config.js";
 import { flagService } from "./flag.service.js";
@@ -94,8 +95,17 @@ export async function getFlag(request, response, next) {
 		const flag = await flagService.getByKey(project, request.params.flagKey);
 		const [decorated] = await personService.attachActors([flag], "ownerId", "owner");
 		const [killSwitch] = await personService.attachActors([flag.killSwitch]);
+		const openChangeRequests = await personService.attachActors(await changeRequestService.openForFlag(flag._id), "authorId", "author");
 		response.json({
-			data: { ...decorated, killSwitch, activeRollouts: Object.fromEntries(ENVIRONMENT_KEYS.map((key) => [key, null])) },
+			data: {
+				...decorated,
+				killSwitch,
+				openChangeRequests: openChangeRequests.map(({ proposedConfig, comments, reviews, ...rest }) => ({
+					...rest,
+					approvals: reviews.filter((review) => review.decision === "approve").length,
+				})),
+				activeRollouts: Object.fromEntries(ENVIRONMENT_KEYS.map((key) => [key, null])),
+			},
 		});
 	} catch (error) {
 		next(error);
