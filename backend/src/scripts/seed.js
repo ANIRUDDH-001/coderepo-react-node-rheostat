@@ -5,16 +5,26 @@ dotenv.config({ quiet: true });
 import mongoose from "mongoose";
 import { AuditEntry } from "../features/audit/audit.model.js";
 import { WorkspaceAccount } from "../features/auth/workspace-account.model.js";
+import { AudienceMember } from "../features/evaluation/audience-member.model.js";
+import { EvaluationLog } from "../features/evaluation/evaluation-log.model.js";
+import { FlagVersion } from "../features/flags/flag-version.model.js";
+import { Flag } from "../features/flags/flag.model.js";
 import { Person } from "../features/people/person.model.js";
 import { Project } from "../features/projects/project.model.js";
+import { Segment } from "../features/segments/segment.model.js";
 import { loadConfig } from "../shared/config/index.js";
+import { seedAudience } from "./seed/audience.js";
+import { projectAuditEntries, seedAudit, segmentAuditEntries } from "./seed/audit.js";
+import { DEMO_TODAY } from "./seed/clock.js";
+import { seedFlags } from "./seed/flags.js";
 import { DEMO_PASSWORD, seedPeople } from "./seed/people.js";
 import { seedProjects } from "./seed/projects.js";
+import { seedSegments } from "./seed/segments.js";
 
 const config = loadConfig();
 
 // Every model that holds application data. Seeding clears all of them before inserting the baseline.
-const models = [Person, WorkspaceAccount, Project, AuditEntry];
+const models = [Person, WorkspaceAccount, Project, Segment, Flag, FlagVersion, AudienceMember, EvaluationLog, AuditEntry];
 
 async function clearDatabase() {
 	console.log("Clearing existing collections...");
@@ -34,18 +44,33 @@ async function seed() {
 
 		await clearDatabase();
 
-		const people = await seedPeople();
-		await seedProjects(people);
+		console.log(`Demo "today" is ${DEMO_TODAY.toISOString().slice(0, 10)}`);
 
-		const counts = await Promise.all([Person.countDocuments(), WorkspaceAccount.countDocuments(), Project.countDocuments()]);
+		const people = await seedPeople();
+		const projects = await seedProjects(people);
+		const segments = await seedSegments(projects, people);
+		const flags = await seedFlags(projects, segments, people);
+		await seedAudience(projects);
+		await seedAudit([...projectAuditEntries(projects, people), ...segmentAuditEntries(segments, projects), ...flags.audit]);
+
+		const counts = await Promise.all(models.map((model) => model.countDocuments()));
 
 		console.log("\n========================================");
 		console.log("Seeding completed successfully!");
 		console.log("========================================");
 		console.log("\nCollection counts:");
-		console.log(`  Profiles:  ${counts[0]}`);
-		console.log(`  Accounts:  ${counts[1]}`);
-		console.log(`  Projects:  ${counts[2]}`);
+		const labels = [
+			"Profiles",
+			"Accounts",
+			"Projects",
+			"Segments",
+			"Flags",
+			"Flag versions",
+			"Audience",
+			"Evaluation logs",
+			"Audit entries",
+		];
+		labels.forEach((label, index) => console.log(`  ${`${label}:`.padEnd(17)}${counts[index]}`));
 		console.log("\nDemo accounts:");
 		for (const profile of people.profiles)
 			console.log(`  Email: ${profile.email} | Password: ${DEMO_PASSWORD} | Role: ${profile.role}`);
