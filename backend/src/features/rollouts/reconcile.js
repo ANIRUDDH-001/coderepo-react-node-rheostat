@@ -95,7 +95,14 @@ export function createReconciler({ plans, flags, versions, audit, staleClaimMs =
 	// The claimed step is written with the version guard; the outcome decides between applied, raced, and stalled.
 	async function applyClaimed(plan, flag, step, now) {
 		const fallthrough = fallthroughForStep(plan, flag, step);
-		const updated = await flags.mutateEnvironment(flag._id, plan.environment, plan.expectedVersion, { fallthrough }, plan.createdBy, now);
+		const updated = await flags.mutateEnvironment(
+			flag._id,
+			plan.environment,
+			plan.expectedVersion,
+			{ fallthrough },
+			plan.createdBy,
+			now,
+		);
 		if (!updated) {
 			const current = await flags.currentConfig(flag._id, plan.environment);
 			await plans.releaseStep(plan._id, step.id);
@@ -149,7 +156,9 @@ export function createReconciler({ plans, flags, versions, audit, staleClaimMs =
 		async reconcileDue(now = new Date()) {
 			const before = new Date(now.getTime() - staleClaimMs);
 			for (const plan of await plans.findStaleClaims(before)) {
-				for (const step of plan.steps.filter((entry) => entry.status === "applying" && entry.claimedAt && new Date(entry.claimedAt) < before)) {
+				for (const step of plan.steps.filter(
+					(entry) => entry.status === "applying" && entry.claimedAt && new Date(entry.claimedAt) < before,
+				)) {
 					await recover(plan, step, now);
 				}
 			}

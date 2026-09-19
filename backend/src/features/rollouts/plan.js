@@ -11,8 +11,7 @@ export const STEP_STATUSES = ["pending", "applying", "applied", "skipped"];
 export const STALL_REASONS = ["CONFIG_CHANGED_OUTSIDE_ROLLOUT", "RECOVERY_AMBIGUOUS"];
 export const BASELINE_MESSAGE = "Baseline must be the variation currently served";
 
-const INVALID = (issues) =>
-	new AppError(422, "INVALID_CONFIG", issues[0] || "The rollout plan is invalid.", { issues });
+const INVALID = (issues) => new AppError(422, "INVALID_CONFIG", issues[0] || "The rollout plan is invalid.", { issues });
 
 const variationName = (flag, id) => flag.variations.find((variation) => variation.id === id)?.name || id;
 
@@ -58,9 +57,7 @@ export function validatePlan(input, flag, config) {
 		const served = servedVariations(config);
 		const pair = new Set([input.baselineVariationId, input.targetVariationId]);
 		const fixed = !config.fallthrough?.rollout;
-		const compatible = fixed
-			? served[0] === input.baselineVariationId
-			: served.length > 0 && served.every((id) => pair.has(id));
+		const compatible = fixed ? served[0] === input.baselineVariationId : served.length > 0 && served.every((id) => pair.has(id));
 		if (!compatible) {
 			const currently = served.length ? served.map((id) => variationName(flag, id)).join(" and ") : "nothing";
 			issues.push(`${BASELINE_MESSAGE} (the fallthrough currently serves ${currently}).`);
@@ -87,7 +84,9 @@ export const fallthroughForStep = (plan, flag, step) => ({
 });
 
 export const dueSteps = (plan, now) =>
-	plan.steps.filter((step) => step.status === "pending" && new Date(step.startAt) <= now).sort((a, b) => new Date(a.startAt) - new Date(b.startAt));
+	plan.steps
+		.filter((step) => step.status === "pending" && new Date(step.startAt) <= now)
+		.sort((a, b) => new Date(a.startAt) - new Date(b.startAt));
 
 export const nextPendingStep = (plan) => plan.steps.find((step) => step.status === "pending") || null;
 

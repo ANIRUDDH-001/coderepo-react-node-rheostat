@@ -19,7 +19,6 @@ const VERSION_ACTIONS = {
 	direct: "flag.config.updated",
 	promotion: "flag.promoted",
 	rollback: "flag.rolledBack",
-	rollout: "rollout.stepApplied",
 	changeRequest: "changeRequest.applied",
 };
 
@@ -83,8 +82,8 @@ function buildFlag(definition, project, segmentKeys, people) {
 			createdAt: at,
 			updatedAt: at,
 		});
-		// Change-request applies own their single audit entry (recorded by the change-request seeder).
-		if (entry.source !== "changeRequest") {
+		// Change-request applies and rollout steps own their audit entries (recorded by those seeders).
+		if (entry.source !== "changeRequest" && entry.source !== "rollout") {
 			audit.push({
 				projectId: project._id,
 				actorId: actor._id,
@@ -172,7 +171,6 @@ const describe = (source) =>
 		direct: "updated",
 		promotion: "promoted",
 		rollback: "rolled back",
-		rollout: "advanced the rollout of",
 		changeRequest: "applied a change request to",
 	})[source];
 

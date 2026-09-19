@@ -5,6 +5,7 @@ import { ENVIRONMENT_KEYS } from "../projects/project.model.js";
 import { projectService } from "../projects/project.service.js";
 import { changeRequestService } from "../change-requests/change-request.service.js";
 import { personService } from "../people/person.service.js";
+import { rolloutService } from "../rollouts/rollout.service.js";
 import { FLAG_TYPES, variationValueSchema } from "./env-config.js";
 import { flagService } from "./flag.service.js";
 
@@ -96,6 +97,7 @@ export async function getFlag(request, response, next) {
 		const [decorated] = await personService.attachActors([flag], "ownerId", "owner");
 		const [killSwitch] = await personService.attachActors([flag.killSwitch]);
 		const openChangeRequests = await personService.attachActors(await changeRequestService.openForFlag(flag._id), "authorId", "author");
+		const activeRollouts = await rolloutService.activeByEnvironment(flag, ENVIRONMENT_KEYS);
 		response.json({
 			data: {
 				...decorated,
@@ -104,7 +106,7 @@ export async function getFlag(request, response, next) {
 					...rest,
 					approvals: reviews.filter((review) => review.decision === "approve").length,
 				})),
-				activeRollouts: Object.fromEntries(ENVIRONMENT_KEYS.map((key) => [key, null])),
+				activeRollouts,
 			},
 		});
 	} catch (error) {

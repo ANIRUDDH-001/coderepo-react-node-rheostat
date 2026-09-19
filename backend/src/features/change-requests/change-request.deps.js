@@ -1,2 +1,4 @@
-// Phase 5 replaces `rollouts: null` with the real service; `null` means no rollout can be active.
-export const changeRequestDeps = { rollouts: null };
+import { rolloutService } from "../rollouts/rollout.service.js";
+
+// change-requests → rollouts (active-rollout guard only); rollouts never import change requests.
+export const changeRequestDeps = { rollouts: rolloutService };

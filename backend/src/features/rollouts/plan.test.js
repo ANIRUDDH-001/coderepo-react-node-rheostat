@@ -148,7 +148,9 @@ describe("compatibilityIssue", () => {
 	});
 	test("incompatible: disabled, fixed third variation, rollout including a third variation", () => {
 		expect(compatibilityIssue(flagPlan, fixed("v_off", false), flag)).toContain("turned off");
-		expect(compatibilityIssue(flagPlan, fixed("v_alt"), flag)).toBe("Production now serves Alternate, which is not part of this rollout.");
+		expect(compatibilityIssue(flagPlan, fixed("v_alt"), flag)).toBe(
+			"Production now serves Alternate, which is not part of this rollout.",
+		);
 		const third = rollout([
 			{ variationId: "v_off", weight: 50000 },
 			{ variationId: "v_on", weight: 40000 },

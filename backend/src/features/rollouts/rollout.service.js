@@ -155,7 +155,14 @@ export const rolloutService = {
 		const config = flag.environments[environment.key];
 		const detail = {
 			...summarize(plan, flag),
-			flag: { _id: flag._id, key: flag.key, name: flag.name, variations: flag.variations, archived: flag.archived, killSwitch: flag.killSwitch },
+			flag: {
+				_id: flag._id,
+				key: flag.key,
+				name: flag.name,
+				variations: flag.variations,
+				archived: flag.archived,
+				killSwitch: flag.killSwitch,
+			},
 			environmentPolicy: environment,
 			currentVersion: config.version,
 			permissions: { canManage: can(profile.role, "rollout:manage", { environment: { protected: environment.protected } }) },
@@ -178,7 +185,12 @@ export const rolloutService = {
 		if (!["scheduled", "running"].includes(plan.status)) throw INVALID_TRANSITION(`A ${plan.status} rollout cannot be paused.`);
 		const now = new Date();
 		await rolloutPlanRepository.save(plan._id, { status: "paused", pausedAt: now });
-		await audit(profile, "rollout.paused", plan, `${profile.name} paused the rollout of ${plan.flagKey} in ${environment.name} at ${currentPercent(plan)}%.`);
+		await audit(
+			profile,
+			"rollout.paused",
+			plan,
+			`${profile.name} paused the rollout of ${plan.flagKey} in ${environment.name} at ${currentPercent(plan)}%.`,
+		);
 		return this.get(id, profile);
 	},
 
@@ -190,13 +202,27 @@ export const rolloutService = {
 		const config = flag.environments[environment.key];
 		if (plan.status === "paused") {
 			const shifted = shiftForResume(plan, now);
-			await rolloutPlanRepository.save(plan._id, { status: nextPendingStep(plan) ? "running" : "completed", pausedAt: null, steps: shifted.steps });
-			await audit(profile, "rollout.resumed", plan, `${profile.name} resumed the rollout of ${plan.flagKey} in ${environment.name}.`, {
-				shiftedByMs: now.getTime() - new Date(plan.pausedAt).getTime(),
+			await rolloutPlanRepository.save(plan._id, {
+				status: nextPendingStep(plan) ? "running" : "completed",
+				pausedAt: null,
+				steps: shifted.steps,
 			});
+			await audit(
+				profile,
+				"rollout.resumed",
+				plan,
+				`${profile.name} resumed the rollout of ${plan.flagKey} in ${environment.name}.`,
+				{
+					shiftedByMs: now.getTime() - new Date(plan.pausedAt).getTime(),
+				},
+			);
 		} else if (plan.status === "stalled") {
 			const issue = compatibilityIssue({ ...plan, environmentName: environment.name }, config, flag);
-			if (issue) throw new AppError(422, "ROLLOUT_INCOMPATIBLE", issue, { expectedVersion: plan.expectedVersion, currentVersion: config.version });
+			if (issue)
+				throw new AppError(422, "ROLLOUT_INCOMPATIBLE", issue, {
+					expectedVersion: plan.expectedVersion,
+					currentVersion: config.version,
+				});
 			await rolloutPlanRepository.save(plan._id, {
 				status: nextPendingStep(plan) ? "running" : "completed",
 				stallReason: null,
@@ -222,9 +248,15 @@ export const rolloutService = {
 		const now = new Date();
 		const skipped = markRemainingSkipped(plan);
 		await rolloutPlanRepository.save(plan._id, { status: "aborted", steps: skipped.steps, resolvedAt: now, pausedAt: null });
-		await audit(profile, "rollout.aborted", plan, `${profile.name} aborted the rollout of ${plan.flagKey} in ${environment.name} at ${currentPercent(plan)}%.`, {
-			startedFromVersion: plan.startedFromVersion,
-		});
+		await audit(
+			profile,
+			"rollout.aborted",
+			plan,
+			`${profile.name} aborted the rollout of ${plan.flagKey} in ${environment.name} at ${currentPercent(plan)}%.`,
+			{
+				startedFromVersion: plan.startedFromVersion,
+			},
+		);
 		return this.get(id, profile);
 	},
 };

@@ -5,7 +5,10 @@ export const rolloutPlanRepository = {
 	findById: (id) => RolloutPlan.findById(id).lean(),
 	findPage: (filter, skip, limit) => RolloutPlan.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
 	count: (filter) => RolloutPlan.countDocuments(filter),
-	findActive: (filter = {}) => RolloutPlan.find({ ...filter, status: { $in: ACTIVE_STATUSES } }).sort({ createdAt: -1 }).lean(),
+	findActive: (filter = {}) =>
+		RolloutPlan.find({ ...filter, status: { $in: ACTIVE_STATUSES } })
+			.sort({ createdAt: -1 })
+			.lean(),
 	findActiveForFlag: (flagId, environment) => RolloutPlan.findOne({ flagId, environment, status: { $in: ACTIVE_STATUSES } }).lean(),
 	create: (input) => RolloutPlan.create(input).then((document) => document.toObject()),
 	insertMany: (documents) => RolloutPlan.insertMany(documents),
@@ -44,7 +47,10 @@ export const rolloutPlanRepository = {
 			{ new: true },
 		).lean(),
 	stall: (planId, reason, at) =>
-		RolloutPlan.updateOne({ _id: planId, status: { $in: ACTIVE_STATUSES } }, { $set: { status: "stalled", stallReason: reason, stalledAt: at } }),
+		RolloutPlan.updateOne(
+			{ _id: planId, status: { $in: ACTIVE_STATUSES } },
+			{ $set: { status: "stalled", stallReason: reason, stalledAt: at } },
+		),
 	complete: (planId, at) => RolloutPlan.updateOne({ _id: planId }, { $set: { status: "completed", resolvedAt: at } }),
 	// Interactive transitions persist the whole steps array (resume shifts dates, abort skips).
 	save: (planId, patch) => RolloutPlan.findByIdAndUpdate(planId, { $set: patch }, { new: true, runValidators: true }).lean(),

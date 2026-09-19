@@ -16,6 +16,9 @@ const boolean = [
 ];
 const booleanOn = config(true, "v_false", on("v_true"));
 const booleanOff = config(false, "v_false", on("v_true"));
+// Targeting on while everyone still gets the old behaviour: the baseline a rollout starts from.
+const booleanArmed = config(true, "v_false", on("v_false"));
+const ramp = (percent) => config(true, "v_false", split(["v_true", percent * 1000], ["v_false", 100000 - percent * 1000]));
 const step = (env, daysAgo, actor, source, reason, configuration) => ({ env, daysAgo, actor, source, reason, config: configuration });
 
 const layoutRules = [
@@ -39,30 +42,9 @@ export const flagCatalog = [
 		history: [
 			step("development", 28, "diego", "direct", "Enable for local testing", booleanOn),
 			step("staging", 25, "diego", "promotion", "Promoted from Development (v2)", booleanOn),
-			step(
-				"production",
-				14,
-				"marcus",
-				"direct",
-				"Start canary at 5%",
-				config(true, "v_false", split(["v_true", 5000], ["v_false", 95000])),
-			),
-			step(
-				"production",
-				7,
-				"marcus",
-				"rollout",
-				"Rollout step 2: 10%",
-				config(true, "v_false", split(["v_true", 10000], ["v_false", 90000])),
-			),
-			step(
-				"production",
-				1,
-				"marcus",
-				"rollout",
-				"Rollout step 3: 25%",
-				config(true, "v_false", split(["v_true", 25000], ["v_false", 75000])),
-			),
+			step("production", 4, "marcus", "direct", "Turn targeting on ahead of the rollout; everyone stays on the old checkout", booleanArmed),
+			step("production", 3, "marcus", "rollout", "Rollout step 5%", ramp(5)),
+			step("production", 1, "marcus", "rollout", "Rollout step 25%", ramp(25)),
 		],
 	},
 	{
@@ -497,23 +479,8 @@ export const flagCatalog = [
 		createdBy: "diego",
 		history: [
 			step("development", 17, "diego", "direct", "Enable the new onboarding", booleanOn),
-			step("staging", 14, "diego", "promotion", "Promoted from Development (v2)", booleanOn),
-			step(
-				"production",
-				6,
-				"marcus",
-				"direct",
-				"Start rollout at 10%",
-				config(true, "v_false", split(["v_true", 10000], ["v_false", 90000])),
-			),
-			step(
-				"production",
-				3,
-				"marcus",
-				"rollout",
-				"Rollout step 2: 30%",
-				config(true, "v_false", split(["v_true", 30000], ["v_false", 70000])),
-			),
+			step("staging", 7, "diego", "direct", "Turn staging on; the old onboarding stays until the rollout ramps", booleanArmed),
+			step("staging", 6, "marcus", "rollout", "Rollout step 10%", ramp(10)),
 		],
 	},
 	{
@@ -562,23 +529,10 @@ export const flagCatalog = [
 		history: [
 			step("development", 54, "elena", "direct", "Default to dark", booleanOn),
 			step("staging", 50, "elena", "promotion", "Promoted from Development (v2)", booleanOn),
-			step(
-				"production",
-				40,
-				"marcus",
-				"direct",
-				"Start rollout at 20%",
-				config(true, "v_false", split(["v_true", 20000], ["v_false", 80000])),
-			),
-			step(
-				"production",
-				33,
-				"marcus",
-				"rollout",
-				"Rollout step 2: 50%",
-				config(true, "v_false", split(["v_true", 50000], ["v_false", 50000])),
-			),
-			step("production", 27, "marcus", "rollout", "Rollout step 3: 100%", booleanOn),
+			step("production", 16, "marcus", "direct", "Turn production on ahead of the rollout", booleanArmed),
+			step("production", 14, "marcus", "rollout", "Rollout step 5%", ramp(5)),
+			step("production", 9, "marcus", "rollout", "Rollout step 50%", ramp(50)),
+			step("production", 4, "marcus", "rollout", "Rollout step 100%", ramp(100)),
 		],
 	},
 ];

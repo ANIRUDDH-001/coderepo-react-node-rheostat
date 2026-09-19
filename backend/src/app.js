@@ -11,6 +11,7 @@ import { flagRouter } from "./features/flags/flag.routes.js";
 import { governanceRouter } from "./features/governance/governance.routes.js";
 import { personRouter, profileRouter } from "./features/people/person.routes.js";
 import { projectRouter } from "./features/projects/project.routes.js";
+import { projectRolloutRouter, rolloutRouter } from "./features/rollouts/rollout.routes.js";
 import { segmentRouter } from "./features/segments/segment.routes.js";
 import { errorHandler, notFoundHandler } from "./shared/middleware/error-handler.js";
 import { resolveProfileContext } from "./shared/middleware/profile-context.js";
@@ -43,6 +44,8 @@ export function createApp() {
 	app.use("/api/v1/projects/:projectKey/audience", audienceRouter);
 	app.use("/api/v1/projects/:projectKey/change-requests", projectChangeRequestRouter);
 	app.use("/api/v1/change-requests", changeRequestRouter);
+	app.use("/api/v1/projects/:projectKey/rollouts", projectRolloutRouter);
+	app.use("/api/v1/rollouts", rolloutRouter);
 	app.use("/api/v1/audit", auditRouter);
 	app.use(notFoundHandler);
 	app.use(errorHandler);

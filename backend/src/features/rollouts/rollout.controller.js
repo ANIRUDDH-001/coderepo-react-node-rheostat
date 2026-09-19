@@ -15,7 +15,13 @@ const createSchema = z
 		environment: z.enum(ENVIRONMENT_KEYS),
 		targetVariationId: z.string().min(1),
 		baselineVariationId: z.string().min(1),
-		bucketBy: z.string().trim().min(1).max(60).regex(/^[A-Za-z][A-Za-z0-9_.-]*$/, "Bucket attribute must be an attribute name.").default("key"),
+		bucketBy: z
+			.string()
+			.trim()
+			.min(1)
+			.max(60)
+			.regex(/^[A-Za-z][A-Za-z0-9_.-]*$/, "Bucket attribute must be an attribute name.")
+			.default("key"),
 		steps: z.array(stepSchema).min(1).max(12),
 	})
 	.strict();

@@ -46,7 +46,9 @@ function harness({ plan = planTemplate(), flag = flagTemplate(), failWriteOnce =
 				.filter((entry) => entry.steps.some((step) => step.status === "pending" && step.startAt <= now))
 				.map((entry) => structuredClone(entry)),
 		findStaleClaims: async (before) =>
-			state.plans.filter((entry) => entry.steps.some((step) => step.status === "applying" && step.claimedAt < before)).map((entry) => structuredClone(entry)),
+			state.plans
+				.filter((entry) => entry.steps.some((step) => step.status === "applying" && step.claimedAt < before))
+				.map((entry) => structuredClone(entry)),
 		claimStep: async (id, stepId, at) => {
 			const step = stepOf(id, stepId);
 			if (step.status !== "pending") return false;
@@ -102,7 +104,8 @@ function harness({ plan = planTemplate(), flag = flagTemplate(), failWriteOnce =
 			state.versions.push(structuredClone(doc));
 			return doc;
 		},
-		findByStep: async (planId, stepId) => state.versions.find((entry) => entry.rolloutPlanId === planId && entry.stepId === stepId) || null,
+		findByStep: async (planId, stepId) =>
+			state.versions.find((entry) => entry.rolloutPlanId === planId && entry.stepId === stepId) || null,
 	};
 	const audit = {
 		recordOnce: async (entry) => {
@@ -131,7 +134,13 @@ describe("reconcileDue — due steps", () => {
 		]);
 		expect(h.state.flag.environments.production.lastChangedBy).toBe("marcus");
 		expect(h.state.versions).toHaveLength(1);
-		expect(h.state.versions[0]).toMatchObject({ source: "rollout", actorId: "marcus", stepId: "s1", version: 4, reason: "Rollout step 10%" });
+		expect(h.state.versions[0]).toMatchObject({
+			source: "rollout",
+			actorId: "marcus",
+			stepId: "s1",
+			version: 4,
+			reason: "Rollout step 10%",
+		});
 		expect(h.state.audit.map((entry) => entry.action)).toEqual(["rollout.stepApplied"]);
 		expect(h.state.audit[0].idempotencyKey).toBe(appliedKey("plan1", "s1"));
 		expect(plan.steps[1].status).toBe("pending");
@@ -196,7 +205,14 @@ describe("reconcileDue — due steps", () => {
 });
 
 describe("reconcileDue — crash recovery", () => {
-	const staleStep = (extra = {}) => ({ id: "s1", percent: 10, startAt: minutesAgo(5), status: "applying", claimedAt: minutesAgo(3), ...extra });
+	const staleStep = (extra = {}) => ({
+		id: "s1",
+		percent: 10,
+		startAt: minutesAgo(5),
+		status: "applying",
+		claimedAt: minutesAgo(3),
+		...extra,
+	});
 	const futureStep = { id: "s2", percent: 50, startAt: new Date(NOW.getTime() + 3600000), status: "pending" };
 
 	test("version present but audit missing → audit inserted once, finalized, no second version", async () => {
