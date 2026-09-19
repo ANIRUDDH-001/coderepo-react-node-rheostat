@@ -35,7 +35,8 @@ export function validateEnvConfig(config, flag, segmentKeys = new Set()) {
 		}
 		for (const clause of rule.clauses || []) {
 			if (clause.operator === "segmentMatch") {
-				for (const key of clause.values || []) if (!segmentKeys.has(key)) issues.push(`${label} references unknown segment ${key}.`);
+				for (const key of clause.values || [])
+					if (!segmentKeys.has(key)) issues.push(`${label} references unknown segment ${key}.`);
 			}
 		}
 		serveIssues(label, rule.serve, variationIds, issues);

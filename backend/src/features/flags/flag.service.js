@@ -36,7 +36,16 @@ export const decorateFlag = (flag, now = new Date()) => ({
 	environmentSummaries: Object.fromEntries(
 		ENVIRONMENT_KEYS.map((key) => {
 			const config = flag.environments[key];
-			return [key, { enabled: config.enabled, version: config.version, ruleCount: config.rules.length, fallthrough: summarizeServe(config.fallthrough, flag.variations), lastEffectiveChangeAt: config.lastEffectiveChangeAt }];
+			return [
+				key,
+				{
+					enabled: config.enabled,
+					version: config.version,
+					ruleCount: config.rules.length,
+					fallthrough: summarizeServe(config.fallthrough, flag.variations),
+					lastEffectiveChangeAt: config.lastEffectiveChangeAt,
+				},
+			];
 		}),
 	),
 });
@@ -53,7 +62,9 @@ const buildVariations = (type, variations) => {
 
 const validateVariationValues = (type, variations) => {
 	const schema = variationValueSchema(type);
-	const issues = variations.filter((variation) => !schema.safeParse(variation.value).success).map((variation) => `Variation ${variation.name} has a value that is not a valid ${type}.`);
+	const issues = variations
+		.filter((variation) => !schema.safeParse(variation.value).success)
+		.map((variation) => `Variation ${variation.name} has a value that is not a valid ${type}.`);
 	if (issues.length) throw INVALID("Variation values do not match the flag type.", issues);
 };
 
@@ -67,7 +78,8 @@ function listFilter(projectId, filters) {
 	if (filters.type) filter.type = filters.type;
 	if (filters.ownerId) filter.ownerId = filters.ownerId;
 	if (filters.lifecycle) filter["lifecycle.kind"] = filters.lifecycle;
-	if (filters.state && filters.state !== "any" && filters.environment) filter[`environments.${filters.environment}.enabled`] = filters.state === "on";
+	if (filters.state && filters.state !== "any" && filters.environment)
+		filter[`environments.${filters.environment}.enabled`] = filters.state === "on";
 	return filter;
 }
 
@@ -81,8 +93,12 @@ export const flagService = {
 		const sortByStale = filters.sort === "stale";
 		if (wantsStale || sortByStale) {
 			// Staleness is computed, so filter and sort in memory over the project's flags (bounded: a project holds tens of flags).
-			const all = (await flagRepository.findPage(filter, SORTS[filters.sort] || SORTS.updated, 0, 1000)).map((flag) => decorateFlag(flag));
-			const matching = all.filter((flag) => !wantsStale || (filters.stale === "readyToRemove" ? flag.stale.readyToRemove : flag.stale.overdue));
+			const all = (await flagRepository.findPage(filter, SORTS[filters.sort] || SORTS.updated, 0, 1000)).map((flag) =>
+				decorateFlag(flag),
+			);
+			const matching = all.filter(
+				(flag) => !wantsStale || (filters.stale === "readyToRemove" ? flag.stale.readyToRemove : flag.stale.overdue),
+			);
 			if (sortByStale) matching.sort((left, right) => staleRank(left) - staleRank(right) || right.updatedAt - left.updatedAt);
 			const start = (filters.page - 1) * filters.pageSize;
 			return pageResult(matching.slice(start, start + filters.pageSize), matching.length, filters.page, filters.pageSize);
@@ -91,7 +107,12 @@ export const flagService = {
 			flagRepository.findPage(filter, SORTS[filters.sort] || SORTS.updated, (filters.page - 1) * filters.pageSize, filters.pageSize),
 			flagRepository.count(filter),
 		]);
-		return pageResult(items.map((flag) => decorateFlag(flag)), total, filters.page, filters.pageSize);
+		return pageResult(
+			items.map((flag) => decorateFlag(flag)),
+			total,
+			filters.page,
+			filters.pageSize,
+		);
 	},
 	async getByKey(project, key) {
 		const flag = await flagRepository.findByKey(project._id, key);
@@ -122,7 +143,9 @@ export const flagService = {
 			ownerId: input.ownerId || actor._id,
 			lifecycle: input.lifecycle,
 			killSwitch: { active: false, reason: "", actorId: null, activatedAt: null },
-			environments: Object.fromEntries(ENVIRONMENT_KEYS.map((key) => [key, { ...config, lastEffectiveChangeAt: new Date(), lastChangedBy: actor._id }])),
+			environments: Object.fromEntries(
+				ENVIRONMENT_KEYS.map((key) => [key, { ...config, lastEffectiveChangeAt: new Date(), lastChangedBy: actor._id }]),
+			),
 			createdBy: actor._id,
 		});
 		await flagVersionRepository.insertMany(
@@ -153,13 +176,18 @@ export const flagService = {
 		assertCan(actor, "flag:editMetadata");
 		const flag = await this.getRawByKey(project, key);
 		const patch = {};
-		for (const field of ["name", "description", "tags", "ownerId", "lifecycle"]) if (input[field] !== undefined) patch[field] = input[field];
+		for (const field of ["name", "description", "tags", "ownerId", "lifecycle"])
+			if (input[field] !== undefined) patch[field] = input[field];
 		if (input.variations) {
 			if (flag.type === "boolean") throw INVALID("Boolean flags always have exactly two variations.");
 			const existingIds = new Set(flag.variations.map((variation) => variation.id));
 			const incomingIds = input.variations.filter((variation) => variation.id).map((variation) => variation.id);
 			const removed = [...existingIds].filter((id) => !incomingIds.includes(id));
-			if (removed.length) throw INVALID("Variations cannot be removed once created.", removed.map((id) => `Variation ${id} cannot be removed.`));
+			if (removed.length)
+				throw INVALID(
+					"Variations cannot be removed once created.",
+					removed.map((id) => `Variation ${id} cannot be removed.`),
+				);
 			const merged = input.variations.map((variation) => {
 				const existing = flag.variations.find((candidate) => candidate.id === variation.id);
 				if (existing) {
@@ -190,7 +218,8 @@ export const flagService = {
 	async setArchived(project, key, archived, actor) {
 		assertCan(actor, archived ? "flag:archive" : "flag:restore");
 		const flag = await this.getRawByKey(project, key);
-		if (flag.archived === archived) throw new AppError(422, "INVALID_TRANSITION", archived ? "This flag is already archived." : "This flag is not archived.");
+		if (flag.archived === archived)
+			throw new AppError(422, "INVALID_TRANSITION", archived ? "This flag is already archived." : "This flag is not archived.");
 		const updated = await flagRepository.setArchived(flag._id, archived, actor._id);
 		await auditService.record({
 			actor,
@@ -247,7 +276,9 @@ export const flagService = {
 			diff: index + 1 < versions.length ? diffEnvConfig(versions[index + 1].config, entry.config) : [],
 			kind: "version",
 		}));
-		const killSwitchEvents = (await auditService.listForEntity("flag", flag._id, ["flag.killSwitch.activated", "flag.killSwitch.cleared"])).map((entry) => ({
+		const killSwitchEvents = (
+			await auditService.listForEntity("flag", flag._id, ["flag.killSwitch.activated", "flag.killSwitch.cleared"])
+		).map((entry) => ({
 			kind: "killSwitch",
 			_id: entry._id,
 			action: entry.action,

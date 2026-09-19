@@ -11,5 +11,11 @@ export function variationValueSchema(type) {
 
 // A new flag starts off everywhere: the second variation is served while disabled, the first when enabled.
 export function initialConfig(flag) {
-	return { version: 1, enabled: false, offVariationId: flag.variations[1].id, rules: [], fallthrough: { variationId: flag.variations[0].id } };
+	return {
+		version: 1,
+		enabled: false,
+		offVariationId: flag.variations[1].id,
+		rules: [],
+		fallthrough: { variationId: flag.variations[0].id },
+	};
 }

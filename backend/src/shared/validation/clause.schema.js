@@ -17,7 +17,10 @@ export const serveSchema = z.union([
 			rollout: z
 				.object({
 					bucketBy: z.string().trim().min(1).max(60).default("key"),
-					weights: z.array(z.object({ variationId: z.string().min(1).max(40), weight: z.number().int().min(0).max(100000) }).strict()).min(1).max(8),
+					weights: z
+						.array(z.object({ variationId: z.string().min(1).max(40), weight: z.number().int().min(0).max(100000) }).strict())
+						.min(1)
+						.max(8),
 				})
 				.strict(),
 		})

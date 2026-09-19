@@ -5,8 +5,12 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { auditRouter } from "./features/audit/audit.routes.js";
 import { authRouter } from "./features/auth/auth.routes.js";
+import { audienceRouter, evaluateRouter } from "./features/evaluation/evaluation.routes.js";
+import { flagRouter } from "./features/flags/flag.routes.js";
+import { governanceRouter } from "./features/governance/governance.routes.js";
 import { personRouter, profileRouter } from "./features/people/person.routes.js";
 import { projectRouter } from "./features/projects/project.routes.js";
+import { segmentRouter } from "./features/segments/segment.routes.js";
 import { errorHandler, notFoundHandler } from "./shared/middleware/error-handler.js";
 import { resolveProfileContext } from "./shared/middleware/profile-context.js";
 import { requireWorkspaceAuth } from "./shared/middleware/auth.js";
@@ -30,6 +34,12 @@ export function createApp() {
 	app.use("/api/v1", requireWorkspaceAuth, resolveProfileContext);
 	app.use("/api/v1/people", personRouter);
 	app.use("/api/v1/projects", projectRouter);
+	// Governance owns every configuration-changing path, so it is mounted ahead of the flags router.
+	app.use("/api/v1/projects/:projectKey/flags/:flagKey/environments/:environment", governanceRouter);
+	app.use("/api/v1/projects/:projectKey/flags", flagRouter);
+	app.use("/api/v1/projects/:projectKey/segments", segmentRouter);
+	app.use("/api/v1/projects/:projectKey/evaluate", evaluateRouter);
+	app.use("/api/v1/projects/:projectKey/audience", audienceRouter);
 	app.use("/api/v1/audit", auditRouter);
 	app.use(notFoundHandler);
 	app.use(errorHandler);

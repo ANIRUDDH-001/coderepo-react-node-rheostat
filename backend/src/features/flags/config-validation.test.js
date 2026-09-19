@@ -15,8 +15,23 @@ const segmentKeys = new Set(["beta", "eu"]);
 const ok = () => ({
 	enabled: true,
 	offVariationId: "v_a",
-	rules: [{ id: "r1", description: "", clauses: [{ attribute: "plan", operator: "in", values: ["pro"], negate: false }], serve: { variationId: "v_b" } }],
-	fallthrough: { rollout: { bucketBy: "key", weights: [{ variationId: "v_a", weight: 60000 }, { variationId: "v_b", weight: 40000 }] } },
+	rules: [
+		{
+			id: "r1",
+			description: "",
+			clauses: [{ attribute: "plan", operator: "in", values: ["pro"], negate: false }],
+			serve: { variationId: "v_b" },
+		},
+	],
+	fallthrough: {
+		rollout: {
+			bucketBy: "key",
+			weights: [
+				{ variationId: "v_a", weight: 60000 },
+				{ variationId: "v_b", weight: 40000 },
+			],
+		},
+	},
 });
 const issuesOf = (config) => {
 	try {
@@ -35,15 +50,48 @@ describe("validateEnvConfig", () => {
 	});
 	test("rejects unknown variation ids everywhere they can appear", () => {
 		expect(issuesOf({ ...ok(), offVariationId: "v_zz" })).toEqual([expect.stringContaining("v_zz")]);
-		expect(issuesOf({ ...ok(), rules: [{ ...ok().rules[0], serve: { variationId: "v_zz" } }] })).toEqual([expect.stringContaining("v_zz")]);
-		expect(issuesOf({ ...ok(), fallthrough: { rollout: { bucketBy: "key", weights: [{ variationId: "v_zz", weight: 100000 }] } } })).toEqual([expect.stringContaining("v_zz")]);
+		expect(issuesOf({ ...ok(), rules: [{ ...ok().rules[0], serve: { variationId: "v_zz" } }] })).toEqual([
+			expect.stringContaining("v_zz"),
+		]);
+		expect(
+			issuesOf({ ...ok(), fallthrough: { rollout: { bucketBy: "key", weights: [{ variationId: "v_zz", weight: 100000 }] } } }),
+		).toEqual([expect.stringContaining("v_zz")]);
 	});
 	test("weights must sum to exactly 100000 and not repeat a variation", () => {
-		expect(issuesOf({ ...ok(), fallthrough: { rollout: { bucketBy: "key", weights: [{ variationId: "v_a", weight: 60000 }, { variationId: "v_b", weight: 39999 }] } } })).toEqual([expect.stringContaining("100000")]);
-		expect(issuesOf({ ...ok(), fallthrough: { rollout: { bucketBy: "key", weights: [{ variationId: "v_a", weight: 50000 }, { variationId: "v_a", weight: 50000 }] } } })).toEqual([expect.stringContaining("once")]);
+		expect(
+			issuesOf({
+				...ok(),
+				fallthrough: {
+					rollout: {
+						bucketBy: "key",
+						weights: [
+							{ variationId: "v_a", weight: 60000 },
+							{ variationId: "v_b", weight: 39999 },
+						],
+					},
+				},
+			}),
+		).toEqual([expect.stringContaining("100000")]);
+		expect(
+			issuesOf({
+				...ok(),
+				fallthrough: {
+					rollout: {
+						bucketBy: "key",
+						weights: [
+							{ variationId: "v_a", weight: 50000 },
+							{ variationId: "v_a", weight: 50000 },
+						],
+					},
+				},
+			}),
+		).toEqual([expect.stringContaining("once")]);
 	});
 	test("segmentMatch values must be known segment keys", () => {
-		const rule = { ...ok().rules[0], clauses: [{ attribute: "key", operator: "segmentMatch", values: ["beta", "nope"], negate: false }] };
+		const rule = {
+			...ok().rules[0],
+			clauses: [{ attribute: "key", operator: "segmentMatch", values: ["beta", "nope"], negate: false }],
+		};
 		expect(issuesOf({ ...ok(), rules: [rule] })).toEqual([expect.stringContaining("nope")]);
 	});
 	test("rule ids must be unique and rule count is capped", () => {
@@ -52,14 +100,24 @@ describe("validateEnvConfig", () => {
 		expect(issuesOf({ ...ok(), rules: many })).toEqual([expect.stringContaining("25")]);
 	});
 	test("reports every issue at once", () => {
-		const broken = { ...ok(), offVariationId: "v_zz", fallthrough: { rollout: { bucketBy: "key", weights: [{ variationId: "v_a", weight: 1 }] } } };
+		const broken = {
+			...ok(),
+			offVariationId: "v_zz",
+			fallthrough: { rollout: { bucketBy: "key", weights: [{ variationId: "v_a", weight: 1 }] } },
+		};
 		expect(issuesOf(broken)).toHaveLength(2);
 	});
 });
 
 describe("initialConfig and variation values", () => {
 	test("initial config is disabled, off = second variation, fallthrough = first, version 1", () => {
-		expect(initialConfig(flag)).toEqual({ version: 1, enabled: false, offVariationId: "v_b", rules: [], fallthrough: { variationId: "v_a" } });
+		expect(initialConfig(flag)).toEqual({
+			version: 1,
+			enabled: false,
+			offVariationId: "v_b",
+			rules: [],
+			fallthrough: { variationId: "v_a" },
+		});
 	});
 	test("variation values are validated by flag type", () => {
 		expect(variationValueSchema("boolean").safeParse(true).success).toBe(true);

@@ -13,7 +13,11 @@ export const flagRepository = {
 	create: (input) => Flag.create(input).then((document) => document.toObject()),
 	updateMetadata: (id, patch) => Flag.findByIdAndUpdate(id, { $set: patch }, { new: true, runValidators: true }).lean(),
 	setArchived: (id, archived, actorId, now = new Date()) =>
-		Flag.findByIdAndUpdate(id, { $set: { archived, archivedAt: archived ? now : null, archivedBy: archived ? actorId : null } }, { new: true }).lean(),
+		Flag.findByIdAndUpdate(
+			id,
+			{ $set: { archived, archivedAt: archived ? now : null, archivedBy: archived ? actorId : null } },
+			{ new: true },
+		).lean(),
 	setKillSwitch: (id, state) => Flag.findByIdAndUpdate(id, { $set: { killSwitch: state } }, { new: true }).lean(),
 	// The single guarded write that changes an environment configuration (spec §5.13).
 	// `fields` is the full decision config for interactive writes, or `{ fallthrough }` for rollout steps.

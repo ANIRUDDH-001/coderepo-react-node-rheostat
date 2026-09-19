@@ -13,12 +13,21 @@ const clauseSchema = new mongoose.Schema(
 	{ _id: false },
 );
 
-const weightSchema = new mongoose.Schema({ variationId: { type: String, required: true }, weight: { type: Number, min: 0, max: 100000, required: true } }, { _id: false });
+const weightSchema = new mongoose.Schema(
+	{ variationId: { type: String, required: true }, weight: { type: Number, min: 0, max: 100000, required: true } },
+	{ _id: false },
+);
 
 const serveSchema = new mongoose.Schema(
 	{
 		variationId: { type: String, default: undefined },
-		rollout: { type: new mongoose.Schema({ bucketBy: { type: String, default: "key" }, weights: { type: [weightSchema], default: undefined } }, { _id: false }), default: undefined },
+		rollout: {
+			type: new mongoose.Schema(
+				{ bucketBy: { type: String, default: "key" }, weights: { type: [weightSchema], default: undefined } },
+				{ _id: false },
+			),
+			default: undefined,
+		},
 	},
 	{ _id: false },
 );
@@ -52,7 +61,8 @@ const variationSchema = new mongoose.Schema(
 		name: { type: String, required: true, trim: true, maxlength: 60 },
 		value: { type: mongoose.Schema.Types.Mixed, required: true },
 	},
-	{ _id: false },
+	// minimize: false keeps an empty-object JSON variation ({}), which is a legitimate value.
+	{ _id: false, minimize: false },
 );
 
 const flagSchema = new mongoose.Schema(
