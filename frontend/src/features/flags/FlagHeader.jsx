@@ -32,7 +32,12 @@ export function FlagHeader({ actions, flag, projectKey }) {
 					<h1 id="flag-title">{flag.name}</h1>
 					<div className="flag-meta">
 						<code>{flag.key}</code>
-						<button aria-label={copied ? "Copied" : "Copy flag key"} className="icon-button icon-button-small" type="button" onClick={copyKey}>
+						<button
+							aria-label={copied ? "Copied" : "Copy flag key"}
+							className="icon-button icon-button-small"
+							type="button"
+							onClick={copyKey}
+						>
 							<MaterialIcon size={16}>{copied ? "check" : "content_copy"}</MaterialIcon>
 						</button>
 						<Badge tone="neutral">{flag.type}</Badge>
@@ -57,7 +62,11 @@ export function FlagHeader({ actions, flag, projectKey }) {
 						<span className="flag-fact">
 							<MaterialIcon size={16}>{flag.lifecycle.kind === "permanent" ? "lock" : "schedule"}</MaterialIcon>
 							<span>
-								{flag.lifecycle.kind === "permanent" ? "Permanent" : flag.lifecycle.removeBy ? `Temporary · remove by ${formatDate(flag.lifecycle.removeBy)}` : "Temporary"}
+								{flag.lifecycle.kind === "permanent"
+									? "Permanent"
+									: flag.lifecycle.removeBy
+										? `Temporary · remove by ${formatDate(flag.lifecycle.removeBy)}`
+										: "Temporary"}
 							</span>
 						</span>
 						{flag.stale?.lastEffectiveChangeAt && (

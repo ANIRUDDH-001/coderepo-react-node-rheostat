@@ -35,7 +35,10 @@ export function EvaluationResults({ environment, projectKey, results, rulesByFla
 					{results.map((result) => (
 						<tr key={result.flagKey}>
 							<td>
-								<Link className="flag-name" to={buildPath("flag", { projectKey, flagKey: result.flagKey }, { env: environment })}>
+								<Link
+									className="flag-name"
+									to={buildPath("flag", { projectKey, flagKey: result.flagKey }, { env: environment })}
+								>
 									{result.name}
 								</Link>
 								<div className="flag-meta">
@@ -46,9 +49,16 @@ export function EvaluationResults({ environment, projectKey, results, rulesByFla
 							<td>
 								<code className="result-value">{formatValue(result.value)}</code>
 							</td>
-							<td>{result.variationId ? rulesByFlag[result.flagKey]?.variations?.find((variation) => variation.id === result.variationId)?.name || result.variationId : "—"}</td>
 							<td>
-								<Badge tone={TONES[result.reason.kind] || "neutral"}>{result.reason.kind.replace("_", " ").toLowerCase()}</Badge>
+								{result.variationId
+									? rulesByFlag[result.flagKey]?.variations?.find((variation) => variation.id === result.variationId)
+											?.name || result.variationId
+									: "—"}
+							</td>
+							<td>
+								<Badge tone={TONES[result.reason.kind] || "neutral"}>
+									{result.reason.kind.replace("_", " ").toLowerCase()}
+								</Badge>
 								<span className="reason-text">{describeReason(result.reason, rulesByFlag[result.flagKey])}</span>
 							</td>
 						</tr>

@@ -16,7 +16,11 @@ function ValuesInput({ clause, disabled, onChange, segments }) {
 					<span className="chip" key={key}>
 						{known.find((segment) => segment.key === key)?.name || key}
 						{!disabled && (
-							<button aria-label={`Remove ${key}`} type="button" onClick={() => onChange(clause.values.filter((value) => value !== key))}>
+							<button
+								aria-label={`Remove ${key}`}
+								type="button"
+								onClick={() => onChange(clause.values.filter((value) => value !== key))}
+							>
 								<MaterialIcon size={14}>close</MaterialIcon>
 							</button>
 						)}
@@ -26,7 +30,10 @@ function ValuesInput({ clause, disabled, onChange, segments }) {
 					<SelectMenu
 						ariaLabel="Add segment"
 						onChange={(key) => key && onChange([...clause.values, key])}
-						options={[{ value: "", label: "Add segment…" }, ...options.map((segment) => ({ value: segment.key, label: segment.name }))]}
+						options={[
+							{ value: "", label: "Add segment…" },
+							...options.map((segment) => ({ value: segment.key, label: segment.name })),
+						]}
 						value=""
 					/>
 				)}
@@ -35,12 +42,39 @@ function ValuesInput({ clause, disabled, onChange, segments }) {
 		);
 	}
 	if (DATE_OPERATORS.has(clause.operator)) {
-		return <input aria-label="Date" disabled={disabled} type="date" value={clause.values[0] || ""} onChange={(event) => onChange(event.target.value ? [event.target.value] : [])} />;
+		return (
+			<input
+				aria-label="Date"
+				disabled={disabled}
+				type="date"
+				value={clause.values[0] || ""}
+				onChange={(event) => onChange(event.target.value ? [event.target.value] : [])}
+			/>
+		);
 	}
 	if (NUMBER_OPERATORS.has(clause.operator)) {
-		return <input aria-label="Number" disabled={disabled} inputMode="decimal" step="any" type="number" value={clause.values[0] ?? ""} onChange={(event) => onChange(event.target.value === "" ? [] : [event.target.value])} />;
+		return (
+			<input
+				aria-label="Number"
+				disabled={disabled}
+				inputMode="decimal"
+				step="any"
+				type="number"
+				value={clause.values[0] ?? ""}
+				onChange={(event) => onChange(event.target.value === "" ? [] : [event.target.value])}
+			/>
+		);
 	}
-	return <ChipInput aria-label="Values" disabled={disabled} max={50} placeholder={clause.operator === "in" ? "value, value…" : "text"} values={clause.values} onChange={onChange} />;
+	return (
+		<ChipInput
+			aria-label="Values"
+			disabled={disabled}
+			max={50}
+			placeholder={clause.operator === "in" ? "value, value…" : "text"}
+			values={clause.values}
+			onChange={onChange}
+		/>
+	);
 }
 
 export function ClauseEditor({ clause, disabled = false, hideSegments = false, listId, onChange, onRemove, segments = [] }) {
@@ -49,7 +83,12 @@ export function ClauseEditor({ clause, disabled = false, hideSegments = false, l
 	return (
 		<div className="clause-row">
 			<label className="clause-negate">
-				<input checked={clause.negate} disabled={disabled} type="checkbox" onChange={(event) => onChange({ ...clause, negate: event.target.checked })} />
+				<input
+					checked={clause.negate}
+					disabled={disabled}
+					type="checkbox"
+					onChange={(event) => onChange({ ...clause, negate: event.target.checked })}
+				/>
 				<span>NOT</span>
 			</label>
 			<input
@@ -66,12 +105,19 @@ export function ClauseEditor({ clause, disabled = false, hideSegments = false, l
 			<SelectMenu
 				ariaLabel="Operator"
 				disabled={disabled}
-				onChange={(operator) => onChange({ ...clause, operator, attribute: operator === "segmentMatch" ? "key" : clause.attribute, values: [] })}
+				onChange={(operator) =>
+					onChange({ ...clause, operator, attribute: operator === "segmentMatch" ? "key" : clause.attribute, values: [] })
+				}
 				options={operators}
 				value={clause.operator}
 			/>
 			<div className="clause-values">
-				<ValuesInput clause={clause} disabled={disabled} onChange={(values) => onChange({ ...clause, values })} segments={segments} />
+				<ValuesInput
+					clause={clause}
+					disabled={disabled}
+					onChange={(values) => onChange({ ...clause, values })}
+					segments={segments}
+				/>
 			</div>
 			{!disabled && (
 				<button aria-label="Remove condition" className="icon-button" type="button" onClick={onRemove}>

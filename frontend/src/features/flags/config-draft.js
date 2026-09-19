@@ -18,7 +18,12 @@ export const localId = (prefix) => `${prefix}_${Date.now().toString(36)}${(count
 
 export const normalizeServe = (serve) =>
 	serve?.rollout
-		? { rollout: { bucketBy: serve.rollout.bucketBy || "key", weights: (serve.rollout.weights || []).map((entry) => ({ variationId: entry.variationId, weight: entry.weight })) } }
+		? {
+				rollout: {
+					bucketBy: serve.rollout.bucketBy || "key",
+					weights: (serve.rollout.weights || []).map((entry) => ({ variationId: entry.variationId, weight: entry.weight })),
+				},
+			}
 		: { variationId: serve?.variationId ?? null };
 
 export const normalizeConfig = (config) => ({
@@ -27,7 +32,12 @@ export const normalizeConfig = (config) => ({
 	rules: (config?.rules || []).map((rule) => ({
 		id: rule.id,
 		description: rule.description || "",
-		clauses: (rule.clauses || []).map((clause) => ({ attribute: clause.attribute, operator: clause.operator, values: [...(clause.values || [])].map(String), negate: Boolean(clause.negate) })),
+		clauses: (rule.clauses || []).map((clause) => ({
+			attribute: clause.attribute,
+			operator: clause.operator,
+			values: [...(clause.values || [])].map(String),
+			negate: Boolean(clause.negate),
+		})),
 		serve: normalizeServe(rule.serve),
 	})),
 	fallthrough: normalizeServe(config?.fallthrough),
@@ -40,7 +50,10 @@ export const newRule = (variationId) => ({ id: localId("r"), description: "", cl
 
 export const evenWeights = (variations) => {
 	const share = Math.floor(BUCKET_SPACE / variations.length);
-	return variations.map((variation, index) => ({ variationId: variation.id, weight: index === variations.length - 1 ? BUCKET_SPACE - share * (variations.length - 1) : share }));
+	return variations.map((variation, index) => ({
+		variationId: variation.id,
+		weight: index === variations.length - 1 ? BUCKET_SPACE - share * (variations.length - 1) : share,
+	}));
 };
 
 // Serializes the draft for the API: strips nulls the schema rejects and drops empty clause values.
@@ -50,7 +63,12 @@ export const toPayload = (draft) => ({
 	rules: draft.rules.map((rule) => ({
 		id: rule.id,
 		description: rule.description,
-		clauses: rule.clauses.map((clause) => ({ attribute: clause.attribute, operator: clause.operator, values: clause.values, negate: clause.negate })),
+		clauses: rule.clauses.map((clause) => ({
+			attribute: clause.attribute,
+			operator: clause.operator,
+			values: clause.values,
+			negate: clause.negate,
+		})),
 		serve: rule.serve.rollout ? { rollout: rule.serve.rollout } : { variationId: rule.serve.variationId },
 	})),
 	fallthrough: draft.fallthrough.rollout ? { rollout: draft.fallthrough.rollout } : { variationId: draft.fallthrough.variationId },

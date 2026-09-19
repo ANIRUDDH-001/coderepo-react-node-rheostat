@@ -61,7 +61,11 @@ export function SegmentsPage() {
 	else if (!data.length) {
 		body = (
 			<EmptyState
-				action={canManage ? { label: "Create segment", onClick: () => navigate(buildPath("segmentNew", { projectKey: project.key })) } : null}
+				action={
+					canManage
+						? { label: "Create segment", onClick: () => navigate(buildPath("segmentNew", { projectKey: project.key })) }
+						: null
+				}
 				description="Segments are reusable audiences that targeting rules can reference in any environment."
 				icon="group"
 				title="No segments yet"
@@ -89,7 +93,10 @@ export function SegmentsPage() {
 							<tr key={segment._id}>
 								<td>
 									<div className="flag-cell">
-										<Link className="flag-name" to={buildPath("segment", { projectKey: project.key, segmentKey: segment.key })}>
+										<Link
+											className="flag-name"
+											to={buildPath("segment", { projectKey: project.key, segmentKey: segment.key })}
+										>
 											{segment.name}
 										</Link>
 										<div className="flag-meta">
@@ -100,8 +107,12 @@ export function SegmentsPage() {
 								</td>
 								<td>
 									{pluralize(segment.rules.length, "rule")}
-									{segment.includedKeys.length > 0 && <span className="muted"> · {segment.includedKeys.length} included</span>}
-									{segment.excludedKeys.length > 0 && <span className="muted"> · {segment.excludedKeys.length} excluded</span>}
+									{segment.includedKeys.length > 0 && (
+										<span className="muted"> · {segment.includedKeys.length} included</span>
+									)}
+									{segment.excludedKeys.length > 0 && (
+										<span className="muted"> · {segment.excludedKeys.length} excluded</span>
+									)}
 								</td>
 								<td>
 									{segment.referencedBy.length ? (
@@ -118,7 +129,12 @@ export function SegmentsPage() {
 								</td>
 								{canManage && (
 									<td className="row-actions">
-										<button aria-label={`Delete ${segment.name}`} className="icon-button" type="button" onClick={() => setDeleting(segment)}>
+										<button
+											aria-label={`Delete ${segment.name}`}
+											className="icon-button"
+											type="button"
+											onClick={() => setDeleting(segment)}
+										>
 											<MaterialIcon>delete</MaterialIcon>
 										</button>
 									</td>
@@ -136,10 +152,16 @@ export function SegmentsPage() {
 			<header className="page-header">
 				<div>
 					<h1 id="segments-title">Segments</h1>
-					<p className="page-subtitle">Reusable audiences for {project.name}. Rules use the same conditions as flags; segments cannot nest.</p>
+					<p className="page-subtitle">
+						Reusable audiences for {project.name}. Rules use the same conditions as flags; segments cannot nest.
+					</p>
 				</div>
 				{canManage && (
-					<button className="primary-button" type="button" onClick={() => navigate(buildPath("segmentNew", { projectKey: project.key }))}>
+					<button
+						className="primary-button"
+						type="button"
+						onClick={() => navigate(buildPath("segmentNew", { projectKey: project.key }))}
+					>
 						<MaterialIcon size={18}>add</MaterialIcon> Create segment
 					</button>
 				)}

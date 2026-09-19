@@ -4,12 +4,40 @@ import { MaterialIcon } from "../../shared/components/MaterialIcon.jsx";
 export function VariationValueInput({ disabled, id, onChange, type, value }) {
 	if (type === "boolean") return <input disabled id={id} readOnly type="text" value={String(value)} />;
 	if (type === "number") {
-		return <input disabled={disabled} id={id} inputMode="decimal" step="any" type="number" value={value ?? ""} onChange={(event) => onChange(event.target.value === "" ? "" : Number(event.target.value))} />;
+		return (
+			<input
+				disabled={disabled}
+				id={id}
+				inputMode="decimal"
+				step="any"
+				type="number"
+				value={value ?? ""}
+				onChange={(event) => onChange(event.target.value === "" ? "" : Number(event.target.value))}
+			/>
+		);
 	}
 	if (type === "json") {
-		return <textarea disabled={disabled} id={id} rows={2} spellCheck={false} value={typeof value === "string" ? value : JSON.stringify(value ?? {})} onChange={(event) => onChange(event.target.value)} />;
+		return (
+			<textarea
+				disabled={disabled}
+				id={id}
+				rows={2}
+				spellCheck={false}
+				value={typeof value === "string" ? value : JSON.stringify(value ?? {})}
+				onChange={(event) => onChange(event.target.value)}
+			/>
+		);
 	}
-	return <input disabled={disabled} id={id} maxLength={500} type="text" value={value ?? ""} onChange={(event) => onChange(event.target.value)} />;
+	return (
+		<input
+			disabled={disabled}
+			id={id}
+			maxLength={500}
+			type="text"
+			value={value ?? ""}
+			onChange={(event) => onChange(event.target.value)}
+		/>
+	);
 }
 
 export const MAX_VARIATIONS = 8;
@@ -27,9 +55,21 @@ export function VariationsEditor({ errors = {}, onChange, rows, type }) {
 			</div>
 			{rows.map((row, index) => (
 				<div className="variation-row" key={row.id || `new-${index}`}>
-					<input aria-label={`Variation ${index + 1} name`} disabled={type === "boolean"} maxLength={60} type="text" value={row.name} onChange={(event) => update(index, { name: event.target.value })} />
+					<input
+						aria-label={`Variation ${index + 1} name`}
+						disabled={type === "boolean"}
+						maxLength={60}
+						type="text"
+						value={row.name}
+						onChange={(event) => update(index, { name: event.target.value })}
+					/>
 					<div>
-						<VariationValueInput disabled={Boolean(row.existing) || type === "boolean"} onChange={(value) => update(index, { value })} type={type} value={row.value} />
+						<VariationValueInput
+							disabled={Boolean(row.existing) || type === "boolean"}
+							onChange={(value) => update(index, { value })}
+							type={type}
+							value={row.value}
+						/>
 						{errors[index] && (
 							<span className="form-error" role="alert">
 								{errors[index]}
@@ -37,7 +77,12 @@ export function VariationsEditor({ errors = {}, onChange, rows, type }) {
 						)}
 					</div>
 					{!row.existing && type !== "boolean" && rows.length > 2 ? (
-						<button aria-label={`Remove variation ${index + 1}`} className="icon-button" type="button" onClick={() => onChange(rows.filter((_, position) => position !== index))}>
+						<button
+							aria-label={`Remove variation ${index + 1}`}
+							className="icon-button"
+							type="button"
+							onClick={() => onChange(rows.filter((_, position) => position !== index))}
+						>
 							<MaterialIcon>delete</MaterialIcon>
 						</button>
 					) : (
@@ -48,7 +93,13 @@ export function VariationsEditor({ errors = {}, onChange, rows, type }) {
 				</div>
 			))}
 			{canAppend && (
-				<button className="text-button" type="button" onClick={() => onChange([...rows, { name: "", value: type === "json" ? "{}" : type === "number" ? "" : "", existing: false }])}>
+				<button
+					className="text-button"
+					type="button"
+					onClick={() =>
+						onChange([...rows, { name: "", value: type === "json" ? "{}" : type === "number" ? "" : "", existing: false }])
+					}
+				>
 					<MaterialIcon size={18}>add</MaterialIcon> Add variation
 				</button>
 			)}

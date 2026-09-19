@@ -8,7 +8,9 @@ const describeValue = (value, variationName) => {
 	if (typeof value === "string") return variationName(value);
 	if (Array.isArray(value)) return value.map((entry) => describeValue(entry, variationName)).join(", ");
 	if (value.rollout) {
-		return value.rollout.weights.map((entry) => `${variationName(entry.variationId)} ${(entry.weight / 1000).toFixed(entry.weight % 1000 ? 1 : 0)}%`).join(" · ");
+		return value.rollout.weights
+			.map((entry) => `${variationName(entry.variationId)} ${(entry.weight / 1000).toFixed(entry.weight % 1000 ? 1 : 0)}%`)
+			.join(" · ");
 	}
 	if (value.variationId !== undefined) return `Serve ${variationName(value.variationId)}`;
 	if (value.clauses) {
@@ -18,7 +20,8 @@ const describeValue = (value, variationName) => {
 	return JSON.stringify(value);
 };
 
-const describeClause = (clause) => `${clause.negate ? "NOT " : ""}${clause.attribute} ${clause.operator} [${(clause.values || []).join(", ")}]`;
+const describeClause = (clause) =>
+	`${clause.negate ? "NOT " : ""}${clause.attribute} ${clause.operator} [${(clause.values || []).join(", ")}]`;
 
 const describePath = (path) => {
 	const parts = path.split(".");

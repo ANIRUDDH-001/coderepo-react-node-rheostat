@@ -31,7 +31,10 @@ export function EnvironmentTabs({ actions = null, environment, environments, fla
 				/>
 				<div className="environment-info">
 					{environment.protected && (
-						<span className="protected-note" title={`${environment.requiredApprovals} approval${environment.requiredApprovals === 1 ? "" : "s"} required`}>
+						<span
+							className="protected-note"
+							title={`${environment.requiredApprovals} approval${environment.requiredApprovals === 1 ? "" : "s"} required`}
+						>
 							<MaterialIcon size={16}>lock</MaterialIcon> Protected
 						</span>
 					)}

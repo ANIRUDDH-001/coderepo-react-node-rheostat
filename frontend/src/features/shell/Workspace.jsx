@@ -45,7 +45,8 @@ function RouteSwitch({ project, projects, route }) {
 	if (name === "segmentNew") return <SegmentEditorPage key={`${project.key}/new`} segmentKey={null} />;
 	if (name === "segment") return <SegmentEditorPage key={`${project.key}/${params.segmentKey}`} segmentKey={params.segmentKey} />;
 	if (name === "playground") return <PlaygroundPage key={project.key} />;
-	if (PLACEHOLDERS[name]) return <EmptyState description={PLACEHOLDERS[name].description} icon="hourglass_empty" title={PLACEHOLDERS[name].title} />;
+	if (PLACEHOLDERS[name])
+		return <EmptyState description={PLACEHOLDERS[name].description} icon="hourglass_empty" title={PLACEHOLDERS[name].title} />;
 	return <NotFound projectKey={project?.key || projects[0]?.key} />;
 }
 
@@ -82,7 +83,8 @@ export function Workspace({ onLogout, onProfileSwitch }) {
 	let content;
 	if (loading && !projects) content = <Skeleton rows={6} />;
 	else if (error && !projects) content = <ErrorBanner message={error.message} onRetry={reload} />;
-	else if (!projects.length) content = <EmptyState description="Ask an admin to create the first project." icon="layers" title="No projects yet" />;
+	else if (!projects.length)
+		content = <EmptyState description="Ask an admin to create the first project." icon="layers" title="No projects yet" />;
 	else if (route.params.projectKey && !project) content = <NotFound projectKey={projects[0].key} />;
 	else if (route.name === "home") content = <Skeleton rows={6} />;
 	else content = <RouteSwitch project={project} projects={projects} route={route} />;
@@ -98,7 +100,12 @@ export function Workspace({ onLogout, onProfileSwitch }) {
 					project={project}
 					projects={projects || []}
 				/>
-				<NavRail currentRoute={route.name} onClose={closeDrawer} open={drawerOpen} projectKey={project?.key || projects?.[0]?.key || ""} />
+				<NavRail
+					currentRoute={route.name}
+					onClose={closeDrawer}
+					open={drawerOpen}
+					projectKey={project?.key || projects?.[0]?.key || ""}
+				/>
 				<main className="workspace-surface" id="main">
 					{content}
 				</main>

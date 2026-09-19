@@ -66,7 +66,13 @@ export function VersionCard({ current, entry, rollback, variations }) {
 				{entry.version > 1 && <DiffView diff={entry.diff} variations={variations} />}
 				{!current && rollback && (
 					<div className="timeline-actions">
-						<button className="tonal-button" disabled={rollback.disabled} title={rollback.title} type="button" onClick={() => rollback.onClick(entry)}>
+						<button
+							className="tonal-button"
+							disabled={rollback.disabled}
+							title={rollback.title}
+							type="button"
+							onClick={() => rollback.onClick(entry)}
+						>
 							<MaterialIcon size={18}>undo</MaterialIcon> {rollback.label}
 						</button>
 					</div>

@@ -34,12 +34,9 @@ export function useRoute() {
 	const location = useSyncExternalStore(subscribe, readLocation, readLocation);
 	const route = useMemo(() => matchRoute(location.path), [location.path]);
 	const query = useMemo(() => parseQuery(location.search), [location.search]);
-	const setQuery = useCallback(
-		(patch, { replace = true } = {}) => {
-			const next = { ...parseQuery(window.location.search), ...patch };
-			navigate(`${window.location.pathname}${stringifyQuery(next)}`, { replace });
-		},
-		[],
-	);
+	const setQuery = useCallback((patch, { replace = true } = {}) => {
+		const next = { ...parseQuery(window.location.search), ...patch };
+		navigate(`${window.location.pathname}${stringifyQuery(next)}`, { replace });
+	}, []);
 	return { path: location.path, name: route.name, params: route.params, query, navigate, setQuery, buildPath };
 }

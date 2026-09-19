@@ -44,7 +44,10 @@ export function FlagsPage() {
 		page,
 		pageSize,
 	};
-	const { data, error, loading, reload } = useAsync(() => flagApi.list(project.key, requestFilters), [project.key, JSON.stringify(requestFilters)]);
+	const { data, error, loading, reload } = useAsync(
+		() => flagApi.list(project.key, requestFilters),
+		[project.key, JSON.stringify(requestFilters)],
+	);
 
 	const filtered = Object.entries(filters).some(([key, value]) => key in DEFAULT_FILTERS && value !== DEFAULT_FILTERS[key]);
 	let body;
@@ -69,7 +72,12 @@ export function FlagsPage() {
 		body = (
 			<>
 				<FlagTable environments={project.environments} flags={data.items} projectKey={project.key} />
-				<Pagination onPage={(next) => setQuery({ page: next === 1 ? "" : String(next) })} page={data.page} pageSize={data.pageSize} total={data.total} />
+				<Pagination
+					onPage={(next) => setQuery({ page: next === 1 ? "" : String(next) })}
+					page={data.page}
+					pageSize={data.pageSize}
+					total={data.total}
+				/>
 			</>
 		);
 	}
@@ -79,7 +87,9 @@ export function FlagsPage() {
 			<header className="page-header">
 				<div>
 					<h1 id="flags-title">Flags</h1>
-					<p className="page-subtitle">{data ? `${data.total} flag${data.total === 1 ? "" : "s"} in ${project.name}` : project.name}</p>
+					<p className="page-subtitle">
+						{data ? `${data.total} flag${data.total === 1 ? "" : "s"} in ${project.name}` : project.name}
+					</p>
 				</div>
 				{can("flag:create") && (
 					<button className="primary-button" type="button" onClick={() => setCreating(true)}>

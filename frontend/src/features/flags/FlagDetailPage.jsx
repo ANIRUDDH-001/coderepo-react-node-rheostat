@@ -37,7 +37,14 @@ export function FlagDetailPage({ flagKey }) {
 
 	if (loading && !flag) return <Skeleton rows={8} />;
 	if (error?.code === "FLAG_NOT_FOUND") {
-		return <EmptyState action={{ label: "Back to flags", onClick: () => navigate(buildPath("flags", { projectKey: project.key })) }} description={`No flag with key ${flagKey} exists in ${project.name}.`} icon="flag" title="Flag not found" />;
+		return (
+			<EmptyState
+				action={{ label: "Back to flags", onClick: () => navigate(buildPath("flags", { projectKey: project.key })) }}
+				description={`No flag with key ${flagKey} exists in ${project.name}.`}
+				icon="flag"
+				title="Flag not found"
+			/>
+		);
 	}
 	if (error && !flag) return <ErrorBanner message={error.message} onRetry={reload} />;
 
@@ -161,7 +168,11 @@ export function FlagDetailPage({ flagKey }) {
 				/>
 			)}
 			{dialog === "kill" && (
-				<KillSwitchDialog flag={flag} onClose={() => setDialog(null)} onConfirm={(reason) => run(() => flagApi.killSwitch(project.key, flag.key, reason), "Kill switch activated.")} />
+				<KillSwitchDialog
+					flag={flag}
+					onClose={() => setDialog(null)}
+					onConfirm={(reason) => run(() => flagApi.killSwitch(project.key, flag.key, reason), "Kill switch activated.")}
+				/>
 			)}
 			{dialog === "clear" && (
 				<ConfirmationDialog

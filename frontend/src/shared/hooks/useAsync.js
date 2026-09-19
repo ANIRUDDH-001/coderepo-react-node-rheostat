@@ -18,7 +18,10 @@ export function useAsync(loader, dependencies = []) {
 	useEffect(() => {
 		run();
 	}, [run]);
-	const mutate = useCallback((updater) => setState((previous) => ({ ...previous, data: typeof updater === "function" ? updater(previous.data) : updater })), []);
+	const mutate = useCallback(
+		(updater) => setState((previous) => ({ ...previous, data: typeof updater === "function" ? updater(previous.data) : updater })),
+		[],
+	);
 	return { ...state, reload: run, mutate };
 }
 

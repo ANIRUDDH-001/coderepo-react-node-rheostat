@@ -2,7 +2,16 @@ import { useState } from "react";
 import { MaterialIcon } from "./MaterialIcon.jsx";
 
 // Free-text chips: Enter or comma adds, Backspace on an empty input removes the last chip.
-export function ChipInput({ disabled = false, id, max = 50, normalize = (value) => value.trim(), onChange, placeholder = "Add…", values = [], ...rest }) {
+export function ChipInput({
+	disabled = false,
+	id,
+	max = 50,
+	normalize = (value) => value.trim(),
+	onChange,
+	placeholder = "Add…",
+	values = [],
+	...rest
+}) {
 	const [draft, setDraft] = useState("");
 	const add = (raw) => {
 		const value = normalize(raw);
@@ -19,7 +28,11 @@ export function ChipInput({ disabled = false, id, max = 50, normalize = (value) 
 				<span className="chip" key={value}>
 					{value}
 					{!disabled && (
-						<button aria-label={`Remove ${value}`} type="button" onClick={() => onChange(values.filter((item) => item !== value))}>
+						<button
+							aria-label={`Remove ${value}`}
+							type="button"
+							onClick={() => onChange(values.filter((item) => item !== value))}
+						>
 							<MaterialIcon size={14}>close</MaterialIcon>
 						</button>
 					)}

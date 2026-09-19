@@ -36,10 +36,20 @@ export function KillSwitchDialog({ flag, onClose, onConfirm }) {
 				</header>
 				<div className="dialog-body">
 					<p>
-						Every environment of <strong>{flag.name}</strong> will serve its off variation immediately, regardless of rules or rollouts. Active rollouts hold until the switch is cleared.
+						Every environment of <strong>{flag.name}</strong> will serve its off variation immediately, regardless of rules or
+						rollouts. Active rollouts hold until the switch is cleared.
 					</p>
 					<FormField error={error} hint="Recorded in the audit history." label="Reason" required>
-						{(props) => <textarea {...props} data-autofocus maxLength={300} rows={3} value={reason} onChange={(event) => setReason(event.target.value)} />}
+						{(props) => (
+							<textarea
+								{...props}
+								data-autofocus
+								maxLength={300}
+								rows={3}
+								value={reason}
+								onChange={(event) => setReason(event.target.value)}
+							/>
+						)}
 					</FormField>
 				</div>
 				<footer className="dialog-footer">

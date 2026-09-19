@@ -13,7 +13,11 @@ function Distribution({ counts, label, total, variations }) {
 			<h4>{label}</h4>
 			<div className="impact-bar" aria-hidden="true">
 				{entries.map((entry, index) => (
-					<span className={`weight-bar-segment weight-tone-${index % 6}`} key={entry.id} style={{ width: `${total ? (entry.count / total) * 100 : 0}%` }} />
+					<span
+						className={`weight-bar-segment weight-tone-${index % 6}`}
+						key={entry.id}
+						style={{ width: `${total ? (entry.count / total) * 100 : 0}%` }}
+					/>
 				))}
 			</div>
 			<ul>
@@ -65,7 +69,8 @@ export function ImpactPreview({ error = null, loading = false, onClose, proposed
 					{result && (
 						<>
 							<p className="impact-summary">
-								<strong>{result.flipped}</strong> of {result.audienceSize} audience members would receive a different variation.
+								<strong>{result.flipped}</strong> of {result.audienceSize} audience members would receive a different
+								variation.
 							</p>
 							<div className="impact-grid">
 								<Distribution counts={result.before} label="Current" total={result.audienceSize} variations={variations} />
@@ -75,7 +80,11 @@ export function ImpactPreview({ error = null, loading = false, onClose, proposed
 							<ul className="impact-attribution">
 								{Object.entries(result.attribution.after).map(([key, count]) => (
 									<li key={key}>
-										<span>{key === "fallthrough" || key === "off" || key === "killSwitch" ? key : `rule ${Math.max(1, proposedRules.findIndex((rule) => rule.id === key) + 1)}`}</span>
+										<span>
+											{key === "fallthrough" || key === "off" || key === "killSwitch"
+												? key
+												: `rule ${Math.max(1, proposedRules.findIndex((rule) => rule.id === key) + 1)}`}
+										</span>
 										<strong>{count}</strong>
 									</li>
 								))}
@@ -102,13 +111,16 @@ export function ImpactPreview({ error = null, loading = false, onClose, proposed
 															<code>{entry.key}</code>
 														</td>
 														<td className="muted">
-															{entry.attributes.plan} · {entry.attributes.country} · {entry.attributes.platform}
+															{entry.attributes.plan} · {entry.attributes.country} ·{" "}
+															{entry.attributes.platform}
 														</td>
 														<td>
-															{variationName(entry.before.variationId)} <span className="muted">({ruleLabel(entry.before.reason, [])})</span>
+															{variationName(entry.before.variationId)}{" "}
+															<span className="muted">({ruleLabel(entry.before.reason, [])})</span>
 														</td>
 														<td>
-															{variationName(entry.after.variationId)} <span className="muted">({ruleLabel(entry.after.reason, proposedRules)})</span>
+															{variationName(entry.after.variationId)}{" "}
+															<span className="muted">({ruleLabel(entry.after.reason, proposedRules)})</span>
 														</td>
 													</tr>
 												))}

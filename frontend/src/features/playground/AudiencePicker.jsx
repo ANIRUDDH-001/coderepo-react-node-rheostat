@@ -45,14 +45,28 @@ export function AudiencePicker({ disabled, onSelect, projectKey }) {
 
 	return (
 		<div className="audience-picker" ref={reference}>
-			<button aria-expanded={open} aria-haspopup="dialog" className="tonal-button" disabled={disabled} type="button" onClick={() => setOpen((value) => !value)}>
+			<button
+				aria-expanded={open}
+				aria-haspopup="dialog"
+				className="tonal-button"
+				disabled={disabled}
+				type="button"
+				onClick={() => setOpen((value) => !value)}
+			>
 				<MaterialIcon size={18}>person</MaterialIcon> Load audience member
 			</button>
 			{open && (
 				<div aria-label="Audience members" className="audience-popover" role="dialog">
 					<label className="filter-search">
 						<MaterialIcon size={20}>search</MaterialIcon>
-						<input autoFocus aria-label="Search audience" placeholder="Name, key, or company" type="search" value={search} onChange={(event) => setSearch(event.target.value)} />
+						<input
+							autoFocus
+							aria-label="Search audience"
+							placeholder="Name, key, or company"
+							type="search"
+							value={search}
+							onChange={(event) => setSearch(event.target.value)}
+						/>
 					</label>
 					{state.error && <p className="form-error">{state.error.message}</p>}
 					{state.loading && !state.items.length && <p className="muted">Searching…</p>}
@@ -69,7 +83,8 @@ export function AudiencePicker({ disabled, onSelect, projectKey }) {
 								>
 									<strong>{member.name}</strong>
 									<span className="muted">
-										{member.attributes.plan} · {member.attributes.country} · {member.attributes.platform} {member.attributes.appVersion}
+										{member.attributes.plan} · {member.attributes.country} · {member.attributes.platform}{" "}
+										{member.attributes.appVersion}
 									</span>
 									<code>{member.key}</code>
 								</button>

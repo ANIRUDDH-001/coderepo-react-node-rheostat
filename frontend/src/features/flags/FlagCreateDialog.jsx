@@ -117,7 +117,12 @@ export function FlagCreateDialog({ onClose, onCreated, projectKey }) {
 							/>
 						)}
 					</FormField>
-					<FormField error={errors.fields.key} hint="Lowercase letters, numbers, and hyphens. Cannot be changed later." label="Key" required>
+					<FormField
+						error={errors.fields.key}
+						hint="Lowercase letters, numbers, and hyphens. Cannot be changed later."
+						label="Key"
+						required
+					>
 						{(props) => (
 							<input
 								{...props}
@@ -135,7 +140,15 @@ export function FlagCreateDialog({ onClose, onCreated, projectKey }) {
 						)}
 					</FormField>
 					<FormField error={errors.fields.description} label="Description">
-						{(props) => <textarea {...props} maxLength={1000} rows={2} value={description} onChange={(event) => setDescription(event.target.value)} />}
+						{(props) => (
+							<textarea
+								{...props}
+								maxLength={1000}
+								rows={2}
+								value={description}
+								onChange={(event) => setDescription(event.target.value)}
+							/>
+						)}
 					</FormField>
 					<div className="form-row">
 						<FormField label="Type">
@@ -152,13 +165,24 @@ export function FlagCreateDialog({ onClose, onCreated, projectKey }) {
 								/>
 							)}
 						</FormField>
-						<FormField label="Owner">{() => <PersonPicker ariaLabel="Owner" onChange={setOwnerId} value={ownerId} />}</FormField>
+						<FormField label="Owner">
+							{() => <PersonPicker ariaLabel="Owner" onChange={setOwnerId} value={ownerId} />}
+						</FormField>
 					</div>
 					<FormField error={errors.fields.variations} label="Variations">
 						{() => <VariationsEditor errors={errors.variations} onChange={setRows} rows={rows} type={type} />}
 					</FormField>
 					<FormField error={errors.fields.tags} hint="Up to 10 tags. Press Enter to add." label="Tags">
-						{(props) => <ChipInput {...props} max={10} normalize={(value) => value.trim().toLowerCase().slice(0, 30)} placeholder="checkout, experiment…" values={tags} onChange={setTags} />}
+						{(props) => (
+							<ChipInput
+								{...props}
+								max={10}
+								normalize={(value) => value.trim().toLowerCase().slice(0, 30)}
+								placeholder="checkout, experiment…"
+								values={tags}
+								onChange={setTags}
+							/>
+						)}
 					</FormField>
 					<div className="form-row">
 						<FormField label="Lifecycle">
@@ -175,8 +199,14 @@ export function FlagCreateDialog({ onClose, onCreated, projectKey }) {
 							)}
 						</FormField>
 						{lifecycle === "temporary" && (
-							<FormField error={errors.fields.lifecycle} hint="Optional. Flags past this date show as overdue." label="Remove by">
-								{(props) => <input {...props} type="date" value={removeBy} onChange={(event) => setRemoveBy(event.target.value)} />}
+							<FormField
+								error={errors.fields.lifecycle}
+								hint="Optional. Flags past this date show as overdue."
+								label="Remove by"
+							>
+								{(props) => (
+									<input {...props} type="date" value={removeBy} onChange={(event) => setRemoveBy(event.target.value)} />
+								)}
 							</FormField>
 						)}
 					</div>

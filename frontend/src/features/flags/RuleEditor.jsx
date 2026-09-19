@@ -6,7 +6,8 @@ import { ServeEditor } from "./ServeEditor.jsx";
 
 export function RuleEditor({ disabled = false, index, onChange, onMove, onRemove, rule, segments, total, variations }) {
 	const listId = `attributes-${useId().replace(/:/g, "")}`;
-	const updateClause = (position, clause) => onChange({ ...rule, clauses: rule.clauses.map((entry, at) => (at === position ? clause : entry)) });
+	const updateClause = (position, clause) =>
+		onChange({ ...rule, clauses: rule.clauses.map((entry, at) => (at === position ? clause : entry)) });
 	return (
 		<article aria-label={`Rule ${index + 1}`} className="rule-card">
 			<header className="rule-header">
@@ -22,10 +23,22 @@ export function RuleEditor({ disabled = false, index, onChange, onMove, onRemove
 				/>
 				{!disabled && (
 					<div className="rule-actions">
-						<button aria-label="Move rule up" className="icon-button" disabled={index === 0} type="button" onClick={() => onMove(index, index - 1)}>
+						<button
+							aria-label="Move rule up"
+							className="icon-button"
+							disabled={index === 0}
+							type="button"
+							onClick={() => onMove(index, index - 1)}
+						>
 							<MaterialIcon>expand_less</MaterialIcon>
 						</button>
-						<button aria-label="Move rule down" className="icon-button" disabled={index === total - 1} type="button" onClick={() => onMove(index, index + 1)}>
+						<button
+							aria-label="Move rule down"
+							className="icon-button"
+							disabled={index === total - 1}
+							type="button"
+							onClick={() => onMove(index, index + 1)}
+						>
 							<MaterialIcon>expand_more</MaterialIcon>
 						</button>
 						<button aria-label="Delete rule" className="icon-button" type="button" onClick={onRemove}>
@@ -50,14 +63,24 @@ export function RuleEditor({ disabled = false, index, onChange, onMove, onRemove
 					</div>
 				))}
 				{!disabled && rule.clauses.length < 10 && (
-					<button className="text-button" type="button" onClick={() => onChange({ ...rule, clauses: [...rule.clauses, newClause()] })}>
+					<button
+						className="text-button"
+						type="button"
+						onClick={() => onChange({ ...rule, clauses: [...rule.clauses, newClause()] })}
+					>
 						<MaterialIcon size={18}>add</MaterialIcon> Add condition
 					</button>
 				)}
 			</div>
 			<div className="rule-serve">
 				<span className="rule-label">Then</span>
-				<ServeEditor disabled={disabled} label={`Rule ${index + 1}`} onChange={(serve) => onChange({ ...rule, serve })} serve={rule.serve} variations={variations} />
+				<ServeEditor
+					disabled={disabled}
+					label={`Rule ${index + 1}`}
+					onChange={(serve) => onChange({ ...rule, serve })}
+					serve={rule.serve}
+					variations={variations}
+				/>
 			</div>
 		</article>
 	);

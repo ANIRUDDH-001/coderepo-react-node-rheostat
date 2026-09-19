@@ -31,7 +31,10 @@ export function VersionHistory({ environment, flag, onRolledBack, onProposeRollb
 		setBusy(true);
 		setFailure("");
 		try {
-			const result = await flagApi.rollback(project.key, flag.key, environment.key, { version: target.version, ...(acknowledgeActiveRollout ? { acknowledgeActiveRollout: true } : {}) });
+			const result = await flagApi.rollback(project.key, flag.key, environment.key, {
+				version: target.version,
+				...(acknowledgeActiveRollout ? { acknowledgeActiveRollout: true } : {}),
+			});
 			setTarget(null);
 			setRolloutError(null);
 			notify({ kind: "success", message: `${environment.name} rolled back to v${target.version} (now v${result.version.version}).` });
@@ -47,17 +50,29 @@ export function VersionHistory({ environment, flag, onRolledBack, onProposeRollb
 	const rollbackAction = canDirect
 		? { label: "Roll back to this version", onClick: setTarget, disabled: false }
 		: canPropose
-			? { label: "Propose rollback", onClick: (entry) => onProposeRollback?.(entry), disabled: !onProposeRollback, title: onProposeRollback ? "" : "Production changes require a change request." }
+			? {
+					label: "Propose rollback",
+					onClick: (entry) => onProposeRollback?.(entry),
+					disabled: !onProposeRollback,
+					title: onProposeRollback ? "" : "Production changes require a change request.",
+				}
 			: null;
 
 	if (loading && !data) return <Skeleton rows={4} />;
 	if (error) return <ErrorBanner message={error.message} onRetry={reload} />;
-	if (!data?.length) return <EmptyState description="Versions appear here as the configuration changes." icon="history" title="No history yet" />;
+	if (!data?.length)
+		return <EmptyState description="Versions appear here as the configuration changes." icon="history" title="No history yet" />;
 	return (
 		<div className="version-history">
 			<ol className="timeline">
 				{data.map((entry) => (
-					<VersionCard current={entry.kind === "version" && entry.version === currentVersion} entry={entry} key={entry._id} rollback={rollbackAction} variations={flag.variations} />
+					<VersionCard
+						current={entry.kind === "version" && entry.version === currentVersion}
+						entry={entry}
+						key={entry._id}
+						rollback={rollbackAction}
+						variations={flag.variations}
+					/>
 				))}
 			</ol>
 			{target && !rolloutError && (
@@ -72,7 +87,13 @@ export function VersionHistory({ environment, flag, onRolledBack, onProposeRollb
 				/>
 			)}
 			{rolloutError && (
-				<RolloutActiveDialog busy={busy} environmentName={environment.name} error={rolloutError} onCancel={() => setRolloutError(null)} onConfirm={() => rollback(true)} />
+				<RolloutActiveDialog
+					busy={busy}
+					environmentName={environment.name}
+					error={rolloutError}
+					onCancel={() => setRolloutError(null)}
+					onConfirm={() => rollback(true)}
+				/>
 			)}
 		</div>
 	);

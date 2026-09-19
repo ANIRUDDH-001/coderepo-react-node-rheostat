@@ -21,7 +21,11 @@ export const rowsToAttributes = (rows) => {
 };
 
 export const attributesToRows = (attributes) =>
-	Object.entries(attributes).map(([name, value]) => ({ name, type: typeof value === "number" ? "number" : typeof value === "boolean" ? "boolean" : "string", value }));
+	Object.entries(attributes).map(([name, value]) => ({
+		name,
+		type: typeof value === "number" ? "number" : typeof value === "boolean" ? "boolean" : "string",
+		value,
+	}));
 
 // Context key plus typed attribute rows. Values are typed so number/boolean comparisons behave like production.
 export function ContextEditor({ contextKey, disabled, onKeyChange, onRowsChange, rows }) {
@@ -30,13 +34,35 @@ export function ContextEditor({ contextKey, disabled, onKeyChange, onRowsChange,
 		<div className="context-editor">
 			<label className="context-key">
 				<span>Context key</span>
-				<input disabled={disabled} maxLength={120} placeholder="user-123" type="text" value={contextKey} onChange={(event) => onKeyChange(event.target.value)} />
+				<input
+					disabled={disabled}
+					maxLength={120}
+					placeholder="user-123"
+					type="text"
+					value={contextKey}
+					onChange={(event) => onKeyChange(event.target.value)}
+				/>
 			</label>
 			<div className="attribute-rows">
 				{rows.map((row, index) => (
 					<div className="attribute-row" key={index}>
-						<input aria-label={`Attribute ${index + 1} name`} disabled={disabled} list="context-attribute-names" maxLength={60} placeholder="attribute" type="text" value={row.name} onChange={(event) => update(index, { name: event.target.value })} />
-						<SelectMenu ariaLabel={`Attribute ${index + 1} type`} disabled={disabled} onChange={(type) => update(index, { type, value: type === "boolean" ? true : type === "number" ? 0 : "" })} options={TYPE_OPTIONS} value={row.type} />
+						<input
+							aria-label={`Attribute ${index + 1} name`}
+							disabled={disabled}
+							list="context-attribute-names"
+							maxLength={60}
+							placeholder="attribute"
+							type="text"
+							value={row.name}
+							onChange={(event) => update(index, { name: event.target.value })}
+						/>
+						<SelectMenu
+							ariaLabel={`Attribute ${index + 1} type`}
+							disabled={disabled}
+							onChange={(type) => update(index, { type, value: type === "boolean" ? true : type === "number" ? 0 : "" })}
+							options={TYPE_OPTIONS}
+							value={row.type}
+						/>
 						{row.type === "boolean" ? (
 							<SelectMenu
 								ariaLabel={`Attribute ${index + 1} value`}
@@ -61,13 +87,24 @@ export function ContextEditor({ contextKey, disabled, onKeyChange, onRowsChange,
 								onChange={(event) => update(index, { value: event.target.value })}
 							/>
 						)}
-						<button aria-label={`Remove attribute ${index + 1}`} className="icon-button" disabled={disabled} type="button" onClick={() => onRowsChange(rows.filter((_, at) => at !== index))}>
+						<button
+							aria-label={`Remove attribute ${index + 1}`}
+							className="icon-button"
+							disabled={disabled}
+							type="button"
+							onClick={() => onRowsChange(rows.filter((_, at) => at !== index))}
+						>
 							<MaterialIcon>close</MaterialIcon>
 						</button>
 					</div>
 				))}
 				{rows.length < 30 && (
-					<button className="text-button" disabled={disabled} type="button" onClick={() => onRowsChange([...rows, { name: "", type: "string", value: "" }])}>
+					<button
+						className="text-button"
+						disabled={disabled}
+						type="button"
+						onClick={() => onRowsChange([...rows, { name: "", type: "string", value: "" }])}
+					>
 						<MaterialIcon size={18}>add</MaterialIcon> Add attribute
 					</button>
 				)}

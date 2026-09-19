@@ -31,14 +31,17 @@ export function FlagMetadataDialog({ flag, onClose, onSave }) {
 		if ((ownerId || null) !== (flag.ownerId || null)) patch.ownerId = ownerId || null;
 		const nextRemoveBy = lifecycle === "temporary" && removeBy ? removeBy : null;
 		const currentRemoveBy = toDateInput(flag.lifecycle.removeBy) || null;
-		if (lifecycle !== flag.lifecycle.kind || nextRemoveBy !== currentRemoveBy) patch.lifecycle = { kind: lifecycle, removeBy: nextRemoveBy };
+		if (lifecycle !== flag.lifecycle.kind || nextRemoveBy !== currentRemoveBy)
+			patch.lifecycle = { kind: lifecycle, removeBy: nextRemoveBy };
 		if (flag.type !== "boolean") {
 			const { variations, errors: variationErrors } = serializeVariations(rows, flag.type);
 			if (Object.keys(variationErrors).length) {
 				setErrors({ fields: {}, general: [], variations: variationErrors });
 				return;
 			}
-			const changed = variations.length !== flag.variations.length || variations.some((variation, index) => variation.name !== flag.variations[index]?.name);
+			const changed =
+				variations.length !== flag.variations.length ||
+				variations.some((variation, index) => variation.name !== flag.variations[index]?.name);
 			if (changed) patch.variations = variations;
 		}
 		if (!Object.keys(patch).length) {
@@ -65,21 +68,55 @@ export function FlagMetadataDialog({ flag, onClose, onSave }) {
 					</button>
 				</header>
 				<div className="dialog-body">
-					{(errors.general.length > 0 || errors.message) && Object.keys(errors.fields).length === 0 && Object.keys(errors.variations).length === 0 && (
-						<div className="banner banner-danger" role="alert">
-							<MaterialIcon size={20}>error_outline</MaterialIcon>
-							<div className="banner-body">{errors.general.length ? errors.general.map((message) => <span key={message}>{message}</span>) : <span>{errors.message}</span>}</div>
-						</div>
-					)}
+					{(errors.general.length > 0 || errors.message) &&
+						Object.keys(errors.fields).length === 0 &&
+						Object.keys(errors.variations).length === 0 && (
+							<div className="banner banner-danger" role="alert">
+								<MaterialIcon size={20}>error_outline</MaterialIcon>
+								<div className="banner-body">
+									{errors.general.length ? (
+										errors.general.map((message) => <span key={message}>{message}</span>)
+									) : (
+										<span>{errors.message}</span>
+									)}
+								</div>
+							</div>
+						)}
 					<FormField error={errors.fields.name} label="Name" required>
-						{(props) => <input {...props} data-autofocus maxLength={120} required type="text" value={name} onChange={(event) => setName(event.target.value)} />}
+						{(props) => (
+							<input
+								{...props}
+								data-autofocus
+								maxLength={120}
+								required
+								type="text"
+								value={name}
+								onChange={(event) => setName(event.target.value)}
+							/>
+						)}
 					</FormField>
 					<FormField hint={`Key ${flag.key} cannot change.`} label="Description">
-						{(props) => <textarea {...props} maxLength={1000} rows={2} value={description} onChange={(event) => setDescription(event.target.value)} />}
+						{(props) => (
+							<textarea
+								{...props}
+								maxLength={1000}
+								rows={2}
+								value={description}
+								onChange={(event) => setDescription(event.target.value)}
+							/>
+						)}
 					</FormField>
 					<FormField label="Owner">{() => <PersonPicker ariaLabel="Owner" onChange={setOwnerId} value={ownerId} />}</FormField>
 					<FormField error={errors.fields.tags} label="Tags">
-						{(props) => <ChipInput {...props} max={10} normalize={(value) => value.trim().toLowerCase().slice(0, 30)} values={tags} onChange={setTags} />}
+						{(props) => (
+							<ChipInput
+								{...props}
+								max={10}
+								normalize={(value) => value.trim().toLowerCase().slice(0, 30)}
+								values={tags}
+								onChange={setTags}
+							/>
+						)}
 					</FormField>
 					<div className="form-row">
 						<FormField label="Lifecycle">
@@ -97,11 +134,17 @@ export function FlagMetadataDialog({ flag, onClose, onSave }) {
 						</FormField>
 						{lifecycle === "temporary" && (
 							<FormField error={errors.fields.lifecycle} label="Remove by">
-								{(props) => <input {...props} type="date" value={removeBy} onChange={(event) => setRemoveBy(event.target.value)} />}
+								{(props) => (
+									<input {...props} type="date" value={removeBy} onChange={(event) => setRemoveBy(event.target.value)} />
+								)}
 							</FormField>
 						)}
 					</div>
-					<FormField error={errors.fields.variations} hint={flag.type === "boolean" ? "" : "Existing variations can be renamed but never removed or revalued."} label="Variations">
+					<FormField
+						error={errors.fields.variations}
+						hint={flag.type === "boolean" ? "" : "Existing variations can be renamed but never removed or revalued."}
+						label="Variations"
+					>
 						{() => <VariationsEditor errors={errors.variations} onChange={setRows} rows={rows} type={flag.type} />}
 					</FormField>
 				</div>

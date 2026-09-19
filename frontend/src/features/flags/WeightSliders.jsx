@@ -8,7 +8,10 @@ export function WeightSliders({ disabled = false, onChange, variations, weights 
 	const setWeight = (id, next) => {
 		const others = variations.filter((variation) => variation.id !== id);
 		const last = others.at(-1);
-		const updated = variations.map((variation) => ({ variationId: variation.id, weight: variation.id === id ? clamp(next) : weightOf(variation.id) }));
+		const updated = variations.map((variation) => ({
+			variationId: variation.id,
+			weight: variation.id === id ? clamp(next) : weightOf(variation.id),
+		}));
 		const sumWithoutLast = updated.filter((entry) => entry.variationId !== last.id).reduce((sum, entry) => sum + entry.weight, 0);
 		const remainder = BUCKET_SPACE - sumWithoutLast;
 		if (remainder < 0) {
@@ -55,7 +58,11 @@ export function WeightSliders({ disabled = false, onChange, variations, weights 
 			})}
 			<div className="weight-bar" aria-hidden="true">
 				{variations.map((variation, index) => (
-					<span className={`weight-bar-segment weight-tone-${index % 6}`} key={variation.id} style={{ width: `${weightOf(variation.id) / 1000}%` }} />
+					<span
+						className={`weight-bar-segment weight-tone-${index % 6}`}
+						key={variation.id}
+						style={{ width: `${weightOf(variation.id) / 1000}%` }}
+					/>
 				))}
 			</div>
 			{total !== BUCKET_SPACE && (

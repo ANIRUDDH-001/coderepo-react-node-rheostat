@@ -75,7 +75,10 @@ export function TargetingEditor({ canEdit, config, environment, flag, mode = "di
 			if (error.code === "VERSION_CONFLICT") setConflict(true);
 			else if (error.code === "ROLLOUT_ACTIVE") setRolloutError(error);
 			else if (error.code === "INVALID_CONFIG" || error.code === "VALIDATION_ERROR") {
-				const list = error.details?.issues || [...(error.details?.formErrors || []), ...Object.values(error.details?.fieldErrors || {}).flat()];
+				const list = error.details?.issues || [
+					...(error.details?.formErrors || []),
+					...Object.values(error.details?.fieldErrors || {}).flat(),
+				];
 				setIssues(list.length ? list : [error.message]);
 			} else notify({ kind: "error", message: error.message });
 		} finally {
@@ -108,7 +111,10 @@ export function TargetingEditor({ canEdit, config, environment, flag, mode = "di
 				<div className="banner banner-warning" role="alert">
 					<MaterialIcon size={20}>sync</MaterialIcon>
 					<div className="banner-body">
-						<span>This environment changed since you opened it. Reload to see the latest version; your unsaved edits will be discarded.</span>
+						<span>
+							This environment changed since you opened it. Reload to see the latest version; your unsaved edits will be
+							discarded.
+						</span>
 					</div>
 					<button className="text-button" type="button" onClick={() => onSaved(null)}>
 						Reload
@@ -129,7 +135,13 @@ export function TargetingEditor({ canEdit, config, environment, flag, mode = "di
 			<section className="editor-section">
 				<div className="editor-toggle">
 					<label className="switch">
-						<input checked={draft.enabled} disabled={readOnly} role="switch" type="checkbox" onChange={(event) => setDraft({ ...draft, enabled: event.target.checked })} />
+						<input
+							checked={draft.enabled}
+							disabled={readOnly}
+							role="switch"
+							type="checkbox"
+							onChange={(event) => setDraft({ ...draft, enabled: event.target.checked })}
+						/>
 						<span className="switch-track" aria-hidden="true" />
 						<span className="switch-label">
 							Targeting is <strong>{draft.enabled ? "on" : "off"}</strong> in {environment.name}
@@ -138,7 +150,13 @@ export function TargetingEditor({ canEdit, config, environment, flag, mode = "di
 				</div>
 				<div className="editor-off">
 					<span className="rule-label">When off, serve</span>
-					<SelectMenu ariaLabel="Off variation" disabled={readOnly} onChange={(offVariationId) => setDraft({ ...draft, offVariationId })} options={variationOptions} value={draft.offVariationId} />
+					<SelectMenu
+						ariaLabel="Off variation"
+						disabled={readOnly}
+						onChange={(offVariationId) => setDraft({ ...draft, offVariationId })}
+						options={variationOptions}
+						value={draft.offVariationId}
+					/>
 				</div>
 			</section>
 
@@ -163,7 +181,11 @@ export function TargetingEditor({ canEdit, config, environment, flag, mode = "di
 					/>
 				))}
 				{!readOnly && draft.rules.length < 25 && (
-					<button className="text-button" type="button" onClick={() => setDraft({ ...draft, rules: [...draft.rules, newRule(flag.variations[0].id)] })}>
+					<button
+						className="text-button"
+						type="button"
+						onClick={() => setDraft({ ...draft, rules: [...draft.rules, newRule(flag.variations[0].id)] })}
+					>
 						<MaterialIcon size={18}>add</MaterialIcon> Add rule
 					</button>
 				)}
@@ -174,14 +196,28 @@ export function TargetingEditor({ canEdit, config, environment, flag, mode = "di
 					<h3 id="fallthrough-heading">Fallthrough</h3>
 					<span className="muted">Served when targeting is on and no rule matches.</span>
 				</div>
-				<ServeEditor disabled={readOnly} label="Fallthrough" onChange={(fallthrough) => setDraft({ ...draft, fallthrough })} serve={draft.fallthrough} variations={flag.variations} />
+				<ServeEditor
+					disabled={readOnly}
+					label="Fallthrough"
+					onChange={(fallthrough) => setDraft({ ...draft, fallthrough })}
+					serve={draft.fallthrough}
+					variations={flag.variations}
+				/>
 			</section>
 
 			{canEdit && (
 				<footer className="editor-footer">
 					<label className="editor-reason" htmlFor={reasonId}>
 						<span>Reason</span>
-						<input disabled={saving} id={reasonId} maxLength={200} placeholder="Why this change? (optional, kept in history)" type="text" value={reason} onChange={(event) => setReason(event.target.value)} />
+						<input
+							disabled={saving}
+							id={reasonId}
+							maxLength={200}
+							placeholder="Why this change? (optional, kept in history)"
+							type="text"
+							value={reason}
+							onChange={(event) => setReason(event.target.value)}
+						/>
 					</label>
 					<div className="editor-actions">
 						<button className="text-button" disabled={!dirty || saving} type="button" onClick={() => setDiscarding(true)}>
@@ -190,7 +226,12 @@ export function TargetingEditor({ canEdit, config, environment, flag, mode = "di
 						<button className="tonal-button" disabled={saving} type="button" onClick={previewImpact}>
 							<MaterialIcon size={18}>insights</MaterialIcon> Preview impact
 						</button>
-						<button className="primary-button" disabled={!dirty || saving || conflict} type="button" onClick={() => save(false)}>
+						<button
+							className="primary-button"
+							disabled={!dirty || saving || conflict}
+							type="button"
+							onClick={() => save(false)}
+						>
 							{saving ? "Saving…" : mode === "propose" ? "Propose change" : "Save"}
 						</button>
 					</div>
@@ -219,7 +260,16 @@ export function TargetingEditor({ canEdit, config, environment, flag, mode = "di
 					onConfirm={() => save(true)}
 				/>
 			)}
-			{impact && <ImpactPreview error={impact.error} loading={impact.loading} onClose={() => setImpact(null)} proposedRules={draft.rules} result={impact.result} variations={flag.variations} />}
+			{impact && (
+				<ImpactPreview
+					error={impact.error}
+					loading={impact.loading}
+					onClose={() => setImpact(null)}
+					proposedRules={draft.rules}
+					result={impact.result}
+					variations={flag.variations}
+				/>
+			)}
 		</div>
 	);
 }

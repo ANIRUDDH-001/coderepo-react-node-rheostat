@@ -29,7 +29,9 @@ export function PlaygroundPage() {
 	const [state, setState] = useState({ result: null, loading: false, error: null });
 	const flagsState = useAsync(() => flagApi.list(project.key, { pageSize: 100, sort: "key" }), [project.key]);
 	const flags = flagsState.data?.items || [];
-	const rulesByFlag = Object.fromEntries(flags.map((flag) => [flag.key, { variations: flag.variations, rules: flag.environments[environment.key]?.rules || [] }]));
+	const rulesByFlag = Object.fromEntries(
+		flags.map((flag) => [flag.key, { variations: flag.variations, rules: flag.environments[environment.key]?.rules || [] }]),
+	);
 
 	const evaluate = async (event) => {
 		event?.preventDefault();
@@ -51,14 +53,21 @@ export function PlaygroundPage() {
 			<header className="page-header">
 				<div>
 					<h1 id="playground-title">Playground</h1>
-					<p className="page-subtitle">Evaluate {project.name} flags for any context exactly as an SDK would, with the reason for each result.</p>
+					<p className="page-subtitle">
+						Evaluate {project.name} flags for any context exactly as an SDK would, with the reason for each result.
+					</p>
 				</div>
 			</header>
 			<form className="playground-form" onSubmit={evaluate}>
 				<div className="playground-controls">
 					<label className="control-label">
 						<span>Environment</span>
-						<SelectMenu ariaLabel="Environment" onChange={(env) => setQuery({ env })} options={project.environments.map((candidate) => ({ value: candidate.key, label: candidate.name }))} value={environment.key} />
+						<SelectMenu
+							ariaLabel="Environment"
+							onChange={(env) => setQuery({ env })}
+							options={project.environments.map((candidate) => ({ value: candidate.key, label: candidate.name }))}
+							value={environment.key}
+						/>
 					</label>
 					<label className="control-label">
 						<span>Flag</span>
@@ -69,7 +78,10 @@ export function PlaygroundPage() {
 								setFlagKey(next);
 								setQuery({ flag: next });
 							}}
-							options={[{ value: "", label: "All active flags" }, ...flags.map((flag) => ({ value: flag.key, label: flag.name }))]}
+							options={[
+								{ value: "", label: "All active flags" },
+								...flags.map((flag) => ({ value: flag.key, label: flag.name })),
+							]}
 							value={flagKey}
 						/>
 					</label>
@@ -82,26 +94,51 @@ export function PlaygroundPage() {
 						projectKey={project.key}
 					/>
 				</div>
-				<ContextEditor contextKey={contextKey} disabled={state.loading} onKeyChange={setContextKey} onRowsChange={setRows} rows={rows} />
+				<ContextEditor
+					contextKey={contextKey}
+					disabled={state.loading}
+					onKeyChange={setContextKey}
+					onRowsChange={setRows}
+					rows={rows}
+				/>
 				<div className="editor-actions">
 					<button className="primary-button" disabled={state.loading || !contextKey.trim()} type="submit">
 						<MaterialIcon size={18}>play_arrow</MaterialIcon> {state.loading ? "Evaluating…" : "Evaluate"}
 					</button>
 				</div>
 			</form>
-			{flagsState.error && <ErrorBanner message={`Flags could not be loaded: ${flagsState.error.message}`} onRetry={flagsState.reload} tone="warning" />}
+			{flagsState.error && (
+				<ErrorBanner
+					message={`Flags could not be loaded: ${flagsState.error.message}`}
+					onRetry={flagsState.reload}
+					tone="warning"
+				/>
+			)}
 			{state.loading && <Skeleton rows={4} />}
 			{state.error && <ErrorBanner message={state.error.message} onRetry={evaluate} />}
 			{!state.loading && !state.error && !state.result && (
-				<EmptyState description="Set a context above and press Evaluate to see what every flag would serve." icon="science" title="No evaluation yet" />
+				<EmptyState
+					description="Set a context above and press Evaluate to see what every flag would serve."
+					icon="science"
+					title="No evaluation yet"
+				/>
 			)}
-			{state.result && state.result.results.length === 0 && <EmptyState description="This project has no active flags to evaluate." icon="flag" title="Nothing to evaluate" />}
+			{state.result && state.result.results.length === 0 && (
+				<EmptyState description="This project has no active flags to evaluate." icon="flag" title="Nothing to evaluate" />
+			)}
 			{state.result && state.result.results.length > 0 && (
 				<>
 					<p className="muted results-meta">
-						{state.result.results.length} flag{state.result.results.length === 1 ? "" : "s"} evaluated in {environment.name} for <code>{state.result.context.key}</code> at {formatDateTime(state.result.evaluatedAt)}. Each run is logged as a playground evaluation.
+						{state.result.results.length} flag{state.result.results.length === 1 ? "" : "s"} evaluated in {environment.name} for{" "}
+						<code>{state.result.context.key}</code> at {formatDateTime(state.result.evaluatedAt)}. Each run is logged as a
+						playground evaluation.
 					</p>
-					<EvaluationResults environment={environment.key} projectKey={project.key} results={state.result.results} rulesByFlag={rulesByFlag} />
+					<EvaluationResults
+						environment={environment.key}
+						projectKey={project.key}
+						results={state.result.results}
+						rulesByFlag={rulesByFlag}
+					/>
 				</>
 			)}
 		</section>
