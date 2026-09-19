@@ -89,7 +89,11 @@ export function Workspace({ onLogout, onProfileSwitch }) {
 		return { pendingChangeRequests: result.counts.needsMyReview };
 	}, [projectKey, route.path, profile._id]);
 
-	const value = useMemo(() => ({ project, projects: projects || [], reloadProjects: reload }), [project, projects, reload]);
+	const reloadBadges = badges.reload;
+	const value = useMemo(
+		() => ({ project, projects: projects || [], reloadProjects: reload, reloadBadges }),
+		[project, projects, reload, reloadBadges],
+	);
 
 	let content;
 	if (loading && !projects) content = <Skeleton rows={6} />;

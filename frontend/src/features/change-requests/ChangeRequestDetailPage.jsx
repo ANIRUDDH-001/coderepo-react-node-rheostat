@@ -58,7 +58,7 @@ function ImpactSummary({ impact, variations }) {
 }
 
 export function ChangeRequestDetailPage({ id }) {
-	const { project } = useProject();
+	const { project, reloadBadges } = useProject();
 	const { profile, can } = useSession();
 	const { notify } = useToast();
 	const { data, error, loading, reload, mutate } = useAsync(() => changeRequestApi.get(id), [id]);
@@ -99,6 +99,7 @@ export function ChangeRequestDetailPage({ id }) {
 			setDialog(null);
 			if (message) notify({ kind: "success", message });
 			await reload();
+			reloadBadges?.();
 		} catch (caught) {
 			if (caught.code === "ROLLOUT_ACTIVE") {
 				setRolloutError(caught);
