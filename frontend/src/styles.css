@@ -235,7 +235,8 @@ dialog::backdrop { background: rgb(32 33 36 / 18%); }
 }
 
 /* Page scaffolding */
-.page { display: grid; gap: 16px; max-width: 1280px; margin: 0 auto; align-content: start; }
+.page { display: grid; gap: 16px; width: 100%; max-width: 1280px; margin: 0 auto; align-content: start; }
+.page > * { min-width: 0; }
 .page-header { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 12px 16px; padding: 8px 0 0; }
 .page-header h1 { margin: 0; color: var(--ink-strong); font-size: 24px; font-weight: 400; line-height: 32px; }
 .page-subtitle { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
