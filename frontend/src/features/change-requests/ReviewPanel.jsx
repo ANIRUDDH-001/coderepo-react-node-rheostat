@@ -51,7 +51,16 @@ export function ReviewPanel({ changeRequest, isAuthor, onReview, canReview, reas
 			{open && canReview && !isAuthor && (
 				<div className="review-form">
 					<FormField error={error} label="Review comment (optional)">
-						{(props) => <textarea {...props} disabled={Boolean(busy)} maxLength={2000} rows={2} value={comment} onChange={(event) => setComment(event.target.value)} />}
+						{(props) => (
+							<textarea
+								{...props}
+								disabled={Boolean(busy)}
+								maxLength={2000}
+								rows={2}
+								value={comment}
+								onChange={(event) => setComment(event.target.value)}
+							/>
+						)}
 					</FormField>
 					<div className="editor-actions">
 						<button className="danger-outline-button" disabled={Boolean(busy)} type="button" onClick={() => submit("reject")}>

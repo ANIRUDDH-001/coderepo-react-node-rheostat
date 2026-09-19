@@ -13,7 +13,19 @@ import { ServeEditor } from "./ServeEditor.jsx";
 
 // `mode` is "direct" (save writes a version) or "propose" (the primary action hands the payload to `onPropose`).
 // `initialDraft` seeds the editor with a proposal's configuration instead of the live one. `canEdit` false renders read-only.
-export function TargetingEditor({ canEdit, config, environment, flag, initialDraft = null, mode = "direct", notice = "", onPropose, onSaved, proposeLabel = "Propose change", segments }) {
+export function TargetingEditor({
+	canEdit,
+	config,
+	environment,
+	flag,
+	initialDraft = null,
+	mode = "direct",
+	notice = "",
+	onPropose,
+	onSaved,
+	proposeLabel = "Propose change",
+	segments,
+}) {
 	const { project } = useProject();
 	const { notify } = useToast();
 	const reasonId = `reason-${useId().replace(/:/g, "")}`;

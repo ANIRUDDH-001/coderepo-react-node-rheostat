@@ -9,7 +9,8 @@ export const changeRequestApi = {
 	get: (id) => request(`/change-requests/${id}`),
 	edit: (id, patch) => request(`/change-requests/${id}`, { method: "PATCH", body: JSON.stringify(patch) }),
 	review: (id, decision, comment) => post(`/change-requests/${id}/review`, { decision, comment }),
-	apply: (id, acknowledgeActiveRollout = false) => post(`/change-requests/${id}/apply`, acknowledgeActiveRollout ? { acknowledgeActiveRollout: true } : {}),
+	apply: (id, acknowledgeActiveRollout = false) =>
+		post(`/change-requests/${id}/apply`, acknowledgeActiveRollout ? { acknowledgeActiveRollout: true } : {}),
 	rebase: (id) => post(`/change-requests/${id}/rebase`),
 	withdraw: (id) => post(`/change-requests/${id}/withdraw`),
 	comment: (id, body) => post(`/change-requests/${id}/comments`, { body }),

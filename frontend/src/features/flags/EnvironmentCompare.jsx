@@ -26,7 +26,10 @@ export function EnvironmentCompare({ environment, flag, onClose, onPromoted }) {
 	const [busy, setBusy] = useState(false);
 	const [failure, setFailure] = useState("");
 	const [rolloutError, setRolloutError] = useState(null);
-	const { data, error, loading, reload } = useAsync(() => flagApi.compare(project.key, flag.key, environment.key, source), [project.key, flag.key, environment.key, source]);
+	const { data, error, loading, reload } = useAsync(
+		() => flagApi.compare(project.key, flag.key, environment.key, source),
+		[project.key, flag.key, environment.key, source],
+	);
 	const sourceEnvironment = others.find((candidate) => candidate.key === source);
 	const viaChangeRequest = environment.protected;
 	const allowed = flag.archived ? false : viaChangeRequest ? can("changeRequest:create") : can("flag:editConfig:unprotected");
@@ -36,7 +39,10 @@ export function EnvironmentCompare({ environment, flag, onClose, onPromoted }) {
 		setBusy(true);
 		setFailure("");
 		try {
-			const result = await flagApi.promote(project.key, flag.key, environment.key, { source, ...(acknowledge ? { acknowledgeActiveRollout: true } : {}) });
+			const result = await flagApi.promote(project.key, flag.key, environment.key, {
+				source,
+				...(acknowledge ? { acknowledgeActiveRollout: true } : {}),
+			});
 			setRolloutError(null);
 			if (result.kind === "changeRequest") {
 				notify({ kind: "success", message: "Promotion proposed as a change request." });
@@ -65,7 +71,13 @@ export function EnvironmentCompare({ environment, flag, onClose, onPromoted }) {
 				<div className="dialog-body">
 					<div className="compare-controls">
 						<span className="rule-label">Copy targeting from</span>
-						<SelectMenu ariaLabel="Source environment" disabled={busy} onChange={setSource} options={others.map((candidate) => ({ value: candidate.key, label: candidate.name }))} value={source} />
+						<SelectMenu
+							ariaLabel="Source environment"
+							disabled={busy}
+							onChange={setSource}
+							options={others.map((candidate) => ({ value: candidate.key, label: candidate.name }))}
+							value={source}
+						/>
 						<span className="muted">
 							{data ? `${sourceEnvironment.name} v${data.source.version} → ${environment.name} v${data.target.version}` : ""}
 						</span>
@@ -74,14 +86,24 @@ export function EnvironmentCompare({ environment, flag, onClose, onPromoted }) {
 						<div className="banner banner-info" role="status">
 							<MaterialIcon size={20}>lock</MaterialIcon>
 							<div className="banner-body">
-								<span>{environment.name} is protected: promoting opens a change request for review instead of applying immediately.</span>
+								<span>
+									{environment.name} is protected: promoting opens a change request for review instead of applying
+									immediately.
+								</span>
 							</div>
 						</div>
 					)}
 					{failure && <ErrorBanner message={failure} />}
 					{loading && !data && <Skeleton rows={4} />}
 					{error && <ErrorBanner message={error.message} onRetry={reload} />}
-					{data && (identical ? <p className="muted">{environment.name} already matches {sourceEnvironment.name}.</p> : <DiffView diff={data.diff} variations={flag.variations} />)}
+					{data &&
+						(identical ? (
+							<p className="muted">
+								{environment.name} already matches {sourceEnvironment.name}.
+							</p>
+						) : (
+							<DiffView diff={data.diff} variations={flag.variations} />
+						))}
 				</div>
 				<footer className="dialog-footer">
 					<button className="text-button" disabled={busy} type="button" onClick={onClose}>
@@ -98,7 +120,15 @@ export function EnvironmentCompare({ environment, flag, onClose, onPromoted }) {
 					</button>
 				</footer>
 			</section>
-			{rolloutError && <RolloutActiveDialog busy={busy} environmentName={environment.name} error={rolloutError} onCancel={() => setRolloutError(null)} onConfirm={() => promote(true)} />}
+			{rolloutError && (
+				<RolloutActiveDialog
+					busy={busy}
+					environmentName={environment.name}
+					error={rolloutError}
+					onCancel={() => setRolloutError(null)}
+					onConfirm={() => promote(true)}
+				/>
+			)}
 		</Modal>,
 		document.body,
 	);

@@ -41,7 +41,8 @@ function OpenChangeRequests({ environmentName, items, projectKey }) {
 						<KindBadge kind={item.kind} />
 						<Link to={buildPath("changeRequest", { projectKey, id: item._id })}>{item.title}</Link>
 						<span className="muted">
-							{item.author?.name || "Unknown"} · {relativeTime(item.createdAt)} · {item.approvals} approval{item.approvals === 1 ? "" : "s"}
+							{item.author?.name || "Unknown"} · {relativeTime(item.createdAt)} · {item.approvals} approval
+							{item.approvals === 1 ? "" : "s"}
 						</span>
 					</li>
 				))}
@@ -118,7 +119,8 @@ export function FlagDetailPage({ flagKey }) {
 	if (editingId && !editing.loading && !editable) {
 		if (editing.error) editingProblem = editing.error.message;
 		else if (editingRequest)
-			editingProblem = "That change request cannot be edited here: it belongs to another flag or environment, is not a manual proposal, or is closed.";
+			editingProblem =
+				"That change request cannot be edited here: it belongs to another flag or environment, is not a manual proposal, or is closed.";
 	}
 	const notice = flag.archived
 		? "This flag is archived. Restore it to change targeting."
@@ -132,12 +134,6 @@ export function FlagDetailPage({ flagKey }) {
 	const openForEnvironment = (flag.openChangeRequests || []).filter((item) => item.environment === environment.key);
 
 	const submitProposal = async ({ title, description }) => {
-		if (proposal.kind === "rollback") {
-			const result = await flagApi.rollback(project.key, flag.key, environment.key, { version: proposal.version, title, description });
-			notify({ kind: "success", message: "Rollback proposed as a change request." });
-			navigate(buildPath("changeRequest", { projectKey: project.key, id: result.changeRequest._id }));
-			return;
-		}
 		if (editable) {
 			await changeRequestApi.edit(editingRequest._id, { proposedConfig: proposal.payload, title, description });
 			notify({ kind: "success", message: "Proposal updated; reviews start over." });
@@ -153,6 +149,20 @@ export function FlagDetailPage({ flagKey }) {
 		});
 		notify({ kind: "success", message: "Change request opened." });
 		navigate(buildPath("changeRequest", { projectKey: project.key, id: created._id }));
+	};
+
+	// Rollbacks into a protected environment carry a server-generated title, so they only need confirmation.
+	const proposeRollback = async () => {
+		setBusy(true);
+		setDialogError("");
+		try {
+			const result = await flagApi.rollback(project.key, flag.key, environment.key, { version: proposal.version });
+			notify({ kind: "success", message: "Rollback proposed as a change request." });
+			navigate(buildPath("changeRequest", { projectKey: project.key, id: result.changeRequest._id }));
+		} catch (caught) {
+			setDialogError(caught.message);
+			setBusy(false);
+		}
 	};
 
 	const actions = (
@@ -242,7 +252,9 @@ export function FlagDetailPage({ flagKey }) {
 					<Skeleton rows={5} />
 				) : (
 					<>
-						{!editable && <OpenChangeRequests environmentName={environment.name} items={openForEnvironment} projectKey={project.key} />}
+						{!editable && (
+							<OpenChangeRequests environmentName={environment.name} items={openForEnvironment} projectKey={project.key} />
+						)}
 						<TargetingEditor
 							canEdit={canEditConfig || canPropose}
 							config={config}
@@ -268,17 +280,26 @@ export function FlagDetailPage({ flagKey }) {
 				/>
 			)}
 
-			{proposal && (
+			{proposal?.kind === "config" && (
 				<ChangeRequestComposer
 					environmentName={environment.name}
 					flagName={flag.name}
 					initialDescription={editable ? editingRequest.description : ""}
-					initialTitle={
-						editable ? editingRequest.title : proposal.kind === "rollback" ? `Roll back ${flag.key} in ${environment.name} to v${proposal.version}` : ""
-					}
+					initialTitle={editable ? editingRequest.title : ""}
 					onClose={() => setProposal(null)}
 					onSubmit={submitProposal}
-					submitLabel={editable ? "Update proposal" : proposal.kind === "rollback" ? "Propose rollback" : "Propose change"}
+					submitLabel={editable ? "Update proposal" : "Propose change"}
+				/>
+			)}
+			{proposal?.kind === "rollback" && (
+				<ConfirmationDialog
+					busy={busy}
+					confirmLabel="Propose rollback"
+					error={dialogError}
+					message={`${environment.name} is protected, so restoring v${proposal.version} opens a change request that a reviewer must approve before it applies.`}
+					onCancel={() => setProposal(null)}
+					onConfirm={proposeRollback}
+					title={`Propose rolling back to v${proposal.version}?`}
 				/>
 			)}
 			{dialog === "compare" && (

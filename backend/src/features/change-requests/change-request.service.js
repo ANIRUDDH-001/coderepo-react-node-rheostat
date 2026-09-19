@@ -38,10 +38,15 @@ async function validated(project, flag, config) {
 }
 
 const conflictError = (changeRequest) =>
-	new AppError(409, "VERSION_CONFLICT", "The target environment changed since this request was made. Rebase it and request a fresh review.", {
-		changeRequestId: String(changeRequest._id),
-		status: changeRequest.status,
-	});
+	new AppError(
+		409,
+		"VERSION_CONFLICT",
+		"The target environment changed since this request was made. Rebase it and request a fresh review.",
+		{
+			changeRequestId: String(changeRequest._id),
+			status: changeRequest.status,
+		},
+	);
 
 // Loads the request with its project and flag; stale detection runs here so every reader sees the same status,
 // and the transition is written back with one audit entry naming who observed it.
@@ -56,10 +61,16 @@ async function load(id, actor) {
 	if (detected.status !== stored.status) {
 		changeRequest = await changeRequestRepository.save(stored._id, detected);
 		becameConflicted = true;
-		await audit(actor, "changeRequest.conflicted", changeRequest, `"${changeRequest.title}" conflicts with v${currentVersion} of ${changeRequest.flagKey} in ${changeRequest.environment}.`, {
-			baseVersion: changeRequest.baseVersion,
-			currentVersion,
-		});
+		await audit(
+			actor,
+			"changeRequest.conflicted",
+			changeRequest,
+			`"${changeRequest.title}" conflicts with v${currentVersion} of ${changeRequest.flagKey} in ${changeRequest.environment}.`,
+			{
+				baseVersion: changeRequest.baseVersion,
+				currentVersion,
+			},
+		);
 	}
 	return { changeRequest, project, flag, currentVersion, becameConflicted };
 }
@@ -91,9 +102,15 @@ async function open(project, flag, environmentKey, profile, fields) {
 		{ currentVersion: current.version },
 	);
 	const created = await changeRequestRepository.create(draft);
-	await audit(profile, "changeRequest.created", created, `${profile.name} proposed "${created.title}" for ${flag.key} in ${environment.name}.`, {
-		baseVersion: created.baseVersion,
-	});
+	await audit(
+		profile,
+		"changeRequest.created",
+		created,
+		`${profile.name} proposed "${created.title}" for ${flag.key} in ${environment.name}.`,
+		{
+			baseVersion: created.baseVersion,
+		},
+	);
 	return created;
 }
 
@@ -104,12 +121,21 @@ export const changeRequestService = {
 		if (status) filter.status = status;
 		if (flagKey) filter.flagKey = flagKey;
 		if (mine) filter.authorId = profile._id;
-		const reviewFilter = { projectId: project._id, status: "pending", authorId: { $ne: profile._id }, "reviews.reviewerId": { $ne: profile._id } };
+		const reviewFilter = {
+			projectId: project._id,
+			status: "pending",
+			authorId: { $ne: profile._id },
+			"reviews.reviewerId": { $ne: profile._id },
+		};
 		if (needsMyReview) Object.assign(filter, reviewFilter);
 		const [items, total, mineCount, reviewCount] = await Promise.all([
 			changeRequestRepository.findPage(filter, (page - 1) * pageSize, pageSize),
 			changeRequestRepository.count(filter),
-			changeRequestRepository.count({ projectId: project._id, authorId: profile._id, status: { $in: ["pending", "approved", "conflicted"] } }),
+			changeRequestRepository.count({
+				projectId: project._id,
+				authorId: profile._id,
+				status: { $in: ["pending", "approved", "conflicted"] },
+			}),
 			can(profile.role, "changeRequest:review") ? changeRequestRepository.count(reviewFilter) : Promise.resolve(0),
 		]);
 		return { ...pageResult(items, total, page, pageSize), counts: { mine: mineCount, needsMyReview: reviewCount } };
@@ -153,13 +179,31 @@ export const changeRequestService = {
 		assertCan(profile, "changeRequest:read");
 		const { changeRequest, project, flag, currentVersion } = await load(id, profile);
 		const current = flag.environments[changeRequest.environment];
-		const impact = await evaluationService.impactPreview(project, flag, changeRequest.environment, changeRequest.proposedConfig).catch((error) => ({ error: error.message }));
+		const impact = await evaluationService
+			.impactPreview(project, flag, changeRequest.environment, changeRequest.proposedConfig)
+			.catch((error) => ({ error: error.message }));
 		return {
 			...changeRequest,
 			currentVersion,
 			diff: diffEnvConfig(current, changeRequest.proposedConfig),
-			impact: impact.error ? impact : { audienceSize: impact.audienceSize, before: impact.before, after: impact.after, flipped: impact.flipped, attribution: impact.attribution },
-			flag: { _id: flag._id, key: flag.key, name: flag.name, type: flag.type, variations: flag.variations, archived: flag.archived, killSwitch: flag.killSwitch },
+			impact: impact.error
+				? impact
+				: {
+						audienceSize: impact.audienceSize,
+						before: impact.before,
+						after: impact.after,
+						flipped: impact.flipped,
+						attribution: impact.attribution,
+					},
+			flag: {
+				_id: flag._id,
+				key: flag.key,
+				name: flag.name,
+				type: flag.type,
+				variations: flag.variations,
+				archived: flag.archived,
+				killSwitch: flag.killSwitch,
+			},
 			project: { _id: project._id, key: project.key, name: project.name },
 			environmentPolicy: environmentOf(project, changeRequest.environment),
 			permissions: {
@@ -167,7 +211,8 @@ export const changeRequestService = {
 				canApply: can(profile.role, "changeRequest:apply", { isAuthor: String(changeRequest.authorId) === String(profile._id) }),
 				canEdit: String(changeRequest.authorId) === String(profile._id) && can(profile.role, "changeRequest:editOwn"),
 				canWithdraw:
-					(String(changeRequest.authorId) === String(profile._id) && can(profile.role, "changeRequest:withdrawOwn")) || can(profile.role, "changeRequest:withdrawAny"),
+					(String(changeRequest.authorId) === String(profile._id) && can(profile.role, "changeRequest:withdrawOwn")) ||
+					can(profile.role, "changeRequest:withdrawAny"),
 				canComment: can(profile.role, "changeRequest:comment") && canComment(changeRequest.status),
 			},
 		};
@@ -189,10 +234,16 @@ export const changeRequestService = {
 		const { changeRequest, currentVersion } = await load(id, profile);
 		const next = transition(changeRequest, decision, profile, new Date(), { currentVersion, comment });
 		const saved = await changeRequestRepository.save(changeRequest._id, next);
-		await audit(profile, decision === "approve" ? "changeRequest.approved" : "changeRequest.rejected", saved, `${profile.name} ${decision === "approve" ? "approved" : "rejected"} "${saved.title}"${comment ? `: ${comment}` : "."}`, {
-			status: saved.status,
-			comment: comment || "",
-		});
+		await audit(
+			profile,
+			decision === "approve" ? "changeRequest.approved" : "changeRequest.rejected",
+			saved,
+			`${profile.name} ${decision === "approve" ? "approved" : "rejected"} "${saved.title}"${comment ? `: ${comment}` : "."}`,
+			{
+				status: saved.status,
+				comment: comment || "",
+			},
+		);
 		return saved;
 	},
 
@@ -221,18 +272,30 @@ export const changeRequestService = {
 		const applied = transition(changeRequest, "apply", profile, now, { currentVersion, appliedVersion: written.version.version });
 		const saved = await changeRequestRepository.save(changeRequest._id, applied);
 		// Exactly one audit entry for the apply: the version write above passed `audit: false`.
-		await audit(profile, "changeRequest.applied", saved, `${profile.name} applied "${saved.title}" to ${flag.key} in ${environment.name} (v${saved.appliedVersion}).`, {
-			appliedVersion: saved.appliedVersion,
-		});
+		await audit(
+			profile,
+			"changeRequest.applied",
+			saved,
+			`${profile.name} applied "${saved.title}" to ${flag.key} in ${environment.name} (v${saved.appliedVersion}).`,
+			{
+				appliedVersion: saved.appliedVersion,
+			},
+		);
 		return { ...saved, flag: written.flag };
 	},
 
 	// The guarded write lost the race: the request is conflicted and the caller learns why.
 	async markConflicted(changeRequest, profile) {
 		const saved = await changeRequestRepository.save(changeRequest._id, { ...changeRequest, status: "conflicted" });
-		await audit(profile, "changeRequest.conflicted", saved, `"${saved.title}" conflicts with a newer version of ${saved.flagKey} in ${saved.environment}.`, {
-			baseVersion: saved.baseVersion,
-		});
+		await audit(
+			profile,
+			"changeRequest.conflicted",
+			saved,
+			`"${saved.title}" conflicts with a newer version of ${saved.flagKey} in ${saved.environment}.`,
+			{
+				baseVersion: saved.baseVersion,
+			},
+		);
 		throw conflictError(saved);
 	},
 
@@ -241,7 +304,9 @@ export const changeRequestService = {
 		const next = transition(changeRequest, "rebase", profile, new Date(), { currentVersion });
 		next.proposedConfig = await validated(project, flag, changeRequest.proposedConfig);
 		const saved = await changeRequestRepository.save(changeRequest._id, next);
-		await audit(profile, "changeRequest.rebased", saved, `${profile.name} rebased "${saved.title}" onto v${saved.baseVersion}.`, { baseVersion: saved.baseVersion });
+		await audit(profile, "changeRequest.rebased", saved, `${profile.name} rebased "${saved.title}" onto v${saved.baseVersion}.`, {
+			baseVersion: saved.baseVersion,
+		});
 		return saved;
 	},
 
@@ -258,7 +323,10 @@ export const changeRequestService = {
 		const { changeRequest } = await load(id, profile);
 		if (!canComment(changeRequest.status)) throw new AppError(422, "INVALID_TRANSITION", "Comments are closed.");
 		const comment = { id: shortId("c"), authorId: profile._id, body, at: new Date() };
-		const saved = await changeRequestRepository.save(changeRequest._id, { ...changeRequest, comments: [...changeRequest.comments, comment] });
+		const saved = await changeRequestRepository.save(changeRequest._id, {
+			...changeRequest,
+			comments: [...changeRequest.comments, comment],
+		});
 		await audit(profile, "changeRequest.commented", saved, `${profile.name} commented on "${saved.title}".`, { commentId: comment.id });
 		return saved;
 	},

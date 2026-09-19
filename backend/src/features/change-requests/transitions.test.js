@@ -62,7 +62,11 @@ describe("transition: review", () => {
 	});
 
 	test("author cannot review their own request", () => {
-		expectError(() => transition(base(), "approve", { ...author, role: "reviewer" }, now, { currentVersion: 3 }), 403, "SELF_REVIEW_FORBIDDEN");
+		expectError(
+			() => transition(base(), "approve", { ...author, role: "reviewer" }, now, { currentVersion: 3 }),
+			403,
+			"SELF_REVIEW_FORBIDDEN",
+		);
 	});
 
 	test("a reviewer may review only once", () => {
@@ -75,7 +79,11 @@ describe("transition: review", () => {
 	});
 
 	test("reviewing an approved request is an invalid transition", () => {
-		expectError(() => transition(base({ status: "approved" }), "approve", reviewer, now, { currentVersion: 3 }), 422, "INVALID_TRANSITION");
+		expectError(
+			() => transition(base({ status: "approved" }), "approve", reviewer, now, { currentVersion: 3 }),
+			422,
+			"INVALID_TRANSITION",
+		);
 	});
 
 	test("reviewing a stale request fails with the conflict", () => {
@@ -98,7 +106,13 @@ describe("transition: edit and rebase", () => {
 	});
 
 	test("rebase from conflicted returns to pending on the current version", () => {
-		const rebased = transition(base({ status: "conflicted", reviews: [{ reviewerId: "reviewer", decision: "approve" }] }), "rebase", author, now, { currentVersion: 6 });
+		const rebased = transition(
+			base({ status: "conflicted", reviews: [{ reviewerId: "reviewer", decision: "approve" }] }),
+			"rebase",
+			author,
+			now,
+			{ currentVersion: 6 },
+		);
 		expect(rebased).toMatchObject({ status: "pending", baseVersion: 6, reviews: [] });
 	});
 
@@ -114,11 +128,17 @@ describe("transition: apply", () => {
 	});
 
 	test("release manager applies someone else's request", () => {
-		expect(transition(base({ status: "approved" }), "apply", manager, now, { currentVersion: 3, appliedVersion: 4 }).status).toBe("applied");
+		expect(transition(base({ status: "approved" }), "apply", manager, now, { currentVersion: 3, appliedVersion: 4 }).status).toBe(
+			"applied",
+		);
 	});
 
 	test("another developer cannot apply", () => {
-		expectError(() => transition(base({ status: "approved" }), "apply", { _id: "dev2", role: "developer" }, now, { currentVersion: 3 }), 403, "FORBIDDEN");
+		expectError(
+			() => transition(base({ status: "approved" }), "apply", { _id: "dev2", role: "developer" }, now, { currentVersion: 3 }),
+			403,
+			"FORBIDDEN",
+		);
 	});
 
 	test("apply with a mismatched base moves to conflicted", () => {
@@ -151,7 +171,11 @@ describe("detectStale and terminal states", () => {
 	test("terminal states reject every action", () => {
 		for (const status of ["applied", "rejected", "withdrawn"]) {
 			for (const action of ["approve", "reject", "edit", "apply", "rebase", "withdraw"]) {
-				expectError(() => transition(base({ status }), action, manager, now, { currentVersion: 3, patch: {} }), 422, "INVALID_TRANSITION");
+				expectError(
+					() => transition(base({ status }), action, manager, now, { currentVersion: 3, patch: {} }),
+					422,
+					"INVALID_TRANSITION",
+				);
 			}
 		}
 	});

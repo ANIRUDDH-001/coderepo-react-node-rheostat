@@ -6,7 +6,15 @@ import { Modal } from "../../shared/components/Modal.jsx";
 import { fieldErrors } from "../../shared/utils/format.js";
 
 // Title/description for a proposal; the caller submits (create or edit) and handles navigation.
-export function ChangeRequestComposer({ environmentName, flagName, initialDescription = "", initialTitle = "", onClose, onSubmit, submitLabel = "Propose change" }) {
+export function ChangeRequestComposer({
+	environmentName,
+	flagName,
+	initialDescription = "",
+	initialTitle = "",
+	onClose,
+	onSubmit,
+	submitLabel = "Propose change",
+}) {
 	const titleId = `composer-${useId().replace(/:/g, "")}`;
 	const [title, setTitle] = useState(initialTitle);
 	const [description, setDescription] = useState(initialDescription);
@@ -39,7 +47,8 @@ export function ChangeRequestComposer({ environmentName, flagName, initialDescri
 				</header>
 				<div className="dialog-body">
 					<p>
-						{environmentName} is protected. Your targeting for <strong>{flagName}</strong> becomes a change request that a reviewer must approve before it can be applied.
+						{environmentName} is protected. Your targeting for <strong>{flagName}</strong> becomes a change request that a
+						reviewer must approve before it can be applied.
 					</p>
 					{errors.general.length > 0 && (
 						<div className="banner banner-danger" role="alert">
@@ -52,10 +61,28 @@ export function ChangeRequestComposer({ environmentName, flagName, initialDescri
 						</div>
 					)}
 					<FormField error={errors.fields.title} label="Title" required>
-						{(props) => <input {...props} data-autofocus maxLength={140} required type="text" value={title} onChange={(event) => setTitle(event.target.value)} />}
+						{(props) => (
+							<input
+								{...props}
+								data-autofocus
+								maxLength={140}
+								required
+								type="text"
+								value={title}
+								onChange={(event) => setTitle(event.target.value)}
+							/>
+						)}
 					</FormField>
 					<FormField error={errors.fields.description} hint="What changes and why. Reviewers see this first." label="Description">
-						{(props) => <textarea {...props} maxLength={2000} rows={4} value={description} onChange={(event) => setDescription(event.target.value)} />}
+						{(props) => (
+							<textarea
+								{...props}
+								maxLength={2000}
+								rows={4}
+								value={description}
+								onChange={(event) => setDescription(event.target.value)}
+							/>
+						)}
 					</FormField>
 				</div>
 				<footer className="dialog-footer">

@@ -14,7 +14,8 @@ const approvals = (reviews) => reviews.filter((review) => review.decision === "a
 
 const assertOpen = (changeRequest, allowed) => {
 	if (TERMINAL.has(changeRequest.status)) throw invalid(`A ${changeRequest.status} change request cannot change.`);
-	if (!allowed.includes(changeRequest.status)) throw invalid(`This action is not available while the request is ${changeRequest.status}.`);
+	if (!allowed.includes(changeRequest.status))
+		throw invalid(`This action is not available while the request is ${changeRequest.status}.`);
 };
 
 const review = (changeRequest, actor, now, decision, comment, currentVersion) => {
@@ -25,7 +26,11 @@ const review = (changeRequest, actor, now, decision, comment, currentVersion) =>
 		throw new AppError(409, "ALREADY_REVIEWED", "You have already reviewed this change request.");
 	}
 	if (currentVersion !== undefined && changeRequest.baseVersion !== currentVersion) {
-		throw new AppError(409, "VERSION_CONFLICT", "The target environment changed since this request was made. It needs a rebase before review.");
+		throw new AppError(
+			409,
+			"VERSION_CONFLICT",
+			"The target environment changed since this request was made. It needs a rebase before review.",
+		);
 	}
 	const reviews = [...changeRequest.reviews, { reviewerId: actor._id, decision, comment: comment || "", at: now }];
 	if (decision === "reject") return { ...changeRequest, reviews, status: "rejected", resolvedAt: now };
@@ -37,7 +42,14 @@ export function transition(changeRequest, action, actor, now, context = {}) {
 	switch (action) {
 		case "create": {
 			if (!can(actor.role, "changeRequest:create")) throw forbidden("changeRequest:create");
-			return { ...changeRequest, status: "pending", authorId: actor._id, baseVersion: context.currentVersion, reviews: [], comments: changeRequest.comments || [] };
+			return {
+				...changeRequest,
+				status: "pending",
+				authorId: actor._id,
+				baseVersion: context.currentVersion,
+				reviews: [],
+				comments: changeRequest.comments || [],
+			};
 		}
 		case "approve":
 			return review(changeRequest, actor, now, "approve", context.comment, context.currentVersion);
@@ -55,13 +67,23 @@ export function transition(changeRequest, action, actor, now, context = {}) {
 		}
 		case "apply": {
 			assertOpen(changeRequest, ["approved"]);
-			if (!can(actor.role, "changeRequest:apply", { isAuthor: isAuthor(changeRequest, actor) })) throw forbidden("changeRequest:apply");
+			if (!can(actor.role, "changeRequest:apply", { isAuthor: isAuthor(changeRequest, actor) }))
+				throw forbidden("changeRequest:apply");
 			if (changeRequest.baseVersion !== context.currentVersion) return { ...changeRequest, status: "conflicted" };
-			return { ...changeRequest, status: "applied", appliedVersion: context.appliedVersion, appliedBy: actor._id, appliedAt: now, resolvedAt: now };
+			return {
+				...changeRequest,
+				status: "applied",
+				appliedVersion: context.appliedVersion,
+				appliedBy: actor._id,
+				appliedAt: now,
+				resolvedAt: now,
+			};
 		}
 		case "withdraw": {
 			assertOpen(changeRequest, ["pending", "approved", "conflicted"]);
-			const allowed = (isAuthor(changeRequest, actor) && can(actor.role, "changeRequest:withdrawOwn")) || can(actor.role, "changeRequest:withdrawAny");
+			const allowed =
+				(isAuthor(changeRequest, actor) && can(actor.role, "changeRequest:withdrawOwn")) ||
+				can(actor.role, "changeRequest:withdrawAny");
 			if (!allowed) throw forbidden("changeRequest:withdraw");
 			return { ...changeRequest, status: "withdrawn", resolvedAt: now };
 		}

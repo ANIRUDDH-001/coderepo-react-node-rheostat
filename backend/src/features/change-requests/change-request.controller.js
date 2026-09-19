@@ -25,7 +25,11 @@ const createSchema = z
 	})
 	.strict();
 const editSchema = z
-	.object({ title: z.string().trim().min(3).max(140).optional(), description: z.string().trim().max(2000).optional(), proposedConfig: envConfigSchema.optional() })
+	.object({
+		title: z.string().trim().min(3).max(140).optional(),
+		description: z.string().trim().max(2000).optional(),
+		proposedConfig: envConfigSchema.optional(),
+	})
 	.strict()
 	.refine((value) => Object.keys(value).length > 0, "Provide at least one field to update.");
 const reviewSchema = z.object({ decision: z.enum(["approve", "reject"]), comment: z.string().trim().max(2000).default("") }).strict();
@@ -34,7 +38,12 @@ const commentSchema = z.object({ body: z.string().trim().min(1).max(2000) }).str
 
 // Decorates people everywhere they appear: author, reviewers, commenters, and the applier.
 async function decorate(changeRequest) {
-	const ids = [changeRequest.authorId, changeRequest.appliedBy, ...changeRequest.reviews.map((review) => review.reviewerId), ...changeRequest.comments.map((comment) => comment.authorId)].filter(Boolean);
+	const ids = [
+		changeRequest.authorId,
+		changeRequest.appliedBy,
+		...changeRequest.reviews.map((review) => review.reviewerId),
+		...changeRequest.comments.map((comment) => comment.authorId),
+	].filter(Boolean);
 	const people = await personService.findMany(ids);
 	const byId = new Map(people.map((person) => [String(person._id), person]));
 	const person = (id) => (id ? byId.get(String(id)) || null : null);
@@ -48,7 +57,8 @@ async function decorate(changeRequest) {
 }
 
 const id = (request) => objectIdSchema.parse(request.params.id);
-const respond = (response, status, promise, next) => promise.then(async (data) => response.status(status).json({ data: await decorate(data) })).catch(next);
+const respond = (response, status, promise, next) =>
+	promise.then(async (data) => response.status(status).json({ data: await decorate(data) })).catch(next);
 
 export async function listChangeRequests(request, response, next) {
 	try {

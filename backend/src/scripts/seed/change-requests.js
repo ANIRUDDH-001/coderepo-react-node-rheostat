@@ -26,15 +26,23 @@ const rows = [
 		environment: "production",
 		kind: "manual",
 		title: "Launch express returns to beta testers",
-		description: "Beta testers have been on it in staging for a week without a single failed refund. Everyone else stays on the old flow until the CS team is trained.",
+		description:
+			"Beta testers have been on it in staging for a week without a single failed refund. Everyone else stays on the old flow until the CS team is trained.",
 		author: "diego",
 		createdDaysAgo: 2,
 		baseVersion: 1,
 		status: "pending",
-		proposedConfig: config(true, "v_false", on("v_false"), [segmentRule("r_beta", "Beta testers get express returns", "beta-testers", on("v_true"))]),
+		proposedConfig: config(true, "v_false", on("v_false"), [
+			segmentRule("r_beta", "Beta testers get express returns", "beta-testers", on("v_true")),
+		]),
 		reviews: [],
 		comments: [
-			{ author: "diego", daysAgo: 2, hour: 11, body: "Staging soak looked clean: 412 returns, zero refund failures. Ready for review." },
+			{
+				author: "diego",
+				daysAgo: 2,
+				hour: 11,
+				body: "Staging soak looked clean: 412 returns, zero refund failures. Ready for review.",
+			},
 			{ author: "elena", daysAgo: 1, hour: 15, body: "Looking at it tomorrow morning; can you link the refund dashboard here?" },
 		],
 	},
@@ -43,14 +51,21 @@ const rows = [
 		environment: "production",
 		kind: "manual",
 		title: "Serve 50 results to everyone",
-		description: "The 50/50 split has run for two weeks. p95 latency is flat and click-through on page two dropped 31%, so the larger page wins.",
+		description:
+			"The 50/50 split has run for two weeks. p95 latency is flat and click-through on page two dropped 31%, so the larger page wins.",
 		author: "diego",
 		createdDaysAgo: 4,
 		baseVersion: 3,
 		status: "approved",
-		proposedConfig: config(true, "v_20", on("v_50"), [segmentRule("r_enterprise", "Enterprise accounts get 100 results", "enterprise-plans", on("v_100"))]),
-		reviews: [{ reviewer: "elena", decision: "approve", daysAgo: 3, hour: 10, comment: "Numbers check out. Apply whenever you are ready." }],
-		comments: [{ author: "elena", daysAgo: 3, hour: 10, body: "Approved. Please apply before the weekend so we get a full week of data." }],
+		proposedConfig: config(true, "v_20", on("v_50"), [
+			segmentRule("r_enterprise", "Enterprise accounts get 100 results", "enterprise-plans", on("v_100")),
+		]),
+		reviews: [
+			{ reviewer: "elena", decision: "approve", daysAgo: 3, hour: 10, comment: "Numbers check out. Apply whenever you are ready." },
+		],
+		comments: [
+			{ author: "elena", daysAgo: 3, hour: 10, body: "Approved. Please apply before the weekend so we get a full week of data." },
+		],
 	},
 	{
 		flag: "checkout-layout",
@@ -67,7 +82,14 @@ const rows = [
 			segmentRule("r_beta", "Beta testers try the compact layout", "beta-testers", on("v_compact")),
 		]),
 		reviews: [],
-		comments: [{ author: "marcus", daysAgo: 9, hour: 14, body: "I changed production yesterday to add the EU rule; this needs a rebase before anyone reviews it." }],
+		comments: [
+			{
+				author: "marcus",
+				daysAgo: 9,
+				hour: 14,
+				body: "I changed production yesterday to add the EU rule; this needs a rebase before anyone reviews it.",
+			},
+		],
 	},
 	{
 		flag: "biometric-login",
@@ -84,7 +106,9 @@ const rows = [
 		appliedVersion: 2,
 		appliedBy: "marcus",
 		appliedDaysAgo: 16,
-		proposedConfig: config(true, "v_false", on("v_false"), [segmentRule("r_ios", "iOS on the latest major", "ios-latest", on("v_true"))]),
+		proposedConfig: config(true, "v_false", on("v_false"), [
+			segmentRule("r_ios", "iOS on the latest major", "ios-latest", on("v_true")),
+		]),
 		reviews: [{ reviewer: "elena", decision: "approve", daysAgo: 16, hour: 9, comment: "Matches staging exactly." }],
 		comments: [],
 	},
@@ -100,8 +124,18 @@ const rows = [
 		status: "rejected",
 		sourceEnvironment: "development",
 		sourceVersion: 3,
-		proposedConfig: config(true, "v_none", on("v_spring"), [segmentRule("r_high_value", "High-value customers see the loyalty offer", "high-value", on("v_loyalty"))]),
-		reviews: [{ reviewer: "elena", decision: "reject", daysAgo: 7, hour: 16, comment: "Banner copy needs legal review before it reaches customers." }],
+		proposedConfig: config(true, "v_none", on("v_spring"), [
+			segmentRule("r_high_value", "High-value customers see the loyalty offer", "high-value", on("v_loyalty")),
+		]),
+		reviews: [
+			{
+				reviewer: "elena",
+				decision: "reject",
+				daysAgo: 7,
+				hour: 16,
+				comment: "Banner copy needs legal review before it reaches customers.",
+			},
+		],
 		comments: [{ author: "diego", daysAgo: 7, hour: 17, body: "Fair. I will reopen once legal signs off on the discount wording." }],
 	},
 	{
@@ -116,7 +150,9 @@ const rows = [
 		status: "withdrawn",
 		proposedConfig: config(true, "v_false", on("v_true")),
 		reviews: [],
-		comments: [{ author: "diego", daysAgo: 5, hour: 9, body: "Withdrawing: we will ramp this with a rollout plan instead of a flat switch." }],
+		comments: [
+			{ author: "diego", daysAgo: 5, hour: 9, body: "Withdrawing: we will ramp this with a rollout plan instead of a flat switch." },
+		],
 	},
 ];
 
@@ -132,12 +168,29 @@ export async function seedChangeRequests(projects, flags, people) {
 		const author = person(row.author);
 		const createdAt = daysAgo(row.createdDaysAgo, 10);
 		const id = new ChangeRequest()._id;
-		const reviews = row.reviews.map((review) => ({ reviewerId: person(review.reviewer)._id, decision: review.decision, comment: review.comment, at: daysAgo(review.daysAgo, review.hour) }));
-		const comments = row.comments.map((comment, index) => ({ id: `c_seed${documents.length}${index}`, authorId: person(comment.author)._id, body: comment.body, at: daysAgo(comment.daysAgo, comment.hour) }));
+		const reviews = row.reviews.map((review) => ({
+			reviewerId: person(review.reviewer)._id,
+			decision: review.decision,
+			comment: review.comment,
+			at: daysAgo(review.daysAgo, review.hour),
+		}));
+		const comments = row.comments.map((comment, index) => ({
+			id: `c_seed${documents.length}${index}`,
+			authorId: person(comment.author)._id,
+			body: comment.body,
+			at: daysAgo(comment.daysAgo, comment.hour),
+		}));
 		const timestamps = [createdAt, ...reviews.map((review) => review.at), ...comments.map((comment) => comment.at)];
 		const appliedAt = row.status === "applied" ? daysAgo(row.appliedDaysAgo, 11) : null;
-		const resolvedAt = row.status === "applied" ? appliedAt : ["rejected", "withdrawn"].includes(row.status) ? daysAgo(row.createdDaysAgo - 1, 9) : null;
-		const updatedAt = new Date(Math.max(...timestamps.map((date) => date.getTime()), appliedAt?.getTime() || 0, resolvedAt?.getTime() || 0));
+		const resolvedAt =
+			row.status === "applied"
+				? appliedAt
+				: ["rejected", "withdrawn"].includes(row.status)
+					? daysAgo(row.createdDaysAgo - 1, 9)
+					: null;
+		const updatedAt = new Date(
+			Math.max(...timestamps.map((date) => date.getTime()), appliedAt?.getTime() || 0, resolvedAt?.getTime() || 0),
+		);
 		documents.push({
 			_id: id,
 			projectId: project._id,
@@ -175,23 +228,56 @@ export async function seedChangeRequests(projects, flags, people) {
 				metadata: { flagKey: flag.key, environment: row.environment, kind: row.kind, ...metadata },
 				at,
 			});
-		entry(author, "changeRequest.created", `${author.name} proposed "${row.title}" for ${flag.key} in ${environment.name}.`, createdAt, { baseVersion: row.baseVersion });
+		entry(
+			author,
+			"changeRequest.created",
+			`${author.name} proposed "${row.title}" for ${flag.key} in ${environment.name}.`,
+			createdAt,
+			{ baseVersion: row.baseVersion },
+		);
 		for (const review of row.reviews) {
 			const reviewer = person(review.reviewer);
-			entry(reviewer, review.decision === "approve" ? "changeRequest.approved" : "changeRequest.rejected", `${reviewer.name} ${review.decision === "approve" ? "approved" : "rejected"} "${row.title}": ${review.comment}`, daysAgo(review.daysAgo, review.hour), { comment: review.comment });
+			entry(
+				reviewer,
+				review.decision === "approve" ? "changeRequest.approved" : "changeRequest.rejected",
+				`${reviewer.name} ${review.decision === "approve" ? "approved" : "rejected"} "${row.title}": ${review.comment}`,
+				daysAgo(review.daysAgo, review.hour),
+				{ comment: review.comment },
+			);
 		}
 		for (const [index, comment] of row.comments.entries()) {
 			const commenter = person(comment.author);
-			entry(commenter, "changeRequest.commented", `${commenter.name} commented on "${row.title}".`, daysAgo(comment.daysAgo, comment.hour), { commentId: comments[index].id });
+			entry(
+				commenter,
+				"changeRequest.commented",
+				`${commenter.name} commented on "${row.title}".`,
+				daysAgo(comment.daysAgo, comment.hour),
+				{ commentId: comments[index].id },
+			);
 		}
 		if (row.status === "applied") {
 			const applier = person(row.appliedBy);
-			entry(applier, "changeRequest.applied", `${applier.name} applied "${row.title}" to ${flag.key} in ${environment.name} (v${row.appliedVersion}).`, appliedAt, { appliedVersion: row.appliedVersion });
-			await FlagVersion.updateOne({ flagId: flag._id, environment: row.environment, version: row.appliedVersion }, { $set: { changeRequestId: id } });
+			entry(
+				applier,
+				"changeRequest.applied",
+				`${applier.name} applied "${row.title}" to ${flag.key} in ${environment.name} (v${row.appliedVersion}).`,
+				appliedAt,
+				{ appliedVersion: row.appliedVersion },
+			);
+			await FlagVersion.updateOne(
+				{ flagId: flag._id, environment: row.environment, version: row.appliedVersion },
+				{ $set: { changeRequestId: id } },
+			);
 		}
 		if (row.status === "withdrawn") entry(author, "changeRequest.withdrawn", `${author.name} withdrew "${row.title}".`, resolvedAt);
 		if (row.status === "conflicted") {
-			entry(person("marcus"), "changeRequest.conflicted", `"${row.title}" conflicts with a newer version of ${flag.key} in ${row.environment}.`, daysAgo(10, 11), { baseVersion: row.baseVersion });
+			entry(
+				person("marcus"),
+				"changeRequest.conflicted",
+				`"${row.title}" conflicts with a newer version of ${flag.key} in ${row.environment}.`,
+				daysAgo(10, 11),
+				{ baseVersion: row.baseVersion },
+			);
 		}
 	}
 	const created = await ChangeRequest.insertMany(documents);

@@ -35,7 +35,11 @@ export function CommentThread({ canComment, comments, onSubmit }) {
 			<ol className="comment-list">
 				{comments.map((comment) => (
 					<li className="comment" key={comment.id}>
-						{comment.author ? <ProfileAvatar profile={comment.author} size="small" /> : <span className="profile-avatar profile-avatar-small" />}
+						{comment.author ? (
+							<ProfileAvatar profile={comment.author} size="small" />
+						) : (
+							<span className="profile-avatar profile-avatar-small" />
+						)}
 						<div className="comment-body">
 							<div className="comment-head">
 								<strong>{comment.author?.name || "Unknown"}</strong>
@@ -51,7 +55,9 @@ export function CommentThread({ canComment, comments, onSubmit }) {
 			{canComment ? (
 				<form className="comment-form" onSubmit={submit}>
 					<FormField error={error} hint={`${body.length}/${MAX_BODY}`} label="Add a comment">
-						{(props) => <textarea {...props} disabled={busy} rows={3} value={body} onChange={(event) => setBody(event.target.value)} />}
+						{(props) => (
+							<textarea {...props} disabled={busy} rows={3} value={body} onChange={(event) => setBody(event.target.value)} />
+						)}
 					</FormField>
 					<div className="editor-actions">
 						<button className="tonal-button" disabled={busy || !body.trim()} type="submit">

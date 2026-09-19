@@ -69,12 +69,23 @@ export function ChangeRequestDetailPage({ id }) {
 
 	if (loading && !data) return <Skeleton rows={8} />;
 	if (error?.code === "CHANGE_REQUEST_NOT_FOUND" || error?.code === "VALIDATION_ERROR") {
-		return <EmptyState action={{ label: "Back to change requests", onClick: () => navigate(buildPath("changeRequests", { projectKey: project.key })) }} description="No change request with this identifier exists." icon="rate_review" title="Change request not found" />;
+		return (
+			<EmptyState
+				action={{
+					label: "Back to change requests",
+					onClick: () => navigate(buildPath("changeRequests", { projectKey: project.key })),
+				}}
+				description="No change request with this identifier exists."
+				icon="rate_review"
+				title="Change request not found"
+			/>
+		);
 	}
 	if (error && !data) return <ErrorBanner message={error.message} onRetry={reload} />;
 
 	const changeRequest = data;
-	const environment = project.environments.find((candidate) => candidate.key === changeRequest.environment) || changeRequest.environmentPolicy;
+	const environment =
+		project.environments.find((candidate) => candidate.key === changeRequest.environment) || changeRequest.environmentPolicy;
 	const isAuthor = String(changeRequest.authorId) === String(profile._id);
 	const { permissions } = changeRequest;
 	const terminal = ["applied", "rejected", "withdrawn"].includes(changeRequest.status);
@@ -103,7 +114,8 @@ export function ChangeRequestDetailPage({ id }) {
 		}
 	};
 
-	const apply = (acknowledge) => run(() => changeRequestApi.apply(changeRequest._id, acknowledge), `Applied to ${environment.name}.`).catch(() => {});
+	const apply = (acknowledge) =>
+		run(() => changeRequestApi.apply(changeRequest._id, acknowledge), `Applied to ${environment.name}.`).catch(() => {});
 
 	const kindHeading =
 		changeRequest.kind === "promotion"
@@ -124,8 +136,8 @@ export function ChangeRequestDetailPage({ id }) {
 					<MaterialIcon size={20}>warning_amber</MaterialIcon>
 					<div className="banner-body">
 						<span>
-							{environment.name} moved to v{changeRequest.currentVersion} after this proposal was made against v{changeRequest.baseVersion}. Rebase to re-apply it on the current
-							version; reviews start over.
+							{environment.name} moved to v{changeRequest.currentVersion} after this proposal was made against v
+							{changeRequest.baseVersion}. Rebase to re-apply it on the current version; reviews start over.
 						</span>
 					</div>
 				</div>
@@ -134,7 +146,10 @@ export function ChangeRequestDetailPage({ id }) {
 				<div className="banner banner-danger" role="status">
 					<MaterialIcon size={20}>bolt</MaterialIcon>
 					<div className="banner-body">
-						<span>The kill switch is active on {changeRequest.flag.name}; applying this change will not serve anything until it is cleared.</span>
+						<span>
+							The kill switch is active on {changeRequest.flag.name}; applying this change will not serve anything until it is
+							cleared.
+						</span>
 					</div>
 				</div>
 			)}
@@ -147,7 +162,14 @@ export function ChangeRequestDetailPage({ id }) {
 						<span className="env-pill-key" style={{ "--env-color": environment.color }} aria-hidden="true" />
 						<span>{environment.name}</span>
 						<span>·</span>
-						<Link className="flag-name" to={buildPath("flag", { projectKey: project.key, flagKey: changeRequest.flagKey }, { env: changeRequest.environment })}>
+						<Link
+							className="flag-name"
+							to={buildPath(
+								"flag",
+								{ projectKey: project.key, flagKey: changeRequest.flagKey },
+								{ env: changeRequest.environment },
+							)}
+						>
 							{changeRequest.flag.name}
 						</Link>
 						<code>{changeRequest.flagKey}</code>
@@ -165,15 +187,25 @@ export function ChangeRequestDetailPage({ id }) {
 						</span>
 						{changeRequest.status === "applied" && (
 							<span className="flag-fact muted">
-								Applied as v{changeRequest.appliedVersion} by {changeRequest.appliedByPerson?.name || "unknown"} {relativeTime(changeRequest.appliedAt)}
+								Applied as v{changeRequest.appliedVersion} by {changeRequest.appliedByPerson?.name || "unknown"}{" "}
+								{relativeTime(changeRequest.appliedAt)}
 							</span>
 						)}
-						{changeRequest.resolvedAt && changeRequest.status !== "applied" && <span className="flag-fact muted">Closed {formatDateTime(changeRequest.resolvedAt)}</span>}
+						{changeRequest.resolvedAt && changeRequest.status !== "applied" && (
+							<span className="flag-fact muted">Closed {formatDateTime(changeRequest.resolvedAt)}</span>
+						)}
 					</div>
 				</div>
 				<div className="flag-header-actions">
 					{!terminal && permissions.canEdit && changeRequest.kind === "manual" && (
-						<Link className="tonal-button" to={buildPath("flag", { projectKey: project.key, flagKey: changeRequest.flagKey }, { env: changeRequest.environment, cr: changeRequest._id })}>
+						<Link
+							className="tonal-button"
+							to={buildPath(
+								"flag",
+								{ projectKey: project.key, flagKey: changeRequest.flagKey },
+								{ env: changeRequest.environment, cr: changeRequest._id },
+							)}
+						>
 							<MaterialIcon size={18}>edit</MaterialIcon> Edit proposal
 						</Link>
 					)}
@@ -188,7 +220,12 @@ export function ChangeRequestDetailPage({ id }) {
 						</button>
 					)}
 					{changeRequest.status === "approved" && !permissions.canApply && (
-						<button className="primary-button" disabled title="Only the author, release managers, and admins can apply." type="button">
+						<button
+							className="primary-button"
+							disabled
+							title="Only the author, release managers, and admins can apply."
+							type="button"
+						>
 							<MaterialIcon size={18}>check</MaterialIcon> Apply
 						</button>
 					)}
@@ -226,12 +263,21 @@ export function ChangeRequestDetailPage({ id }) {
 						canReview={permissions.canReview}
 						changeRequest={changeRequest}
 						isAuthor={isAuthor}
-						onReview={(decision, comment) => run(() => changeRequestApi.review(changeRequest._id, decision, comment), decision === "approve" ? "Approved." : "Rejected.")}
+						onReview={(decision, comment) =>
+							run(
+								() => changeRequestApi.review(changeRequest._id, decision, comment),
+								decision === "approve" ? "Approved." : "Rejected.",
+							)
+						}
 						reason={can("changeRequest:review") ? "" : "Reviewers, release managers, and admins can approve or reject."}
 					/>
 				</div>
 				<div className="editor-section">
-					<CommentThread canComment={permissions.canComment} comments={changeRequest.comments} onSubmit={(body) => run(() => changeRequestApi.comment(changeRequest._id, body))} />
+					<CommentThread
+						canComment={permissions.canComment}
+						comments={changeRequest.comments}
+						onSubmit={(body) => run(() => changeRequestApi.comment(changeRequest._id, body))}
+					/>
 				</div>
 			</div>
 
@@ -253,7 +299,9 @@ export function ChangeRequestDetailPage({ id }) {
 					error={failure}
 					message={`The proposal is re-based on ${environment.name} v${changeRequest.currentVersion}. Existing reviews are cleared and reviewers are asked again.`}
 					onCancel={() => setDialog(null)}
-					onConfirm={() => run(() => changeRequestApi.rebase(changeRequest._id), "Rebased; awaiting a fresh review.").catch(() => {})}
+					onConfirm={() =>
+						run(() => changeRequestApi.rebase(changeRequest._id), "Rebased; awaiting a fresh review.").catch(() => {})
+					}
 					title="Rebase onto the current version?"
 				/>
 			)}
@@ -268,7 +316,15 @@ export function ChangeRequestDetailPage({ id }) {
 					title="Withdraw this change request?"
 				/>
 			)}
-			{rolloutError && <RolloutActiveDialog busy={busy} environmentName={environment.name} error={rolloutError} onCancel={() => setRolloutError(null)} onConfirm={() => apply(true).then(() => setRolloutError(null))} />}
+			{rolloutError && (
+				<RolloutActiveDialog
+					busy={busy}
+					environmentName={environment.name}
+					error={rolloutError}
+					onCancel={() => setRolloutError(null)}
+					onConfirm={() => apply(true).then(() => setRolloutError(null))}
+				/>
+			)}
 		</section>
 	);
 }

@@ -192,6 +192,11 @@ export async function seedFlags(projects, segments, people) {
 		audit: built.flatMap((item) => item.audit),
 		byKey: new Map(flags.map((flag) => [flag.key, flag])),
 		versionOf: (flagKey, environment, version) =>
-			versions.find((candidate) => candidate.flagId.equals(flags.find((flag) => flag.key === flagKey)._id) && candidate.environment === environment && candidate.version === version),
+			versions.find(
+				(candidate) =>
+					candidate.flagId.equals(flags.find((flag) => flag.key === flagKey)._id) &&
+					candidate.environment === environment &&
+					candidate.version === version,
+			),
 	};
 }

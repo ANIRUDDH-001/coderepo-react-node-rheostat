@@ -33,8 +33,17 @@ export function ChangeRequestsPage() {
 	const canReview = can("changeRequest:review");
 	const tab = query.tab === "review" && canReview ? "review" : query.tab === "mine" ? "mine" : "all";
 	const page = Math.max(1, Number(query.page) || 1);
-	const filters = { status: query.status || "", flagKey: query.flag || "", page, pageSize: 20, ...(tab === "review" ? { needsMyReview: "true" } : tab === "mine" ? { mine: "true" } : {}) };
-	const { data, error, loading, reload } = useAsync(() => changeRequestApi.list(project.key, filters), [project.key, JSON.stringify(filters)]);
+	const filters = {
+		status: query.status || "",
+		flagKey: query.flag || "",
+		page,
+		pageSize: 20,
+		...(tab === "review" ? { needsMyReview: "true" } : tab === "mine" ? { mine: "true" } : {}),
+	};
+	const { data, error, loading, reload } = useAsync(
+		() => changeRequestApi.list(project.key, filters),
+		[project.key, JSON.stringify(filters)],
+	);
 	const flags = useAsync(() => flagApi.list(project.key, { pageSize: 100, sort: "key" }), [project.key]);
 	const environmentName = (key) => project.environments.find((environment) => environment.key === key)?.name || key;
 
@@ -83,7 +92,10 @@ export function ChangeRequestsPage() {
 									<tr key={item._id}>
 										<td>
 											<div className="flag-cell">
-												<Link className="flag-name" to={buildPath("changeRequest", { projectKey: project.key, id: item._id })}>
+												<Link
+													className="flag-name"
+													to={buildPath("changeRequest", { projectKey: project.key, id: item._id })}
+												>
 													{item.title}
 												</Link>
 												<div className="flag-meta">
@@ -96,7 +108,14 @@ export function ChangeRequestsPage() {
 											<StatusBadge status={item.status} />
 										</td>
 										<td>
-											<Link className="flag-name" to={buildPath("flag", { projectKey: project.key, flagKey: item.flagKey }, { env: item.environment })}>
+											<Link
+												className="flag-name"
+												to={buildPath(
+													"flag",
+													{ projectKey: project.key, flagKey: item.flagKey },
+													{ env: item.environment },
+												)}
+											>
 												{item.flagKey}
 											</Link>
 										</td>
@@ -124,7 +143,12 @@ export function ChangeRequestsPage() {
 						</tbody>
 					</table>
 				</div>
-				<Pagination onPage={(next) => setQuery({ page: next === 1 ? "" : String(next) })} page={data.page} pageSize={data.pageSize} total={data.total} />
+				<Pagination
+					onPage={(next) => setQuery({ page: next === 1 ? "" : String(next) })}
+					page={data.page}
+					pageSize={data.pageSize}
+					total={data.total}
+				/>
 			</>
 		);
 	}
@@ -137,14 +161,27 @@ export function ChangeRequestsPage() {
 					<p className="page-subtitle">Proposals for protected environments in {project.name}: review, approve, and apply.</p>
 				</div>
 			</header>
-			<Tabs ariaLabel="Change request views" items={tabs} onChange={(next) => setQuery({ tab: next === "all" ? "" : next, page: "" })} value={tab} />
+			<Tabs
+				ariaLabel="Change request views"
+				items={tabs}
+				onChange={(next) => setQuery({ tab: next === "all" ? "" : next, page: "" })}
+				value={tab}
+			/>
 			<div className="filter-bar">
-				<SelectMenu ariaLabel="Status" onChange={(status) => setQuery({ status, page: "" })} options={STATUS_OPTIONS} value={filters.status} />
+				<SelectMenu
+					ariaLabel="Status"
+					onChange={(status) => setQuery({ status, page: "" })}
+					options={STATUS_OPTIONS}
+					value={filters.status}
+				/>
 				<SelectMenu
 					ariaLabel="Flag"
 					disabled={!flags.data}
 					onChange={(flag) => setQuery({ flag, page: "" })}
-					options={[{ value: "", label: "Any flag" }, ...(flags.data?.items || []).map((flag) => ({ value: flag.key, label: flag.name }))]}
+					options={[
+						{ value: "", label: "Any flag" },
+						...(flags.data?.items || []).map((flag) => ({ value: flag.key, label: flag.name })),
+					]}
 					value={filters.flagKey}
 				/>
 			</div>
