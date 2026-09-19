@@ -29,7 +29,7 @@ export function FlagHeader({ actions, flag, projectKey }) {
 			</nav>
 			<div className="flag-header-row">
 				<div className="flag-title">
-					<h1>{flag.name}</h1>
+					<h1 id="flag-title">{flag.name}</h1>
 					<div className="flag-meta">
 						<code>{flag.key}</code>
 						<button aria-label={copied ? "Copied" : "Copy flag key"} className="icon-button icon-button-small" type="button" onClick={copyKey}>
