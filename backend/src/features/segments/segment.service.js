@@ -49,7 +49,11 @@ export function referencesFor(segmentKey, flags) {
 	const references = [];
 	for (const flag of flags) {
 		const environments = Object.entries(flag.environments || {})
-			.filter(([, config]) => (config.rules || []).some((rule) => (rule.clauses || []).some((clause) => clause.operator === "segmentMatch" && (clause.values || []).includes(segmentKey))))
+			.filter(([, config]) =>
+				(config.rules || []).some((rule) =>
+					(rule.clauses || []).some((clause) => clause.operator === "segmentMatch" && (clause.values || []).includes(segmentKey)),
+				),
+			)
 			.map(([environment]) => environment);
 		if (environments.length) references.push({ key: flag.key, name: flag.name, archived: flag.archived, environments });
 	}
@@ -58,7 +62,10 @@ export function referencesFor(segmentKey, flags) {
 
 export const segmentService = {
 	async listByProject(project) {
-		const [segments, flags] = await Promise.all([segmentRepository.findByProject(project._id), flagService.findAllByProject(project._id)]);
+		const [segments, flags] = await Promise.all([
+			segmentRepository.findByProject(project._id),
+			flagService.findAllByProject(project._id),
+		]);
 		return segments.map((segment) => ({ ...segment, referencedBy: referencesFor(segment.key, flags) }));
 	},
 	async mapByKey(projectId) {

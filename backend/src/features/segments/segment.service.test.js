@@ -39,9 +39,19 @@ describe("segment guards", () => {
 	test("referencesFor lists the flags and environments that use a segment", () => {
 		const clause = (segment) => ({ attribute: "key", operator: "segmentMatch", values: [segment] });
 		const flags = [
-			{ key: "a", name: "A", archived: false, environments: { development: { rules: [{ clauses: [clause("eu")] }] }, production: { rules: [] } } },
+			{
+				key: "a",
+				name: "A",
+				archived: false,
+				environments: { development: { rules: [{ clauses: [clause("eu")] }] }, production: { rules: [] } },
+			},
 			{ key: "b", name: "B", archived: true, environments: { production: { rules: [{ clauses: [clause("eu"), clause("beta")] }] } } },
-			{ key: "c", name: "C", archived: false, environments: { staging: { rules: [{ clauses: [{ attribute: "plan", operator: "in", values: ["eu"] }] }] } } },
+			{
+				key: "c",
+				name: "C",
+				archived: false,
+				environments: { staging: { rules: [{ clauses: [{ attribute: "plan", operator: "in", values: ["eu"] }] }] } },
+			},
 		];
 		expect(referencesFor("eu", flags)).toEqual([
 			{ key: "a", name: "A", archived: false, environments: ["development"] },
