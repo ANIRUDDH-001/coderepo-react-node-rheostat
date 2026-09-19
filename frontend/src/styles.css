@@ -312,6 +312,7 @@ dialog::backdrop { background: rgb(32 33 36 / 18%); }
 .row-actions { text-align: right; white-space: nowrap; }
 .usage-details summary { cursor: pointer; color: var(--blue); }
 .usage-list { margin: 6px 0 0; padding-left: 18px; font-size: 13px; }
+.confirmation-dialog .usage-list { margin-top: 12px; color: var(--muted); }
 .usage-list a { color: var(--blue); text-decoration: none; }
 .usage-list a:hover { text-decoration: underline; }
 .segment-description { margin: 0; font-size: 13px; }

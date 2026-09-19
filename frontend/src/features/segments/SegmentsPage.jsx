@@ -185,7 +185,9 @@ export function SegmentsPage() {
 					}}
 					onConfirm={remove}
 					title={`Delete ${deleting.name}?`}
-				/>
+				>
+					{deleting.referencedBy.length > 0 && <UsageList projectKey={project.key} references={deleting.referencedBy} />}
+				</ConfirmationDialog>
 			)}
 		</section>
 	);

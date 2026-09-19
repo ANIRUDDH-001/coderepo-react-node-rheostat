@@ -2,7 +2,16 @@ import { createPortal } from "react-dom";
 import { useId } from "react";
 import { Modal } from "./Modal.jsx";
 
-export function ConfirmationDialog({ busy = false, confirmLabel = "Continue", error = "", message = "", onCancel, onConfirm, title }) {
+export function ConfirmationDialog({
+	busy = false,
+	children = null,
+	confirmLabel = "Continue",
+	error = "",
+	message = "",
+	onCancel,
+	onConfirm,
+	title,
+}) {
 	const titleId = `confirmation-${useId().replace(/:/g, "")}`;
 	return createPortal(
 		<Modal
@@ -15,6 +24,7 @@ export function ConfirmationDialog({ busy = false, confirmLabel = "Continue", er
 			<section className="confirmation-dialog">
 				<h2 id={titleId}>{title}</h2>
 				{message && <p>{message}</p>}
+				{children}
 				{error && (
 					<p className="confirmation-dialog-error" role="alert">
 						{error}
