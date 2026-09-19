@@ -11,12 +11,13 @@ import { RolloutActiveDialog } from "./RolloutActiveDialog.jsx";
 import { RuleEditor } from "./RuleEditor.jsx";
 import { ServeEditor } from "./ServeEditor.jsx";
 
-// `mode` is "direct" (save writes a version) or "propose" (Phase 4 wires onPropose). `canEdit` false renders read-only.
-export function TargetingEditor({ canEdit, config, environment, flag, mode = "direct", notice = "", onPropose, onSaved, segments }) {
+// `mode` is "direct" (save writes a version) or "propose" (the primary action hands the payload to `onPropose`).
+// `initialDraft` seeds the editor with a proposal's configuration instead of the live one. `canEdit` false renders read-only.
+export function TargetingEditor({ canEdit, config, environment, flag, initialDraft = null, mode = "direct", notice = "", onPropose, onSaved, proposeLabel = "Propose change", segments }) {
 	const { project } = useProject();
 	const { notify } = useToast();
 	const reasonId = `reason-${useId().replace(/:/g, "")}`;
-	const [draft, setDraft] = useState(() => normalizeConfig(config));
+	const [draft, setDraft] = useState(() => normalizeConfig(initialDraft || config));
 	const [baseVersion, setBaseVersion] = useState(config.version);
 	const [reason, setReason] = useState("");
 	const [issues, setIssues] = useState([]);
@@ -28,12 +29,12 @@ export function TargetingEditor({ canEdit, config, environment, flag, mode = "di
 
 	// A new server version (after save, reload, or switching environments) resets the draft.
 	useEffect(() => {
-		setDraft(normalizeConfig(config));
+		setDraft(normalizeConfig(initialDraft || config));
 		setBaseVersion(config.version);
 		setIssues([]);
 		setConflict(false);
 		setReason("");
-	}, [config]);
+	}, [config, initialDraft]);
 
 	const dirty = !isSameConfig(draft, config);
 	const readOnly = !canEdit || saving;
@@ -206,18 +207,22 @@ export function TargetingEditor({ canEdit, config, environment, flag, mode = "di
 			</section>
 
 			<footer className="editor-footer">
-				<label className="editor-reason" htmlFor={reasonId}>
-					<span>Reason</span>
-					<input
-						disabled={readOnly}
-						id={reasonId}
-						maxLength={200}
-						placeholder="Why this change? (optional, kept in history)"
-						type="text"
-						value={reason}
-						onChange={(event) => setReason(event.target.value)}
-					/>
-				</label>
+				{mode === "propose" ? (
+					<span className="editor-reason muted">The proposal's title and description are collected on the next step.</span>
+				) : (
+					<label className="editor-reason" htmlFor={reasonId}>
+						<span>Reason</span>
+						<input
+							disabled={readOnly}
+							id={reasonId}
+							maxLength={200}
+							placeholder="Why this change? (optional, kept in history)"
+							type="text"
+							value={reason}
+							onChange={(event) => setReason(event.target.value)}
+						/>
+					</label>
+				)}
 				<div className="editor-actions">
 					<button className="text-button" disabled={!dirty || readOnly} type="button" onClick={() => setDiscarding(true)}>
 						Discard
@@ -232,7 +237,7 @@ export function TargetingEditor({ canEdit, config, environment, flag, mode = "di
 						type="button"
 						onClick={() => save(false)}
 					>
-						{saving ? "Saving…" : mode === "propose" ? "Propose change" : "Save"}
+						{saving ? "Saving…" : mode === "propose" ? proposeLabel : "Save"}
 					</button>
 				</div>
 			</footer>
