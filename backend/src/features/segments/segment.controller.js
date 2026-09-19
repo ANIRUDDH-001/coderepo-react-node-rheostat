@@ -42,7 +42,7 @@ export async function listSegments(request, response, next) {
 export async function getSegment(request, response, next) {
 	try {
 		const project = await loadProject(request);
-		response.json({ data: await segmentService.getByKey(project, request.params.segmentKey) });
+		response.json({ data: await segmentService.getDetail(project, request.params.segmentKey) });
 	} catch (error) {
 		next(error);
 	}

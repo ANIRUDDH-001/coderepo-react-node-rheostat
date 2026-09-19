@@ -125,6 +125,7 @@ export const flagService = {
 		return flag;
 	},
 	findActiveByProject: (projectId) => flagRepository.findActiveByProject(projectId),
+	findAllByProject: (projectId) => flagRepository.findAllByProject(projectId),
 	countReferencingSegment: (projectId, segmentKey) => flagRepository.countReferencingSegment(projectId, segmentKey),
 	async create(project, input, actor) {
 		assertCan(actor, "flag:create");

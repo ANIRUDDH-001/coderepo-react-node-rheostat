@@ -93,7 +93,8 @@ export async function getFlag(request, response, next) {
 		const project = await loadProject(request);
 		const flag = await flagService.getByKey(project, request.params.flagKey);
 		const [decorated] = await personService.attachActors([flag], "ownerId", "owner");
-		response.json({ data: { ...decorated, activeRollouts: Object.fromEntries(ENVIRONMENT_KEYS.map((key) => [key, null])) } });
+		const [killSwitch] = await personService.attachActors([flag.killSwitch]);
+		response.json({ data: { ...decorated, killSwitch, activeRollouts: Object.fromEntries(ENVIRONMENT_KEYS.map((key) => [key, null])) } });
 	} catch (error) {
 		next(error);
 	}

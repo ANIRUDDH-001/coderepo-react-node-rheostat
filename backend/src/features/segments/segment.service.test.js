@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { assertFlatRules, assertRemovable, withRuleIds } from "./segment.service.js";
+import { assertFlatRules, assertRemovable, referencesFor, withRuleIds } from "./segment.service.js";
 
 describe("segment guards", () => {
 	test("accepts flat rules", () => {
@@ -34,5 +34,19 @@ describe("segment guards", () => {
 		const rules = withRuleIds([{ id: "sr_keep", clauses: [] }, { clauses: [] }]);
 		expect(rules[0].id).toBe("sr_keep");
 		expect(rules[1].id).toMatch(/^sr_[a-f0-9]{8}$/);
+	});
+
+	test("referencesFor lists the flags and environments that use a segment", () => {
+		const clause = (segment) => ({ attribute: "key", operator: "segmentMatch", values: [segment] });
+		const flags = [
+			{ key: "a", name: "A", archived: false, environments: { development: { rules: [{ clauses: [clause("eu")] }] }, production: { rules: [] } } },
+			{ key: "b", name: "B", archived: true, environments: { production: { rules: [{ clauses: [clause("eu"), clause("beta")] }] } } },
+			{ key: "c", name: "C", archived: false, environments: { staging: { rules: [{ clauses: [{ attribute: "plan", operator: "in", values: ["eu"] }] }] } } },
+		];
+		expect(referencesFor("eu", flags)).toEqual([
+			{ key: "a", name: "A", archived: false, environments: ["development"] },
+			{ key: "b", name: "B", archived: true, environments: ["production"] },
+		]);
+		expect(referencesFor("nope", flags)).toEqual([]);
 	});
 });

@@ -44,8 +44,23 @@ const audit = (actor, action, project, segment, summary, metadata = {}) =>
 		metadata,
 	});
 
+// Which flags reference a segment, per environment, so the UI can explain "used by N flags" before a delete.
+export function referencesFor(segmentKey, flags) {
+	const references = [];
+	for (const flag of flags) {
+		const environments = Object.entries(flag.environments || {})
+			.filter(([, config]) => (config.rules || []).some((rule) => (rule.clauses || []).some((clause) => clause.operator === "segmentMatch" && (clause.values || []).includes(segmentKey))))
+			.map(([environment]) => environment);
+		if (environments.length) references.push({ key: flag.key, name: flag.name, archived: flag.archived, environments });
+	}
+	return references;
+}
+
 export const segmentService = {
-	listByProject: (project) => segmentRepository.findByProject(project._id),
+	async listByProject(project) {
+		const [segments, flags] = await Promise.all([segmentRepository.findByProject(project._id), flagService.findAllByProject(project._id)]);
+		return segments.map((segment) => ({ ...segment, referencedBy: referencesFor(segment.key, flags) }));
+	},
 	async mapByKey(projectId) {
 		const segments = await segmentRepository.findByProject(projectId);
 		return Object.fromEntries(segments.map((segment) => [segment.key, segment]));
@@ -54,6 +69,10 @@ export const segmentService = {
 		const segment = await segmentRepository.findByKey(project._id, key);
 		if (!segment) throw SEGMENT_NOT_FOUND();
 		return segment;
+	},
+	async getDetail(project, key) {
+		const [segment, flags] = await Promise.all([this.getByKey(project, key), flagService.findAllByProject(project._id)]);
+		return { ...segment, referencedBy: referencesFor(key, flags) };
 	},
 	async create(project, input, actor) {
 		assertCan(actor, "segment:manage");
