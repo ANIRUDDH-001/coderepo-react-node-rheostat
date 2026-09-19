@@ -8,6 +8,9 @@ export function Modal({ children, className = "", label = "Rheostat dialog", lab
 	}, [onClose]);
 	useEffect(() => {
 		const dialog = reference.current;
+		// Return focus to whatever opened the dialog once it unmounts (React removes the element, so the
+		// browser's own focus restoration never runs).
+		const opener = document.activeElement;
 		dialog.showModal();
 		window.requestAnimationFrame(() => dialog.querySelector("[autofocus], [data-autofocus]")?.focus());
 		const cancel = (event) => {
@@ -15,7 +18,10 @@ export function Modal({ children, className = "", label = "Rheostat dialog", lab
 			closeReference.current();
 		};
 		dialog.addEventListener("cancel", cancel);
-		return () => dialog.removeEventListener("cancel", cancel);
+		return () => {
+			dialog.removeEventListener("cancel", cancel);
+			if (opener && typeof opener.focus === "function" && document.contains(opener)) opener.focus();
+		};
 	}, []);
 	return (
 		<dialog
