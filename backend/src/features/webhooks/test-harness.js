@@ -36,7 +36,13 @@ export function harness({ objectIds = false } = {}) {
 		requeue: async (id, now, budgetFrom) => Object.assign(state.deliveries.find((d) => same(d._id, id)), { status: "pending", nextAttemptAt: now, claimedAt: null, budgetFrom }),
 		holdPending: async (sid) => { for (const d of state.deliveries) if (same(d.subscriptionId, sid) && d.status === "pending") d.status = "held"; },
 		releaseHeld: async (sid, now) => { for (const d of state.deliveries) if (same(d.subscriptionId, sid) && d.status === "held") Object.assign(d, { status: "pending", nextAttemptAt: now }); },
-		findPage: async (sid, { status, limit }) => state.deliveries.filter((d) => same(d.subscriptionId, sid) && (!status || d.status === status)).slice(0, limit + 1),
+		// Mirrors the repository's compound cursor: newest first by (createdAt, _id), rows strictly after the cursor.
+		findPage: async (sid, { status, cursor = null, limit }) =>
+			state.deliveries
+				.filter((d) => same(d.subscriptionId, sid) && (!status || d.status === status))
+				.filter((d) => !cursor || d.createdAt < cursor.createdAt || (d.createdAt.getTime() === cursor.createdAt.getTime() && String(d._id) < cursor.id))
+				.sort((a, b) => b.createdAt - a.createdAt || (String(b._id) > String(a._id) ? 1 : -1))
+				.slice(0, limit + 1),
 		countByStatus: async (filter) => { const rows = state.deliveries.filter((d) => Object.entries(filter).every(([k, v]) => same(d[k], v))); const by = {}; for (const r of rows) by[r.status] = (by[r.status] || 0) + 1; return Object.entries(by).map(([_id, count]) => ({ _id, count })); },
 		removeForSubscription: async (sid) => { state.deliveries = state.deliveries.filter((d) => !same(d.subscriptionId, sid)); },
 	};

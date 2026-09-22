@@ -15,6 +15,8 @@ import { projectRouter } from "./features/projects/project.routes.js";
 import { projectRolloutRouter, rolloutRouter } from "./features/rollouts/rollout.routes.js";
 import { projectSavedViewRouter, savedViewRouter } from "./features/saved-views/saved-view.routes.js";
 import { segmentRouter } from "./features/segments/segment.routes.js";
+import { sinkRouter } from "./features/webhooks/sink.controller.js";
+import { deliveryRouter, projectWebhookRouter, webhookRouter } from "./features/webhooks/webhook.routes.js";
 import { errorHandler, notFoundHandler } from "./shared/middleware/error-handler.js";
 import { resolveProfileContext } from "./shared/middleware/profile-context.js";
 import { requestContext } from "./shared/middleware/request-context.js";
@@ -27,7 +29,8 @@ export function createApp() {
 	app.disable("x-powered-by");
 	app.use(cors({ exposedHeaders: ["X-Request-Id", "RateLimit-Limit", "RateLimit-Remaining", "RateLimit-Reset", "Retry-After"] }));
 	app.use("/api", requestContext);
-	// The webhook sink verifies an HMAC over the exact bytes, so it reads the raw body ahead of the JSON parser (Task W5C mounts it here).
+	// The webhook sink verifies an HMAC over the exact bytes, so it reads the raw body ahead of the JSON parser.
+	app.use("/api/v1/webhook-sink", sinkRouter);
 	app.use(express.json({ limit: "200kb" }));
 	app.use(express.static(publicDirectory));
 	app.get("/api/v1/health", (request, response) => {
@@ -51,6 +54,9 @@ export function createApp() {
 	app.use("/api/v1/change-requests", changeRequestRouter);
 	app.use("/api/v1/projects/:projectKey/rollouts", projectRolloutRouter);
 	app.use("/api/v1/rollouts", rolloutRouter);
+	app.use("/api/v1/projects/:projectKey/webhooks", projectWebhookRouter);
+	app.use("/api/v1/webhooks", webhookRouter);
+	app.use("/api/v1/deliveries", deliveryRouter);
 	app.use("/api/v1/projects/:projectKey/saved-views", projectSavedViewRouter);
 	app.use("/api/v1/saved-views", savedViewRouter);
 	app.use("/api/v1/projects/:projectKey/dashboard", dashboardRouter);

@@ -21,9 +21,15 @@ const urlSchema = z
 export const createSchema = z
 	.object({ name: z.string().trim().min(1).max(80), url: urlSchema, events: z.array(z.enum(WEBHOOK_EVENTS)).min(1), environments: z.array(z.enum(ENVIRONMENT_KEYS)).default([]) })
 	.strict();
-export const updateSchema = createSchema
-	.partial()
-	.extend({ enabled: z.boolean().optional(), rotateSecret: z.boolean().optional() })
+export const updateSchema = z
+	.object({
+		name: z.string().trim().min(1).max(80).optional(),
+		url: urlSchema.optional(),
+		events: z.array(z.enum(WEBHOOK_EVENTS)).min(1).optional(),
+		environments: z.array(z.enum(ENVIRONMENT_KEYS)).optional(),
+		enabled: z.boolean().optional(),
+		rotateSecret: z.boolean().optional(),
+	})
 	.strict()
 	.refine((value) => Object.keys(value).length > 0, "Provide at least one field to update.");
 export const deliveriesSchema = z.object({ status: z.enum(DELIVERY_STATUSES).optional(), cursor: z.string().max(80).optional(), limit: z.coerce.number().int().min(1).max(100).default(25) });
