@@ -41,7 +41,7 @@ export function createEvents({ subscriptions, deliveries, log = logger, dispatch
 			try {
 				return { enqueued: (await this.enqueue(input)).length };
 			} catch (error) {
-				log.error("webhook.emit.failed", { event: input.event, eventId: input.eventId || null, error });
+				log.error("webhook.emit.failed", { webhookEvent: input.event, eventId: input.eventId || null, error });
 				return { enqueued: 0 };
 			}
 		},
