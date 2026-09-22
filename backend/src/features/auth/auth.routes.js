@@ -8,9 +8,10 @@ export const loginLimiter = createRateLimiter({
 	name: "login",
 	windowMs: 15 * 60 * 1000,
 	max: 10,
-	keyFor: (request) => `${request.ip}:${String(request.body?.email || "")
-		.trim()
-		.toLowerCase()}`,
+	keyFor: (request) =>
+		`${request.ip}:${String(request.body?.email || "")
+			.trim()
+			.toLowerCase()}`,
 });
 
 export const authRouter = Router();

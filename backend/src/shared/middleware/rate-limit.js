@@ -26,7 +26,12 @@ export function createRateLimiter({ name, windowMs, max, keyFor, now = () => Dat
 		response.setHeader("RateLimit-Reset", retryAfterSeconds);
 		if (entry.count > max) {
 			response.setHeader("Retry-After", retryAfterSeconds);
-			return next(new AppError(429, "RATE_LIMITED", `Too many requests. Try again in ${retryAfterSeconds} seconds.`, { retryAfterSeconds, limit: max }));
+			return next(
+				new AppError(429, "RATE_LIMITED", `Too many requests. Try again in ${retryAfterSeconds} seconds.`, {
+					retryAfterSeconds,
+					limit: max,
+				}),
+			);
 		}
 		return next();
 	};

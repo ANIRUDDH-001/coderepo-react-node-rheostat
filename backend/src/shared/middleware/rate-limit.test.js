@@ -3,9 +3,16 @@ import { createRateLimiter } from "./rate-limit.js";
 
 const run = (middleware, key = "a") => {
 	const request = { ip: "1.1.1.1", body: {}, rateKey: key };
-	const response = { headers: {}, setHeader(name, value) { this.headers[name] = value; } };
+	const response = {
+		headers: {},
+		setHeader(name, value) {
+			this.headers[name] = value;
+		},
+	};
 	let error = null;
-	middleware(request, response, (caught) => { error = caught || null; });
+	middleware(request, response, (caught) => {
+		error = caught || null;
+	});
 	return { response, error };
 };
 
