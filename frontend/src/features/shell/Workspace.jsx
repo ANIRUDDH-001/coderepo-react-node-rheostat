@@ -1,29 +1,33 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from "react";
 import { EmptyState } from "../../shared/components/EmptyState.jsx";
 import { ErrorBanner } from "../../shared/components/ErrorBanner.jsx";
+import { ErrorBoundary, RouteErrorFallback } from "../../shared/components/ErrorBoundary.jsx";
 import { Skeleton } from "../../shared/components/Skeleton.jsx";
 import { ProjectProvider, readLastProject, rememberProject } from "../../shared/context/ProjectContext.jsx";
 import { useSession } from "../../shared/context/SessionContext.jsx";
 import { useAsync } from "../../shared/hooks/useAsync.js";
 import { buildPath } from "../../shared/router/match.js";
 import { navigate, useRoute } from "../../shared/router/router.js";
-import { AuditPage } from "../audit/AuditPage.jsx";
 import { changeRequestApi } from "../change-requests/change-request.api.js";
-import { ChangeRequestDetailPage } from "../change-requests/ChangeRequestDetailPage.jsx";
-import { ChangeRequestsPage } from "../change-requests/ChangeRequestsPage.jsx";
-import { DashboardPage } from "../dashboard/DashboardPage.jsx";
-import { FlagDetailPage } from "../flags/FlagDetailPage.jsx";
-import { FlagsPage } from "../flags/FlagsPage.jsx";
-import { PlaygroundPage } from "../playground/PlaygroundPage.jsx";
 import { projectApi } from "../projects/project.api.js";
-import { ProjectSettingsPage } from "../projects/ProjectSettingsPage.jsx";
-import { RolloutDetailPage } from "../rollouts/RolloutDetailPage.jsx";
-import { RolloutsPage } from "../rollouts/RolloutsPage.jsx";
 import { rolloutApi } from "../rollouts/rollout.api.js";
-import { SegmentEditorPage } from "../segments/SegmentEditorPage.jsx";
-import { SegmentsPage } from "../segments/SegmentsPage.jsx";
 import { NavRail } from "./NavRail.jsx";
 import { TopBar } from "./TopBar.jsx";
+
+// Every routed page is its own chunk (hardening spec §4); the boundary above Suspense catches a failed chunk load.
+const page = (load, name) => lazy(() => load().then((module) => ({ default: module[name] })));
+const DashboardPage = page(() => import("../dashboard/DashboardPage.jsx"), "DashboardPage");
+const FlagsPage = page(() => import("../flags/FlagsPage.jsx"), "FlagsPage");
+const FlagDetailPage = page(() => import("../flags/FlagDetailPage.jsx"), "FlagDetailPage");
+const SegmentsPage = page(() => import("../segments/SegmentsPage.jsx"), "SegmentsPage");
+const SegmentEditorPage = page(() => import("../segments/SegmentEditorPage.jsx"), "SegmentEditorPage");
+const PlaygroundPage = page(() => import("../playground/PlaygroundPage.jsx"), "PlaygroundPage");
+const ChangeRequestsPage = page(() => import("../change-requests/ChangeRequestsPage.jsx"), "ChangeRequestsPage");
+const ChangeRequestDetailPage = page(() => import("../change-requests/ChangeRequestDetailPage.jsx"), "ChangeRequestDetailPage");
+const RolloutsPage = page(() => import("../rollouts/RolloutsPage.jsx"), "RolloutsPage");
+const RolloutDetailPage = page(() => import("../rollouts/RolloutDetailPage.jsx"), "RolloutDetailPage");
+const AuditPage = page(() => import("../audit/AuditPage.jsx"), "AuditPage");
+const ProjectSettingsPage = page(() => import("../projects/ProjectSettingsPage.jsx"), "ProjectSettingsPage");
 
 function NotFound({ projectKey }) {
 	return (
@@ -128,7 +132,14 @@ export function Workspace({ onLogout, onProfileSwitch }) {
 					projectKey={project?.key || projects?.[0]?.key || ""}
 				/>
 				<main className="workspace-surface" id="main">
-					{content}
+					<ErrorBoundary
+						fallback={(error, reset) => (
+							<RouteErrorFallback error={error} onRetry={reset} projectKey={project?.key || projects?.[0]?.key || ""} />
+						)}
+						resetKeys={[route.path]}
+					>
+						<Suspense fallback={<Skeleton rows={6} />}>{content}</Suspense>
+					</ErrorBoundary>
 				</main>
 			</div>
 		</ProjectProvider>

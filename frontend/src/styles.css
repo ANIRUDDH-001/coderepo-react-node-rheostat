@@ -655,6 +655,13 @@ dialog::backdrop { background: rgb(32 33 36 / 18%); }
 .people-identity .muted { font-size: 12px; }
 .people-role { width: 180px; }
 
+/* Error boundaries */
+.app-error { display: grid; place-items: center; gap: 12px; min-height: 100vh; padding: 24px; text-align: center; background: var(--surface-muted); }
+.app-error h1 { margin: 0; font-size: 22px; font-weight: 400; }
+.app-error p { max-width: 480px; margin: 0; color: var(--muted); }
+.route-error-links { text-align: center; }
+.route-error-links a { color: var(--accent-ink); }
+
 /* Responsive shell */
 @media (max-width: 960px) {
     .app-shell { grid-template-columns: 76px minmax(0, 1fr); }

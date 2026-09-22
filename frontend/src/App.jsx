@@ -13,6 +13,7 @@ import {
 	setSessionToken,
 } from "./shared/api/client.js";
 import { BrandMark } from "./shared/components/BrandMark.jsx";
+import { AppErrorFallback, ErrorBoundary } from "./shared/components/ErrorBoundary.jsx";
 import { ToastProvider } from "./shared/components/Toast.jsx";
 import { SessionProvider } from "./shared/context/SessionContext.jsx";
 
@@ -36,7 +37,7 @@ const clearStoredSession = () => {
 	localStorage.removeItem(PROFILE_ID_KEY);
 };
 
-export default function App() {
+function AppRoot() {
 	const [account, setAccount] = useState(null);
 	const [session, setSession] = useState({ profile: null, permissions: [] });
 	const [authLoading, setAuthLoading] = useState(false);
@@ -194,5 +195,13 @@ export default function App() {
 			profiles={(profiles || []).filter((profile) => profile._id !== switchingFrom?._id)}
 			switchingFrom={switchingFrom}
 		/>
+	);
+}
+
+export default function App() {
+	return (
+		<ErrorBoundary fallback={(error) => <AppErrorFallback error={error} />}>
+			<AppRoot />
+		</ErrorBoundary>
 	);
 }

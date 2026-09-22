@@ -11,5 +11,5 @@ export default defineConfig({
             "/api": { target: "http://localhost:8000", changeOrigin: true },
         },
     },
-    build: { outDir: "dist", sourcemap: true },
+    build: { outDir: "dist", sourcemap: true, rollupOptions: { output: { manualChunks: (id) => (/node_modules[\/](react|react-dom|scheduler)[\/]/.test(id) ? "react" : undefined) } } },
 });
