@@ -679,9 +679,8 @@ dialog::backdrop { background: rgb(32 33 36 / 18%); }
 .numeric-cell { text-align: right; font-variant-numeric: tabular-nums; }
 .danger-text { color: var(--danger); }
 .webhook-table .row-actions .text-button { min-height: 32px; padding: 0 8px; }
-.inbox { display: grid; gap: 8px; padding-top: 8px; border-top: 1px solid var(--divider); }
-.inbox-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.inbox-header h4 { margin: 0; color: var(--muted); font-size: 12px; font-weight: 500; text-transform: uppercase; }
+.inbox { display: grid; gap: 8px; }
+.inbox-header .text-button { margin-left: auto; }
 .inbox-list { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; }
 .inbox-row { display: grid; gap: 4px; padding: 8px 0; border-bottom: 1px solid var(--divider); }
 .inbox-row:last-child { border-bottom: 0; }
@@ -712,6 +711,8 @@ dialog::backdrop { background: rgb(32 33 36 / 18%); }
 .headers-table td { padding: 4px 0; overflow-wrap: anywhere; }
 .drawer-section { display: grid; gap: 8px; }
 .drawer-summary { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 13px; }
+.drawer-summary code { min-width: 0; overflow-wrap: anywhere; }
+.delivery-drawer .dialog-body { overflow-x: hidden; }
 
 /* Error boundaries */
 .app-error { display: grid; place-items: center; gap: 12px; min-height: 100vh; padding: 24px; text-align: center; background: var(--surface-muted); }

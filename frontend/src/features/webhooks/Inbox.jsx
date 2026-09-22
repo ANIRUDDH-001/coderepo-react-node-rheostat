@@ -20,8 +20,9 @@ export function Inbox({ projectKey, epoch = 0 }) {
 	const { data, error, loading, reload } = useAsync(() => webhookApi.receipts(projectKey), [projectKey, epoch]);
 	return (
 		<div className="inbox">
-			<div className="inbox-header">
-				<h4 id="inbox-title">Inbox</h4>
+			<div className="editor-section-header inbox-header">
+				<h3 id="inbox-title">Inbox</h3>
+				<span className="muted">What the built-in receiver stored, newest first.</span>
 				<button className="text-button" disabled={loading} type="button" onClick={reload}>
 					<MaterialIcon size={18}>refresh</MaterialIcon> Refresh
 				</button>

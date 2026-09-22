@@ -85,7 +85,7 @@ export function WebhookDetailPage({ id }) {
 						<span>·</span>
 						<span>{environmentNames}</span>
 						<span>·</span>
-						<span>Secret …{subscription.secretHint}</span>
+						<span>Secret {subscription.secretHint}</span>
 					</div>
 					<div className="webhook-events" aria-label="Subscribed events">
 						{subscription.events.map((event) => (

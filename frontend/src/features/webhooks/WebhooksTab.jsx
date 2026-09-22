@@ -47,6 +47,8 @@ export function WebhooksTab() {
 			notify({ kind: "success", message: typeof success === "function" ? success(result) : success });
 			reload();
 			reloadBadges?.();
+			// A test or an enable may have landed in the inbox.
+			setInboxEpoch((value) => value + 1);
 			return result;
 		} catch (caught) {
 			setActionError(caught.message);
@@ -87,7 +89,6 @@ export function WebhooksTab() {
 						)}
 					</div>
 				</div>
-				<Inbox epoch={inboxEpoch} projectKey={project.key} />
 			</section>
 			<section className="editor-section" aria-labelledby="settings-webhooks-title">
 				<div className="editor-section-header">
@@ -200,6 +201,9 @@ export function WebhooksTab() {
 					</div>
 				)}
 			</section>
+			<section className="editor-section" aria-labelledby="inbox-title">
+				<Inbox epoch={inboxEpoch} projectKey={project.key} />
+			</section>
 			{(dialog?.kind === "create" || dialog?.kind === "edit") && (
 				<WebhookFormDialog
 					initial={dialog.kind === "edit" ? dialog.subscription : null}
@@ -236,7 +240,6 @@ export function WebhooksTab() {
 					onCancel={() => setDialog(null)}
 					onConfirm={async () => {
 						await run("clear", () => webhookApi.clearReceipts(project.key), "Inbox cleared.");
-						setInboxEpoch((value) => value + 1);
 						setDialog(null);
 					}}
 				/>

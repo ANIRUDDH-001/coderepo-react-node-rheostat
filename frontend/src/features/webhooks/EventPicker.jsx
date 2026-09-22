@@ -40,7 +40,12 @@ export function EventPicker({ value, onChange, disabled = false }) {
 							{events.map((event) => (
 								<li key={event}>
 									<label className="check-row">
-										<input checked={selected.has(event)} onChange={(change) => toggle(event, change.target.checked)} type="checkbox" />
+										<input
+											aria-label={event}
+											checked={selected.has(event)}
+											onChange={(change) => toggle(event, change.target.checked)}
+											type="checkbox"
+										/>
 										<code>{event}</code>
 									</label>
 								</li>
