@@ -14,6 +14,7 @@ import { flagApi } from "./flag.api.js";
 import { FlagCreateDialog } from "./FlagCreateDialog.jsx";
 import { DEFAULT_FILTERS, FlagFilters } from "./FlagFilters.jsx";
 import { FlagTable } from "./FlagTable.jsx";
+import { SavedViewMenu } from "../saved-views/SavedViewMenu.jsx";
 
 const PAGE_SIZE = 25;
 
@@ -101,6 +102,7 @@ export function FlagsPage() {
 				)}
 			</header>
 			<FlagFilters environments={project.environments} filters={filters} onChange={applyFilters} />
+			<SavedViewMenu filters={filters} onApply={applyFilters} projectKey={project.key} />
 			{loading && data && <div className="page-progress" aria-hidden="true" />}
 			{body}
 			{creating && (

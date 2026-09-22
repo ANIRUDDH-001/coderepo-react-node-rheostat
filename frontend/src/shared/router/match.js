@@ -15,6 +15,7 @@ export const ROUTES = [
 	{ name: "playground", pattern: "/projects/:projectKey/playground" },
 	{ name: "audit", pattern: "/projects/:projectKey/audit" },
 	{ name: "settings", pattern: "/projects/:projectKey/settings" },
+	{ name: "webhook", pattern: "/projects/:projectKey/webhooks/:id" },
 ];
 
 const segmentsOf = (path) => path.replace(/\/+$/, "").split("/").slice(1);

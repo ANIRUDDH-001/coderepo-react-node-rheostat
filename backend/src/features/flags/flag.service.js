@@ -132,6 +132,7 @@ export const flagService = {
 	findActiveByProject: (projectId) => flagRepository.findActiveByProject(projectId),
 	findAllByProject: (projectId) => flagRepository.findAllByProject(projectId),
 	countReferencingSegment: (projectId, segmentKey) => flagRepository.countReferencingSegment(projectId, segmentKey),
+	recentVersions: (projectId, environment, limit) => flagVersionRepository.findRecent(projectId, environment, limit),
 	async create(project, input, actor) {
 		assertCan(actor, "flag:create");
 		const variations = buildVariations(input.type, input.variations || []);

@@ -6,9 +6,9 @@ export const evaluationLogRepository = {
 	countByDay: (projectId, from, to) =>
 		EvaluationLog.aggregate([
 			{ $match: { projectId, at: { $gte: from, $lt: to } } },
-			{ $group: { _id: { $dateToString: { format: "%Y-%m-%d", date: "$at" } }, count: { $sum: 1 } } },
-			{ $sort: { _id: 1 } },
-			{ $project: { _id: 0, day: "$_id", count: 1 } },
+			{ $group: { _id: { day: { $dateToString: { format: "%Y-%m-%d", date: "$at" } }, source: "$source" }, count: { $sum: 1 } } },
+			{ $sort: { "_id.day": 1 } },
+			{ $project: { _id: 0, day: "$_id.day", source: "$_id.source", count: 1 } },
 		]),
 	countByFlagVariation: (projectId, from, to) =>
 		EvaluationLog.aggregate([

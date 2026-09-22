@@ -7,9 +7,11 @@ import { useSession } from "../../shared/context/SessionContext.jsx";
 import { useAsync } from "../../shared/hooks/useAsync.js";
 import { buildPath } from "../../shared/router/match.js";
 import { navigate, useRoute } from "../../shared/router/router.js";
+import { AuditPage } from "../audit/AuditPage.jsx";
 import { changeRequestApi } from "../change-requests/change-request.api.js";
 import { ChangeRequestDetailPage } from "../change-requests/ChangeRequestDetailPage.jsx";
 import { ChangeRequestsPage } from "../change-requests/ChangeRequestsPage.jsx";
+import { DashboardPage } from "../dashboard/DashboardPage.jsx";
 import { FlagDetailPage } from "../flags/FlagDetailPage.jsx";
 import { FlagsPage } from "../flags/FlagsPage.jsx";
 import { PlaygroundPage } from "../playground/PlaygroundPage.jsx";
@@ -23,10 +25,6 @@ import { NavRail } from "./NavRail.jsx";
 import { TopBar } from "./TopBar.jsx";
 
 const PLACEHOLDERS = {
-	dashboard: { title: "Dashboard", description: "The dashboard arrives in a later phase." },
-	rollouts: { title: "Rollouts", description: "Progressive rollouts arrive in a later phase." },
-	rollout: { title: "Rollout", description: "Progressive rollouts arrive in a later phase." },
-	audit: { title: "Audit", description: "The audit feed page arrives in a later phase." },
 	settings: { title: "Settings", description: "Project settings arrive in a later phase." },
 };
 
@@ -43,6 +41,7 @@ function NotFound({ projectKey }) {
 
 function RouteSwitch({ project, projects, route }) {
 	const { name, params } = route;
+	if (name === "dashboard") return <DashboardPage key={project.key} />;
 	if (name === "flags") return <FlagsPage key={project.key} />;
 	if (name === "flag") return <FlagDetailPage flagKey={params.flagKey} key={`${project.key}/${params.flagKey}`} />;
 	if (name === "segments") return <SegmentsPage key={project.key} />;
@@ -53,6 +52,7 @@ function RouteSwitch({ project, projects, route }) {
 	if (name === "changeRequest") return <ChangeRequestDetailPage id={params.id} key={params.id} />;
 	if (name === "rollouts") return <RolloutsPage key={project.key} />;
 	if (name === "rollout") return <RolloutDetailPage id={params.id} key={params.id} />;
+	if (name === "audit") return <AuditPage key={project.key} />;
 	if (PLACEHOLDERS[name])
 		return <EmptyState description={PLACEHOLDERS[name].description} icon="hourglass_empty" title={PLACEHOLDERS[name].title} />;
 	return <NotFound projectKey={project?.key || projects[0]?.key} />;
@@ -72,10 +72,10 @@ export function Workspace({ onLogout, onProfileSwitch }) {
 		return projects.find((candidate) => candidate.key === readLastProject()) || projects[0];
 	}, [projects, route.params.projectKey]);
 
-	// `/` redirects to the remembered (or first) project's flags until the dashboard exists.
+	// `/` redirects to the remembered (or first) project's dashboard.
 	useEffect(() => {
 		if (!projects?.length) return;
-		if (route.name === "home") navigate(buildPath("flags", { projectKey: project.key }), { replace: true });
+		if (route.name === "home") navigate(buildPath("dashboard", { projectKey: project.key }), { replace: true });
 	}, [projects, project, route.name]);
 
 	useEffect(() => {

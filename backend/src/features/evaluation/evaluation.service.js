@@ -68,4 +68,13 @@ export const evaluationService = {
 	},
 
 	listAudience: (project, { search, limit }) => audienceMemberRepository.search(project._id, search, limit),
+
+	// Dashboard activity (spec 7.4): raw per-day and per-variation counts for the window [from, to).
+	async activity(projectId, from, to) {
+		const [byDay, byFlagVariation] = await Promise.all([
+			evaluationLogRepository.countByDay(projectId, from, to),
+			evaluationLogRepository.countByFlagVariation(projectId, from, to),
+		]);
+		return { byDay, byFlagVariation };
+	},
 };

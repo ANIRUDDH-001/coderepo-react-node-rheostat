@@ -3,9 +3,9 @@ import { createPortal } from "react-dom";
 import { ErrorBanner } from "../../shared/components/ErrorBanner.jsx";
 import { MaterialIcon } from "../../shared/components/MaterialIcon.jsx";
 import { Modal } from "../../shared/components/Modal.jsx";
-import { StepBuilder } from "./StepBuilder.jsx";
+import { StepBuilder, toLocalInput } from "./StepBuilder.jsx";
 
-const initialSteps = () => [{ percent: 5, startAt: new Date().toISOString().slice(0, 16) }];
+const initialSteps = () => [{ percent: 5, startAt: toLocalInput(new Date()) }];
 
 function servedVariation(config) {
 	if (config?.fallthrough?.variationId) return config.fallthrough.variationId;
