@@ -76,7 +76,8 @@ export async function seedRollouts(projects, flags, people) {
 					candidate.source === "rollout" &&
 					candidate.reason === `Rollout step ${step.percent}%`,
 			);
-			if (!version) throw new Error(`Seed mismatch: no rollout version for ${definition.flagKey} ${definition.environment} ${step.percent}%`);
+			if (!version)
+				throw new Error(`Seed mismatch: no rollout version for ${definition.flagKey} ${definition.environment} ${step.percent}%`);
 			if (startedFromVersion === null) startedFromVersion = version.version - 1;
 			expectedVersion = version.version;
 			lastAppliedStepId = id;
@@ -89,11 +90,24 @@ export async function seedRollouts(projects, flags, people) {
 				entityId: String(planId),
 				entityLabel: flag.key,
 				summary: `Rollout step ${step.percent}% applied to ${flag.key} in ${definition.environment} (v${version.version}).`,
-				metadata: { environment: definition.environment, flagKey: flag.key, percent: step.percent, version: version.version, stepId: id },
+				metadata: {
+					environment: definition.environment,
+					flagKey: flag.key,
+					percent: step.percent,
+					version: version.version,
+					stepId: id,
+				},
 				idempotencyKey: `rollout:${planId}:${id}:applied`,
 				at: version.createdAt,
 			});
-			return { id, percent: step.percent, startAt: step.startAt, status: "applied", appliedAt: version.createdAt, appliedVersion: version.version };
+			return {
+				id,
+				percent: step.percent,
+				startAt: step.startAt,
+				status: "applied",
+				appliedAt: version.createdAt,
+				appliedVersion: version.version,
+			};
 		});
 		const lastApplied = definition.steps.filter((step) => step.applied).at(-1);
 		plans.push({

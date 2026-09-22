@@ -38,7 +38,9 @@ export function EnvironmentTabs({ actions = null, environment, environments, fla
 							<MaterialIcon size={16}>timeline</MaterialIcon> Rolling out · {rollout.currentPercent}%
 						</Link>
 					) : onPlan ? (
-						<button className="text-button" type="button" onClick={onPlan}><MaterialIcon size={18}>timeline</MaterialIcon> Plan a rollout</button>
+						<button className="text-button" type="button" onClick={onPlan}>
+							<MaterialIcon size={18}>timeline</MaterialIcon> Plan a rollout
+						</button>
 					) : null}
 					{environment.protected && (
 						<span

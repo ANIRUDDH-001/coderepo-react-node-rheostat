@@ -33,23 +33,69 @@ export function RolloutsPage() {
 	return (
 		<section className="page rollouts-page" aria-labelledby="rollouts-title">
 			<header className="page-header">
-				<div><h1 id="rollouts-title">Rollouts</h1><p className="page-subtitle">Schedule and supervise progressive delivery across {project.name}.</p></div>
+				<div>
+					<h1 id="rollouts-title">Rollouts</h1>
+					<p className="page-subtitle">Schedule and supervise progressive delivery across {project.name}.</p>
+				</div>
 				<span className="rollout-active-count">{data.counts.active} active</span>
 			</header>
 			<div className="page-controls">
-				<SelectMenu ariaLabel="Rollout status" onChange={(status) => setQuery({ status, page: "" })} options={STATUS_OPTIONS} value={filters.status} />
+				<SelectMenu
+					ariaLabel="Rollout status"
+					onChange={(status) => setQuery({ status, page: "" })}
+					options={STATUS_OPTIONS}
+					value={filters.status}
+				/>
 			</div>
 			{!data.items.length ? (
-				<EmptyState description="Plan a rollout from a flag’s environment tab to begin progressive delivery." icon="timeline" title="No rollouts found" />
+				<EmptyState
+					description="Plan a rollout from a flag’s environment tab to begin progressive delivery."
+					icon="timeline"
+					title="No rollouts found"
+				/>
 			) : (
 				<div className="table-wrap">
-					<table className="data-table rollout-table"><thead><tr><th>Flag</th><th>Environment</th><th>Progress</th><th>Status</th><th>Next step</th><th>Created</th></tr></thead>
-						<tbody>{data.items.map((plan) => (
-							<tr key={plan._id}><td><Link to={buildPath("rollout", { projectKey: project.key, id: plan._id })}>{plan.flagKey}</Link></td><td>{project.environments.find((environment) => environment.key === plan.environment)?.name || plan.environment}</td><td>{plan.currentPercent}%</td><td><span className={`rollout-status rollout-status-${plan.status}`}>{plan.status}</span></td><td>{plan.nextStep ? `${plan.nextStep.percent}% ${relativeTime(plan.nextStep.startAt)}` : "Complete"}</td><td>{relativeTime(plan.createdAt)}</td></tr>
-						))}</tbody></table>
+					<table className="data-table rollout-table">
+						<thead>
+							<tr>
+								<th>Flag</th>
+								<th>Environment</th>
+								<th>Progress</th>
+								<th>Status</th>
+								<th>Next step</th>
+								<th>Created</th>
+							</tr>
+						</thead>
+						<tbody>
+							{data.items.map((plan) => (
+								<tr key={plan._id}>
+									<td>
+										<Link to={buildPath("rollout", { projectKey: project.key, id: plan._id })}>{plan.flagKey}</Link>
+									</td>
+									<td>
+										{project.environments.find((environment) => environment.key === plan.environment)?.name ||
+											plan.environment}
+									</td>
+									<td>{plan.currentPercent}%</td>
+									<td>
+										<span className={`rollout-status rollout-status-${plan.status}`}>{plan.status}</span>
+									</td>
+									<td>
+										{plan.nextStep ? `${plan.nextStep.percent}% ${relativeTime(plan.nextStep.startAt)}` : "Complete"}
+									</td>
+									<td>{relativeTime(plan.createdAt)}</td>
+								</tr>
+							))}
+						</tbody>
+					</table>
 				</div>
 			)}
-			<Pagination onPage={(next) => setQuery({ page: next === 1 ? "" : next })} page={data.page} pageSize={data.pageSize} total={data.total} />
+			<Pagination
+				onPage={(next) => setQuery({ page: next === 1 ? "" : next })}
+				page={data.page}
+				pageSize={data.pageSize}
+				total={data.total}
+			/>
 		</section>
 	);
 }

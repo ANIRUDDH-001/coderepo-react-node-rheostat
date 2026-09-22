@@ -14,7 +14,8 @@ const schedule = (percents, days) => {
 };
 
 export function StepBuilder({ disabled = false, errors = {}, onChange, steps }) {
-	const update = (index, field, value) => onChange(steps.map((step, current) => (current === index ? { ...step, [field]: value } : step)));
+	const update = (index, field, value) =>
+		onChange(steps.map((step, current) => (current === index ? { ...step, [field]: value } : step)));
 	return (
 		<div className="rollout-step-builder">
 			<div className="rollout-presets" aria-label="Schedule presets">
@@ -28,37 +29,37 @@ export function StepBuilder({ disabled = false, errors = {}, onChange, steps }) 
 			<div className="rollout-step-rows">
 				{steps.map((step, index) => (
 					<div className="rollout-step-row" key={`${index}-${step.startAt}`}>
-					<label>
-						<span>Audience</span>
-						<input
-							disabled={disabled}
-							min="1"
-							max="100"
-							type="number"
-							value={step.percent}
-							onChange={(event) => update(index, "percent", event.target.value)}
-						/>
-						<span>%</span>
-					</label>
-					<label>
-						<span>Starts</span>
-						<input
-							disabled={disabled}
-							type="datetime-local"
-							value={step.startAt}
-							onChange={(event) => update(index, "startAt", event.target.value)}
-						/>
-					</label>
-					<button
-						aria-label={`Remove step ${index + 1}`}
-						className="icon-button"
-						disabled={disabled || steps.length === 1}
-						type="button"
-						onClick={() => onChange(steps.filter((_, current) => current !== index))}
-					>
-						<MaterialIcon size={18}>close</MaterialIcon>
-					</button>
-					{errors[index] && <span className="form-error rollout-step-error">{errors[index]}</span>}
+						<label>
+							<span>Audience</span>
+							<input
+								disabled={disabled}
+								min="1"
+								max="100"
+								type="number"
+								value={step.percent}
+								onChange={(event) => update(index, "percent", event.target.value)}
+							/>
+							<span>%</span>
+						</label>
+						<label>
+							<span>Starts</span>
+							<input
+								disabled={disabled}
+								type="datetime-local"
+								value={step.startAt}
+								onChange={(event) => update(index, "startAt", event.target.value)}
+							/>
+						</label>
+						<button
+							aria-label={`Remove step ${index + 1}`}
+							className="icon-button"
+							disabled={disabled || steps.length === 1}
+							type="button"
+							onClick={() => onChange(steps.filter((_, current) => current !== index))}
+						>
+							<MaterialIcon size={18}>close</MaterialIcon>
+						</button>
+						{errors[index] && <span className="form-error rollout-step-error">{errors[index]}</span>}
 					</div>
 				))}
 			</div>

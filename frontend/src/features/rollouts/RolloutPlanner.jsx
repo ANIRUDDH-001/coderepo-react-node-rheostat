@@ -48,7 +48,10 @@ export function RolloutPlanner({ config, environment, flag, onClose, onCreate })
 	const baselineName = flag.variations.find((variation) => variation.id === baseline)?.name || "No served variation";
 
 	const targetOptions = useMemo(
-		() => flag.variations.filter((variation) => variation.id !== baseline).map((variation) => ({ value: variation.id, label: variation.name })),
+		() =>
+			flag.variations
+				.filter((variation) => variation.id !== baseline)
+				.map((variation) => ({ value: variation.id, label: variation.name })),
 		[baseline, flag.variations],
 	);
 	const submit = async (event) => {
@@ -95,9 +98,17 @@ export function RolloutPlanner({ config, environment, flag, onClose, onCreate })
 						</label>
 						<label className="form-field">
 							<span>Target variation</span>
-							<select disabled={busy || !baseline} value={targetVariationId} onChange={(event) => setTargetVariationId(event.target.value)}>
+							<select
+								disabled={busy || !baseline}
+								value={targetVariationId}
+								onChange={(event) => setTargetVariationId(event.target.value)}
+							>
 								<option value="">Choose a variation</option>
-								{targetOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+								{targetOptions.map((option) => (
+									<option key={option.value} value={option.value}>
+										{option.label}
+									</option>
+								))}
 							</select>
 							{errors.target && <span className="form-error">{errors.target}</span>}
 						</label>
@@ -109,13 +120,20 @@ export function RolloutPlanner({ config, environment, flag, onClose, onCreate })
 						{errors.bucketBy && <span className="form-error">{errors.bucketBy}</span>}
 					</label>
 					<section className="editor-section" aria-labelledby="rollout-steps-title">
-						<div className="editor-section-header"><h3 id="rollout-steps-title">Rollout steps</h3><span className="muted">Set the audience percentage at each point in time.</span></div>
+						<div className="editor-section-header">
+							<h3 id="rollout-steps-title">Rollout steps</h3>
+							<span className="muted">Set the audience percentage at each point in time.</span>
+						</div>
 						<StepBuilder disabled={busy} errors={errors.steps} onChange={setSteps} steps={steps} />
 					</section>
 				</div>
 				<footer className="dialog-footer">
-					<button className="text-button" disabled={busy} type="button" onClick={onClose}>Cancel</button>
-					<button className="primary-button" disabled={busy || !baseline} type="submit">Create rollout</button>
+					<button className="text-button" disabled={busy} type="button" onClick={onClose}>
+						Cancel
+					</button>
+					<button className="primary-button" disabled={busy || !baseline} type="submit">
+						Create rollout
+					</button>
 				</footer>
 			</form>
 		</Modal>,

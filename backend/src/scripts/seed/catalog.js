@@ -42,7 +42,14 @@ export const flagCatalog = [
 		history: [
 			step("development", 28, "diego", "direct", "Enable for local testing", booleanOn),
 			step("staging", 25, "diego", "promotion", "Promoted from Development (v2)", booleanOn),
-			step("production", 4, "marcus", "direct", "Turn targeting on ahead of the rollout; everyone stays on the old checkout", booleanArmed),
+			step(
+				"production",
+				4,
+				"marcus",
+				"direct",
+				"Turn targeting on ahead of the rollout; everyone stays on the old checkout",
+				booleanArmed,
+			),
 			step("production", 3, "marcus", "rollout", "Rollout step 5%", ramp(5)),
 			step("production", 1, "marcus", "rollout", "Rollout step 25%", ramp(25)),
 		],

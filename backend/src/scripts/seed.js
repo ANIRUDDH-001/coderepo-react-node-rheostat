@@ -28,7 +28,19 @@ import { seedSegments } from "./seed/segments.js";
 const config = loadConfig();
 
 // Every model that holds application data. Seeding clears all of them before inserting the baseline.
-const models = [Person, WorkspaceAccount, Project, Segment, Flag, FlagVersion, ChangeRequest, RolloutPlan, AudienceMember, EvaluationLog, AuditEntry];
+const models = [
+	Person,
+	WorkspaceAccount,
+	Project,
+	Segment,
+	Flag,
+	FlagVersion,
+	ChangeRequest,
+	RolloutPlan,
+	AudienceMember,
+	EvaluationLog,
+	AuditEntry,
+];
 
 async function clearDatabase() {
 	console.log("Clearing existing collections...");
