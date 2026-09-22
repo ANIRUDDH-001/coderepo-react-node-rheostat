@@ -16,6 +16,7 @@ import { FlagDetailPage } from "../flags/FlagDetailPage.jsx";
 import { FlagsPage } from "../flags/FlagsPage.jsx";
 import { PlaygroundPage } from "../playground/PlaygroundPage.jsx";
 import { projectApi } from "../projects/project.api.js";
+import { ProjectSettingsPage } from "../projects/ProjectSettingsPage.jsx";
 import { RolloutDetailPage } from "../rollouts/RolloutDetailPage.jsx";
 import { RolloutsPage } from "../rollouts/RolloutsPage.jsx";
 import { rolloutApi } from "../rollouts/rollout.api.js";
@@ -23,10 +24,6 @@ import { SegmentEditorPage } from "../segments/SegmentEditorPage.jsx";
 import { SegmentsPage } from "../segments/SegmentsPage.jsx";
 import { NavRail } from "./NavRail.jsx";
 import { TopBar } from "./TopBar.jsx";
-
-const PLACEHOLDERS = {
-	settings: { title: "Settings", description: "Project settings arrive in a later phase." },
-};
 
 function NotFound({ projectKey }) {
 	return (
@@ -53,8 +50,7 @@ function RouteSwitch({ project, projects, route }) {
 	if (name === "rollouts") return <RolloutsPage key={project.key} />;
 	if (name === "rollout") return <RolloutDetailPage id={params.id} key={params.id} />;
 	if (name === "audit") return <AuditPage key={project.key} />;
-	if (PLACEHOLDERS[name])
-		return <EmptyState description={PLACEHOLDERS[name].description} icon="hourglass_empty" title={PLACEHOLDERS[name].title} />;
+	if (name === "settings") return <ProjectSettingsPage key={project.key} />;
 	return <NotFound projectKey={project?.key || projects[0]?.key} />;
 }
 
