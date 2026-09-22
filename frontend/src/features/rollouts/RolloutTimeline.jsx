@@ -19,7 +19,8 @@ export function RolloutTimeline({ plan }) {
 				<h3 id="rollout-timeline-title">Schedule</h3>
 				<span className="muted">Current audience: {plan.currentPercent}%</span>
 			</div>
-			<svg aria-labelledby="rollout-timeline-title rollout-timeline-description" role="img" viewBox="0 0 720 106">
+			<svg aria-labelledby="rollout-timeline-svg-title rollout-timeline-description" role="img" viewBox="0 0 720 106">
+				<title id="rollout-timeline-svg-title">Rollout schedule</title>
 				<desc id="rollout-timeline-description">A timeline of rollout steps and their current status.</desc>
 				<line className="rollout-axis" x1="56" x2="664" y1="54" y2="54" />
 				<line className="rollout-now" x1={`${nowPosition}%`} x2={`${nowPosition}%`} y1="18" y2="90" />

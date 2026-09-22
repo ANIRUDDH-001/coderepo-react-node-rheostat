@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { keySchema, objectIdSchema } from "../../shared/utils/keys.js";
+import { objectIdSchema } from "../../shared/utils/keys.js";
 import { personService } from "../people/person.service.js";
 import { ENVIRONMENT_KEYS } from "../projects/project.model.js";
 import { projectService } from "../projects/project.service.js";
