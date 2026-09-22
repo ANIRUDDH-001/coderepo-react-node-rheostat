@@ -4,6 +4,7 @@ const auditEntrySchema = new mongoose.Schema(
 	{
 		projectId: { type: mongoose.Schema.Types.ObjectId, ref: "Project", default: null },
 		actorId: { type: mongoose.Schema.Types.ObjectId, ref: "Person", required: true },
+		actorKind: { type: String, enum: ["user", "system"], default: "user" },
 		action: { type: String, required: true, maxlength: 80 },
 		entityType: { type: String, required: true, maxlength: 40 },
 		entityId: { type: String, required: true, maxlength: 80 },

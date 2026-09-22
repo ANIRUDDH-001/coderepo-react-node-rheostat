@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 import { AppError } from "../../shared/errors/app-error.js";
 import { assertCan } from "../../shared/auth/permissions.js";
 import { auditService } from "../audit/audit.service.js";
@@ -54,6 +55,7 @@ export const projectService = {
 		const project = await projectRepository.create({
 			...input,
 			environments: defaultEnvironments(),
+			webhookSink: { token: randomBytes(16).toString("hex") },
 			sortOrder: count + 1,
 			createdBy: actor._id,
 		});

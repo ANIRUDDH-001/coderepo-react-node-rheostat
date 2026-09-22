@@ -72,4 +72,13 @@ describe("permissions", () => {
 		expect(permissionsFor("admin")).toContain("rollout:manage:protected");
 		expect(permissionsFor("unknown")).toEqual([]);
 	});
+	test("webhooks: everyone reads, release managers and admins manage", () => {
+		expect(can("viewer", "webhook:read")).toBe(true);
+		expect(can("developer", "webhook:manage")).toBe(false);
+		expect(can("reviewer", "webhook:manage")).toBe(false);
+		expect(can("releaseManager", "webhook:manage")).toBe(true);
+		expect(can("admin", "webhook:manage")).toBe(true);
+		expect(permissionsFor("releaseManager")).toContain("webhook:manage");
+		expect(permissionsFor("viewer")).toContain("webhook:read");
+	});
 });

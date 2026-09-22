@@ -15,6 +15,9 @@ import { Project } from "../features/projects/project.model.js";
 import { RolloutPlan } from "../features/rollouts/rollout-plan.model.js";
 import { SavedView } from "../features/saved-views/saved-view.model.js";
 import { Segment } from "../features/segments/segment.model.js";
+import { WebhookDelivery } from "../features/webhooks/webhook-delivery.model.js";
+import { WebhookReceipt } from "../features/webhooks/webhook-receipt.model.js";
+import { WebhookSubscription } from "../features/webhooks/webhook-subscription.model.js";
 import { loadConfig } from "../shared/config/index.js";
 import { seedAudience } from "./seed/audience.js";
 import { seedChangeRequests } from "./seed/change-requests.js";
@@ -40,6 +43,9 @@ const models = [
 	FlagVersion,
 	ChangeRequest,
 	RolloutPlan,
+	WebhookSubscription,
+	WebhookDelivery,
+	WebhookReceipt,
 	AudienceMember,
 	EvaluationLog,
 	SavedView,
@@ -98,6 +104,9 @@ async function seed() {
 			"Flag versions",
 			"Change requests",
 			"Rollout plans",
+			"Webhooks",
+			"Deliveries",
+			"Receipts",
 			"Audience",
 			"Evaluation logs",
 			"Saved views",

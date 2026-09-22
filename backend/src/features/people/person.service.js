@@ -1,6 +1,7 @@
 import { AppError } from "../../shared/errors/app-error.js";
 import { assertCan } from "../../shared/auth/permissions.js";
 import { ensureObjectId, sameId } from "../../shared/utils/object-id.js";
+import { SYSTEM_ACTOR, isSystemActor } from "../../shared/auth/system-actor.js";
 import { escapeRegex } from "../../shared/utils/keys.js";
 import { auditService } from "../audit/audit.service.js";
 import { personRepository } from "./person.repository.js";
@@ -25,9 +26,11 @@ export const personService = {
 		const expression = query ? { $regex: escapeRegex(query), $options: "i" } : null;
 		return (await personRepository.search(expression, limit)).map(publicPerson);
 	},
+	// The system actor is a constant, not a person document; it resolves here so attachActors can label automated entries.
 	async findMany(ids) {
-		const unique = [...new Set(ids.map(String))];
-		return unique.length ? (await personRepository.findByIds(unique)).map(publicPerson) : [];
+		const unique = [...new Set(ids.map(String))].filter((id) => !isSystemActor(id));
+		const people = unique.length ? (await personRepository.findByIds(unique)).map(publicPerson) : [];
+		return ids.some(isSystemActor) ? [{ ...SYSTEM_ACTOR, _id: String(SYSTEM_ACTOR._id) }, ...people] : people;
 	},
 	async updateRole(personId, role, actor) {
 		assertCan(actor, "people:manageRoles");

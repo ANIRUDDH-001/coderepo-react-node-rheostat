@@ -3,6 +3,7 @@ import { auditRepository } from "./audit.repository.js";
 
 const toEntry = ({
 	actor,
+	actorKind,
 	action,
 	entityType,
 	entityId,
@@ -14,6 +15,7 @@ const toEntry = ({
 	at,
 }) => ({
 	actorId: actor._id,
+	actorKind: actorKind || (actor.system ? "system" : "user"),
 	action,
 	entityType,
 	entityId: String(entityId),

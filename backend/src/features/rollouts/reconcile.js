@@ -44,6 +44,7 @@ export function createReconciler({ plans, flags, versions, audit, staleClaimMs =
 		await audit.recordOnce({
 			idempotencyKey: appliedKey(plan._id, step.id),
 			actorId: plan.createdBy,
+			actorKind: "system",
 			action: "rollout.stepApplied",
 			entityType: "rollout",
 			entityId: plan._id,
@@ -59,6 +60,7 @@ export function createReconciler({ plans, flags, versions, audit, staleClaimMs =
 			await audit.recordOnce({
 				idempotencyKey: `rollout:${plan._id}:completed`,
 				actorId: plan.createdBy,
+				actorKind: "system",
 				action: "rollout.completed",
 				entityType: "rollout",
 				entityId: plan._id,
@@ -78,6 +80,7 @@ export function createReconciler({ plans, flags, versions, audit, staleClaimMs =
 		await audit.recordOnce({
 			idempotencyKey: `rollout:${plan._id}:stalled:${extra.version ?? "?"}:${reason}`,
 			actorId: plan.createdBy,
+			actorKind: "system",
 			action: "rollout.stalled",
 			entityType: "rollout",
 			entityId: plan._id,

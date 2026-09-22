@@ -85,6 +85,7 @@ export async function seedRollouts(projects, flags, people) {
 			audit.push({
 				projectId: project._id,
 				actorId: actor._id,
+				actorKind: "system",
 				action: "rollout.stepApplied",
 				entityType: "rollout",
 				entityId: String(planId),
@@ -163,6 +164,7 @@ export async function seedRollouts(projects, flags, people) {
 			audit.push({
 				projectId: project._id,
 				actorId: actor._id,
+				actorKind: "system",
 				action: "rollout.completed",
 				entityType: "rollout",
 				entityId: String(planId),

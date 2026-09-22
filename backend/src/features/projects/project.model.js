@@ -21,6 +21,8 @@ const projectSchema = new mongoose.Schema(
 		sortOrder: { type: Number, default: 0 },
 		environments: { type: [environmentSchema], required: true },
 		createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "Person" },
+		// Token for the built-in webhook receiver (hardening spec §9.4); the sink URL is derived from it.
+		webhookSink: { token: { type: String, required: true } },
 	},
 	{ timestamps: true, versionKey: false },
 );

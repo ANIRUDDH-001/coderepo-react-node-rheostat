@@ -19,6 +19,7 @@ export const PERMISSIONS = {
 	"dashboard:read": EVERYONE,
 	"playground:evaluate": EVERYONE,
 	"savedView:manageOwn": EVERYONE,
+	"webhook:read": EVERYONE,
 	"flag:create": CONTRIBUTORS,
 	"flag:editMetadata": CONTRIBUTORS,
 	"flag:editConfig": CONTRIBUTORS,
@@ -34,6 +35,7 @@ export const PERMISSIONS = {
 	"flag:archive": RELEASE,
 	"flag:restore": RELEASE,
 	"changeRequest:withdrawAny": RELEASE,
+	"webhook:manage": RELEASE,
 	"project:manage": ADMINS,
 	"people:manageRoles": ADMINS,
 };

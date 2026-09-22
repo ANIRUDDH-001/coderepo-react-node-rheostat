@@ -3,8 +3,20 @@ import { defaultEnvironments } from "../../features/projects/project.service.js"
 import { daysAgo } from "./clock.js";
 
 export const projectRows = [
-	{ key: "storefront", name: "Storefront", description: "Web storefront, product discovery, and checkout.", sortOrder: 1 },
-	{ key: "mobile", name: "Mobile app", description: "iOS and Android shopping app.", sortOrder: 2 },
+	{
+		key: "storefront",
+		name: "Storefront",
+		description: "Web storefront, product discovery, and checkout.",
+		sortOrder: 1,
+		webhookSink: { token: "a3f1c9d2e8b74650a1c2d3e4f5061728" },
+	},
+	{
+		key: "mobile",
+		name: "Mobile app",
+		description: "iOS and Android shopping app.",
+		sortOrder: 2,
+		webhookSink: { token: "b7e2d4c6a1f93850c2d3e4f506172839" },
+	},
 ];
 
 export async function seedProjects(people) {
