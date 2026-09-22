@@ -28,6 +28,7 @@ import { seedFlags } from "./seed/flags.js";
 import { DEMO_PASSWORD, seedPeople } from "./seed/people.js";
 import { seedProjects } from "./seed/projects.js";
 import { seedRollouts } from "./seed/rollouts.js";
+import { seedWebhooks } from "./seed/webhooks.js";
 import { seedSavedViews } from "./seed/saved-views.js";
 import { seedSegments } from "./seed/segments.js";
 
@@ -78,6 +79,7 @@ async function seed() {
 		const flags = await seedFlags(projects, segments, people);
 		const changeRequests = await seedChangeRequests(projects, flags, people);
 		const rollouts = await seedRollouts(projects, flags, people);
+		const webhooks = await seedWebhooks(projects, flags, people);
 		const audience = await seedAudience(projects);
 		await seedEvaluationLogs(projects, flags, segments, audience);
 		await seedSavedViews(projects, people);
@@ -87,6 +89,7 @@ async function seed() {
 			...flags.audit,
 			...changeRequests.audit,
 			...rollouts.audit,
+			...webhooks.audit,
 		]);
 
 		const counts = await Promise.all(models.map((model) => model.countDocuments()));

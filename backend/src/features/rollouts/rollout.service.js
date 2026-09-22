@@ -6,6 +6,7 @@ import { flagVersionRepository } from "../flags/flag-version.repository.js";
 import { flagRepository } from "../flags/flag.repository.js";
 import { flagService } from "../flags/flag.service.js";
 import { environmentOf, projectService } from "../projects/project.service.js";
+import { webhookEvents } from "../webhooks/events.js";
 import {
 	ACTIVE_STATUSES,
 	buildSteps,
@@ -36,6 +37,9 @@ const reconciler = createReconciler({
 	versions: flagVersionRepository,
 	audit: {
 		recordOnce: ({ actorId, ...entry }) => auditService.recordOnce({ ...entry, actor: { _id: actorId } }),
+	},
+	events: {
+		emit: async ({ projectId, ...rest }) => webhookEvents.emit({ ...rest, project: await projectService.getById(projectId) }),
 	},
 });
 
@@ -242,7 +246,7 @@ export const rolloutService = {
 	},
 
 	async abort(id, profile) {
-		const { plan, environment } = await load(id);
+		const { plan, project, flag, environment } = await load(id);
 		assertManage(profile, environment);
 		if (!ACTIVE_STATUSES.includes(plan.status)) throw INVALID_TRANSITION(`A ${plan.status} rollout cannot be aborted.`);
 		const now = new Date();
@@ -257,6 +261,19 @@ export const rolloutService = {
 				startedFromVersion: plan.startedFromVersion,
 			},
 		);
+		await webhookEvents.emit({
+			event: "rollout.aborted",
+			eventId: `rollout:${plan._id}:aborted`,
+			project,
+			environment: plan.environment,
+			flag,
+			data: {
+				planId: String(plan._id),
+				environment: plan.environment,
+				currentPercent: currentPercent(plan),
+				actorId: String(profile._id),
+			},
+		});
 		return this.get(id, profile);
 	},
 };

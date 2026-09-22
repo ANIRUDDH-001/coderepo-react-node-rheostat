@@ -36,7 +36,7 @@ const planTemplate = (overrides = {}) => ({
 // In-memory fakes with the same guarantees as the repositories: claims match only pending steps,
 // the environment write is version-guarded, and the version store has a unique (plan, step) index.
 function harness({ plan = planTemplate(), flag = flagTemplate(), failWriteOnce = false } = {}) {
-	const state = { plans: [structuredClone(plan)], flag: structuredClone(flag), versions: [], audit: [], failWriteOnce };
+	const state = { plans: [structuredClone(plan)], flag: structuredClone(flag), versions: [], audit: [], events: [], failWriteOnce };
 	const find = (id) => state.plans.find((entry) => entry._id === id);
 	const stepOf = (id, stepId) => find(id).steps.find((step) => step.id === stepId);
 	const plans = {
@@ -114,8 +114,9 @@ function harness({ plan = planTemplate(), flag = flagTemplate(), failWriteOnce =
 			return entry;
 		},
 	};
-	const reconciler = createReconciler({ plans, flags, versions, audit });
-	return { state, reconciler, plans, flags, versions, audit, plan: () => find(plan._id) };
+	const events = { emit: async (input) => state.events.push(input) };
+	const reconciler = createReconciler({ plans, flags, versions, audit, events });
+	return { state, reconciler, plans, flags, versions, audit, events, plan: () => find(plan._id) };
 }
 
 describe("reconcileDue — due steps", () => {
@@ -143,6 +144,15 @@ describe("reconcileDue — due steps", () => {
 		});
 		expect(h.state.audit.map((entry) => entry.action)).toEqual(["rollout.stepApplied"]);
 		expect(h.state.audit[0].idempotencyKey).toBe(appliedKey("plan1", "s1"));
+		expect(h.state.audit.every((entry) => entry.actorKind === "system")).toBe(true);
+		// Webhook emissions follow the audit write with deterministic ids (spec §9.2).
+		expect(h.state.events.map((event) => event.event)).toEqual(["flag.config.updated", "rollout.stepApplied"]);
+		expect(h.state.events.map((event) => event.eventId)).toEqual(["flag:flag1:production:v4:config", "rollout:plan1:s1:applied"]);
+		expect(h.state.events[0]).toMatchObject({
+			projectId: "proj1",
+			environment: "production",
+			data: { source: "rollout", version: 4, stepId: "s1" },
+		});
 		expect(plan.steps[1].status).toBe("pending");
 	});
 	test("two reconcilers racing on the same step write exactly one version", async () => {
@@ -163,6 +173,12 @@ describe("reconcileDue — due steps", () => {
 		expect(plan.steps[0].status).toBe("pending");
 		expect(h.state.versions).toHaveLength(0);
 		expect(h.state.audit.map((entry) => entry.action)).toEqual(["rollout.stalled"]);
+		expect(h.state.audit[0].actorKind).toBe("system");
+		expect(h.state.events.map((event) => event.event)).toEqual(["rollout.stalled"]);
+		expect(h.state.events[0]).toMatchObject({
+			eventId: "rollout:plan1:stalled:5",
+			data: { stallReason: "CONFIG_CHANGED_OUTSIDE_ROLLOUT", expectedVersion: 3, currentVersion: 5 },
+		});
 	});
 	test("same-version race releases the claim without stalling", async () => {
 		const h = harness({ failWriteOnce: true });
@@ -186,6 +202,9 @@ describe("reconcileDue — due steps", () => {
 		await h.reconciler.reconcileDue(NOW);
 		expect(h.plan().status).toBe("completed");
 		expect(h.state.audit.map((entry) => entry.action)).toEqual(["rollout.stepApplied", "rollout.completed"]);
+		expect(h.state.audit.every((entry) => entry.actorKind === "system")).toBe(true);
+		expect(h.state.events.map((event) => event.event)).toEqual(["flag.config.updated", "rollout.stepApplied", "rollout.completed"]);
+		expect(h.state.events[2].eventId).toBe("rollout:plan1:completed");
 		await h.reconciler.reconcileDue(NOW);
 		expect(h.state.audit).toHaveLength(2);
 	});
@@ -224,6 +243,8 @@ describe("reconcileDue — crash recovery", () => {
 		expect(h.state.audit.map((entry) => entry.action)).toEqual(["rollout.stepApplied"]);
 		expect(h.plan().steps[0]).toMatchObject({ status: "applied", appliedVersion: 4 });
 		expect(h.plan().expectedVersion).toBe(4);
+		// Recovery re-emits the same ids; the delivery repository's unique index dedupes them (W3).
+		expect(h.state.events.map((event) => event.eventId)).toEqual(["flag:flag1:production:v4:config", "rollout:plan1:s1:applied"]);
 	});
 	test("version and audit both present → nothing inserted, finalized", async () => {
 		const h = harness({ plan: planTemplate({ status: "running", steps: [staleStep(), futureStep] }) });

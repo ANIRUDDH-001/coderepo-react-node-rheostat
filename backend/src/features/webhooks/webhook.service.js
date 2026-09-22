@@ -23,11 +23,35 @@ export async function httpSend(url, body, headers) {
 }
 
 export function createWebhookService(deps) {
-	const { subscriptions, deliveries, receipts, projects, audit, send = httpSend, apiOrigin, clock = () => performance.now(), log = logger } = deps;
+	const {
+		subscriptions,
+		deliveries,
+		receipts,
+		projects,
+		audit,
+		send = httpSend,
+		apiOrigin,
+		clock = () => performance.now(),
+		log = logger,
+	} = deps;
 	const dispatcher = createDispatcher({ deliveries, subscriptions, send, audit, log, clock });
-	const events = createEvents({ subscriptions, deliveries, log, dispatchNow: () => dispatcher.dispatchDue(new Date()).catch((error) => log.warn("webhook.dispatch.failed", { error })) });
+	const events = createEvents({
+		subscriptions,
+		deliveries,
+		log,
+		dispatchNow: () => dispatcher.dispatchDue(new Date()).catch((error) => log.warn("webhook.dispatch.failed", { error })),
+	});
 	const auditFor = (actor, action, subscription, summary, metadata = {}) =>
-		audit.record({ actor, action, entityType: "webhook", entityId: subscription._id, entityLabel: subscription.name, projectId: subscription.projectId, summary, metadata });
+		audit.record({
+			actor,
+			action,
+			entityType: "webhook",
+			entityId: subscription._id,
+			entityLabel: subscription.name,
+			projectId: subscription.projectId,
+			summary,
+			metadata,
+		});
 	const canManage = (profile) => can(profile.role, "webhook:manage");
 	const countsFor = async (filter) => {
 		const rows = await deliveries.countByStatus(filter);
@@ -42,7 +66,12 @@ export function createWebhookService(deps) {
 	const decorateDelivery = async (delivery) => ({
 		...delivery,
 		subscription: await subscriptions.findById(delivery.subscriptionId).then((s) => (s ? publicSubscription(s) : null)),
-		headers: { "X-Rheostat-Event": delivery.event, "X-Rheostat-Delivery": String(delivery._id), "X-Rheostat-Subscription": String(delivery.subscriptionId), "X-Rheostat-Signature": "t=<timestamp>,v1=<hmac-sha256>" },
+		headers: {
+			"X-Rheostat-Event": delivery.event,
+			"X-Rheostat-Delivery": String(delivery._id),
+			"X-Rheostat-Subscription": String(delivery.subscriptionId),
+			"X-Rheostat-Signature": "t=<timestamp>,v1=<hmac-sha256>",
+		},
 	});
 
 	const service = {
@@ -51,7 +80,8 @@ export function createWebhookService(deps) {
 		dispatchDue: (now = new Date()) => dispatcher.dispatchDue(now),
 		events,
 		// `apiOrigin` may be a function so the default instance reads config lazily (module load precedes initConfig in tests).
-		sinkUrlFor: (project) => `${typeof apiOrigin === "function" ? apiOrigin() : apiOrigin}/api/v1/webhook-sink/${project.webhookSink.token}`,
+		sinkUrlFor: (project) =>
+			`${typeof apiOrigin === "function" ? apiOrigin() : apiOrigin}/api/v1/webhook-sink/${project.webhookSink.token}`,
 
 		async stats(projectId) {
 			const [counts, count] = await Promise.all([countsFor({ projectId }), subscriptions.countByProject(projectId)]);
@@ -61,15 +91,28 @@ export function createWebhookService(deps) {
 		async list(project, profile) {
 			assertCan(profile, "webhook:read");
 			const rows = await subscriptions.findByProject(project._id);
-			const items = await Promise.all(rows.map(async (row) => ({ ...publicSubscription(row), counts: await countsFor({ subscriptionId: row._id }) })));
-			return { items, sinkUrl: service.sinkUrlFor(project), totals: { dead: (await countsFor({ projectId: project._id })).dead }, permissions: { canManage: canManage(profile) } };
+			const items = await Promise.all(
+				rows.map(async (row) => ({ ...publicSubscription(row), counts: await countsFor({ subscriptionId: row._id }) })),
+			);
+			return {
+				items,
+				sinkUrl: service.sinkUrlFor(project),
+				totals: { dead: (await countsFor({ projectId: project._id })).dead },
+				permissions: { canManage: canManage(profile) },
+			};
 		},
 
 		async create(project, input, profile) {
 			assertCan(profile, "webhook:manage");
 			const secret = newSecret();
 			const created = await subscriptions.create({ ...input, projectId: project._id, secret, createdBy: profile._id });
-			await auditFor(profile, "webhook.created", created, `${profile.name} added webhook "${created.name}" (${created.events.length} events).`, { url: created.url, events: created.events });
+			await auditFor(
+				profile,
+				"webhook.created",
+				created,
+				`${profile.name} added webhook "${created.name}" (${created.events.length} events).`,
+				{ url: created.url, events: created.events },
+			);
 			return { ...publicSubscription(created), secret, permissions: { canManage: true } };
 		},
 
@@ -93,7 +136,15 @@ export function createWebhookService(deps) {
 			if (patch.enabled === false && wasEnabled) await deliveries.holdPending(id);
 			if (patch.enabled === true && !wasEnabled) await deliveries.releaseHeld(id, now);
 			const changed = Object.keys(fields).filter((key) => key !== "secret");
-			await auditFor(profile, rotateSecret ? "webhook.secretRotated" : "webhook.updated", updated, rotateSecret ? `${profile.name} rotated the secret of webhook "${updated.name}".` : `${profile.name} updated webhook "${updated.name}" (${changed.join(", ")}).`, { fields: changed });
+			await auditFor(
+				profile,
+				rotateSecret ? "webhook.secretRotated" : "webhook.updated",
+				updated,
+				rotateSecret
+					? `${profile.name} rotated the secret of webhook "${updated.name}".`
+					: `${profile.name} updated webhook "${updated.name}" (${changed.join(", ")}).`,
+				{ fields: changed },
+			);
 			if (patch.enabled === true) dispatcher.dispatchDue(now).catch((error) => log.warn("webhook.dispatch.failed", { error }));
 			return { ...publicSubscription(updated), ...(secret ? { secret } : {}), permissions: { canManage: true } };
 		},
@@ -128,11 +179,18 @@ export function createWebhookService(deps) {
 			assertCan(profile, "webhook:manage");
 			const delivery = await deliveries.findById(deliveryId);
 			if (!delivery) throw DELIVERY_NOT_FOUND();
-			if (delivery.status === "delivering" || delivery.status === "held") throw new AppError(422, "INVALID_TRANSITION", `A ${delivery.status} delivery cannot be requeued.`);
+			if (delivery.status === "delivering" || delivery.status === "held")
+				throw new AppError(422, "INVALID_TRANSITION", `A ${delivery.status} delivery cannot be requeued.`);
 			const now = new Date();
 			await deliveries.requeue(deliveryId, now, delivery.attempts.length);
 			const subscription = await subscriptions.findById(delivery.subscriptionId);
-			await auditFor(profile, "webhook.redelivered", subscription, `${profile.name} requeued delivery of ${delivery.event} to "${subscription.name}".`, { deliveryId: String(deliveryId) });
+			await auditFor(
+				profile,
+				"webhook.redelivered",
+				subscription,
+				`${profile.name} requeued delivery of ${delivery.event} to "${subscription.name}".`,
+				{ deliveryId: String(deliveryId) },
+			);
 			await dispatcher.dispatchOne(deliveryId, now);
 			return decorateDelivery(await deliveries.findById(deliveryId));
 		},
@@ -143,7 +201,13 @@ export function createWebhookService(deps) {
 			const { subscription, project } = await load(id);
 			if (!subscription.enabled) throw new AppError(422, "WEBHOOK_DISABLED", "Enable the webhook before sending a test.");
 			const eventId = `test:${subscription._id}:${Date.now()}:${randomBytes(4).toString("hex")}`;
-			const [created] = await events.enqueue({ event: "webhook.test", eventId, project, data: { subscriptionId: String(subscription._id), requestedBy: String(profile._id) }, onlySubscriptionId: subscription._id });
+			const [created] = await events.enqueue({
+				event: "webhook.test",
+				eventId,
+				project,
+				data: { subscriptionId: String(subscription._id), requestedBy: String(profile._id) },
+				onlySubscriptionId: subscription._id,
+			});
 			await dispatcher.dispatchOne(created._id, new Date());
 			return decorateDelivery(await deliveries.findById(created._id));
 		},

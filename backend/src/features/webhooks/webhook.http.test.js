@@ -16,8 +16,15 @@ beforeAll(async () => {
 	const app = express();
 	app.use("/api", requestContext);
 	app.use(express.json({ limit: "200kb" }));
-	app.use((request, response, next) => { request.profile = profiles[request.get("x-test-profile") || "marcus"]; request.profileId = request.profile._id; next(); });
-	const routers = createWebhookRouters(h.service, { projects: { getByKey: async (key) => [storefront, mobile].find((p) => p.key === key) }, people: { attachActors: async (items) => items } });
+	app.use((request, response, next) => {
+		request.profile = profiles[request.get("x-test-profile") || "marcus"];
+		request.profileId = request.profile._id;
+		next();
+	});
+	const routers = createWebhookRouters(h.service, {
+		projects: { getByKey: async (key) => [storefront, mobile].find((p) => p.key === key) },
+		people: { attachActors: async (items) => items },
+	});
 	app.use("/api/v1/projects/:projectKey/webhooks", routers.projectWebhookRouter);
 	app.use("/api/v1/webhooks", routers.webhookRouter);
 	app.use("/api/v1/deliveries", routers.deliveryRouter);
@@ -29,7 +36,11 @@ beforeAll(async () => {
 });
 afterAll(() => server.close());
 const call = (method, path, { body, profile = "marcus" } = {}) =>
-	fetch(`${base}${path}`, { method, headers: { "content-type": "application/json", "x-test-profile": profile }, body: body === undefined ? undefined : JSON.stringify(body) });
+	fetch(`${base}${path}`, {
+		method,
+		headers: { "content-type": "application/json", "x-test-profile": profile },
+		body: body === undefined ? undefined : JSON.stringify(body),
+	});
 
 describe("webhook HTTP API", () => {
 	let created;
@@ -50,7 +61,11 @@ describe("webhook HTTP API", () => {
 		const detail = (await (await call("GET", `/webhooks/${created._id}`, { profile: "sam" })).json()).data;
 		expect(detail.secret).toBeUndefined();
 		expect(detail.secretHint).toHaveLength(5);
-		const other = (await (await call("POST", "/projects/mobile/webhooks", { body: input({ url: "http://localhost:8000/api/v1/webhook-sink/tok2" }) })).json()).data;
+		const other = (
+			await (
+				await call("POST", "/projects/mobile/webhooks", { body: input({ url: "http://localhost:8000/api/v1/webhook-sink/tok2" }) })
+			).json()
+		).data;
 		const list = (await (await call("GET", "/projects/storefront/webhooks")).json()).data;
 		expect(list.items.map((item) => item._id)).toEqual([created._id]);
 		expect(list.items[0]._id).not.toBe(other._id);
@@ -76,7 +91,9 @@ describe("webhook HTTP API", () => {
 		const page1 = (await (await call("GET", `/webhooks/${created._id}/deliveries?limit=1`)).json()).data;
 		expect(page1.items).toHaveLength(1);
 		expect(page1.nextCursor).toBeTruthy();
-		const page2 = (await (await call("GET", `/webhooks/${created._id}/deliveries?limit=1&cursor=${encodeURIComponent(page1.nextCursor)}`)).json()).data;
+		const page2 = (
+			await (await call("GET", `/webhooks/${created._id}/deliveries?limit=1&cursor=${encodeURIComponent(page1.nextCursor)}`)).json()
+		).data;
 		expect(page2.items[0]._id).not.toBe(page1.items[0]._id);
 		expect((await call("GET", `/webhooks/${created._id}/deliveries?cursor=garbage`)).status).toBe(400);
 		const redelivered = (await (await call("POST", `/deliveries/${first._id}/redeliver`)).json()).data;

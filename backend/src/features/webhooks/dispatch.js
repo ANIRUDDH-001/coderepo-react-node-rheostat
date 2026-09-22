@@ -19,7 +19,16 @@ const describeFailure = (error) => (error?.name === "TimeoutError" ? "timeout" :
 // The delivery worker (spec §9.5). Claim → send → record. Every branch is idempotent so the 5 s ticker,
 // the post-enqueue kick, and dispatchOne can overlap. Only `pending` rows are ever claimed; `held` rows belong
 // to disabled subscriptions and cost nothing here.
-export function createDispatcher({ deliveries, subscriptions, send, audit, log, clock = () => performance.now(), staleClaimMs = 60000, maxPerPass = 20 }) {
+export function createDispatcher({
+	deliveries,
+	subscriptions,
+	send,
+	audit,
+	log,
+	clock = () => performance.now(),
+	staleClaimMs = 60000,
+	maxPerPass = 20,
+}) {
 	// Automated entries are attributed to the system actor; the creator is kept as metadata for context only.
 	const auditFor = (subscription, delivery, action, summary, extra = {}) =>
 		audit.record({
@@ -31,7 +40,12 @@ export function createDispatcher({ deliveries, subscriptions, send, audit, log, 
 			entityLabel: subscription.name || subscription.url,
 			projectId: subscription.projectId,
 			summary,
-			metadata: { deliveryId: String(delivery._id), event: delivery.event, subscriptionCreatedBy: String(subscription.createdBy), ...extra },
+			metadata: {
+				deliveryId: String(delivery._id),
+				event: delivery.event,
+				subscriptionCreatedBy: String(subscription.createdBy),
+				...extra,
+			},
 		});
 
 	async function attempt(delivery, now) {
@@ -70,18 +84,34 @@ export function createDispatcher({ deliveries, subscriptions, send, audit, log, 
 		}
 		const budgetUsed = attempts.length - (delivery.budgetFrom || 0);
 		if (budgetUsed < MAX_ATTEMPTS) {
-			await deliveries.finish(delivery._id, { status: "pending", attempts, nextAttemptAt: new Date(now.getTime() + BACKOFF_MS[budgetUsed]), claimedAt: null });
+			await deliveries.finish(delivery._id, {
+				status: "pending",
+				attempts,
+				nextAttemptAt: new Date(now.getTime() + BACKOFF_MS[budgetUsed]),
+				claimedAt: null,
+			});
 			return "failed";
 		}
 		await deliveries.finish(delivery._id, { status: "dead", attempts, claimedAt: null });
 		const updated = await subscriptions.recordOutcome(subscription._id, "dead", now);
-		await auditFor(subscription, delivery, "webhook.deliveryDead", `Delivery of ${delivery.event} to ${subscription.name || subscription.url} failed ${MAX_ATTEMPTS} times and was dead-lettered.`, {
-			attempts: attempts.length,
-			lastError: outcome.error || `HTTP ${outcome.responseStatus}`,
-		});
+		await auditFor(
+			subscription,
+			delivery,
+			"webhook.deliveryDead",
+			`Delivery of ${delivery.event} to ${subscription.name || subscription.url} failed ${MAX_ATTEMPTS} times and was dead-lettered.`,
+			{
+				attempts: attempts.length,
+				lastError: outcome.error || `HTTP ${outcome.responseStatus}`,
+			},
+		);
 		if (updated.consecutiveFailures >= BREAKER_THRESHOLD && (await subscriptions.disableAuto(subscription._id))) {
 			await deliveries.holdPending(subscription._id);
-			await auditFor(subscription, delivery, "webhook.autoDisabled", `${subscription.name || subscription.url} was disabled after ${BREAKER_THRESHOLD} consecutive dead-lettered deliveries.`);
+			await auditFor(
+				subscription,
+				delivery,
+				"webhook.autoDisabled",
+				`${subscription.name || subscription.url} was disabled after ${BREAKER_THRESHOLD} consecutive dead-lettered deliveries.`,
+			);
 			log.warn("webhook.autoDisabled", { subscriptionId: String(subscription._id) });
 		}
 		return "failed";

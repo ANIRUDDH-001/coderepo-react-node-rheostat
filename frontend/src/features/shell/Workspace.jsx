@@ -28,6 +28,7 @@ const RolloutsPage = page(() => import("../rollouts/RolloutsPage.jsx"), "Rollout
 const RolloutDetailPage = page(() => import("../rollouts/RolloutDetailPage.jsx"), "RolloutDetailPage");
 const AuditPage = page(() => import("../audit/AuditPage.jsx"), "AuditPage");
 const ProjectSettingsPage = page(() => import("../projects/ProjectSettingsPage.jsx"), "ProjectSettingsPage");
+const WebhookDetailPage = page(() => import("../webhooks/WebhookDetailPage.jsx"), "WebhookDetailPage");
 
 function NotFound({ projectKey }) {
 	return (
@@ -55,6 +56,7 @@ function RouteSwitch({ project, projects, route }) {
 	if (name === "rollout") return <RolloutDetailPage id={params.id} key={params.id} />;
 	if (name === "audit") return <AuditPage key={project.key} />;
 	if (name === "settings") return <ProjectSettingsPage key={project.key} />;
+	if (name === "webhook") return <WebhookDetailPage id={params.id} key={params.id} />;
 	return <NotFound projectKey={project?.key || projects[0]?.key} />;
 }
 

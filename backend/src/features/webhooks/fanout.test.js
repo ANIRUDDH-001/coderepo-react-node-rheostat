@@ -7,14 +7,32 @@ const base = { event: "flag.config.updated", environment: "production", eventId:
 
 describe("fanout", () => {
 	test("one pending delivery per enabled subscription that lists the event", () => {
-		const docs = fanout({ ...base, subscriptions: [sub(), sub({ _id: "s2", events: ["rollout.stalled"] }), sub({ _id: "s3", enabled: false })] });
+		const docs = fanout({
+			...base,
+			subscriptions: [sub(), sub({ _id: "s2", events: ["rollout.stalled"] }), sub({ _id: "s3", enabled: false })],
+		});
 		expect(docs.map((doc) => doc.subscriptionId)).toEqual(["s1"]);
-		expect(docs[0]).toMatchObject({ status: "pending", eventId: "e1", event: "flag.config.updated", nextAttemptAt: now, attempts: [], budgetFrom: 0 });
+		expect(docs[0]).toMatchObject({
+			status: "pending",
+			eventId: "e1",
+			event: "flag.config.updated",
+			nextAttemptAt: now,
+			attempts: [],
+			budgetFrom: 0,
+		});
 	});
 	test("environment filters apply only to events that carry an environment", () => {
-		const docs = fanout({ ...base, subscriptions: [sub({ environments: ["staging"] }), sub({ _id: "s2", environments: ["production"] })] });
+		const docs = fanout({
+			...base,
+			subscriptions: [sub({ environments: ["staging"] }), sub({ _id: "s2", environments: ["production"] })],
+		});
 		expect(docs.map((doc) => doc.subscriptionId)).toEqual(["s2"]);
-		const flagLevel = fanout({ ...base, event: "flag.archived", environment: null, subscriptions: [sub({ events: ["flag.archived"], environments: ["staging"] })] });
+		const flagLevel = fanout({
+			...base,
+			event: "flag.archived",
+			environment: null,
+			subscriptions: [sub({ events: ["flag.archived"], environments: ["staging"] })],
+		});
 		expect(flagLevel).toHaveLength(1);
 	});
 	test("onlySubscriptionId restricts fan-out and webhook.test ignores the event filter", () => {

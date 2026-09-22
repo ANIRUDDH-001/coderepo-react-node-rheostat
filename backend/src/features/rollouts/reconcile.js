@@ -9,6 +9,7 @@ import { dueSteps, fallthroughForStep, isComplete } from "./plan.js";
 //                currentConfig(flagId, env) → { version, enabled, fallthrough } }
 //   versions = { insert(doc) → doc (duplicate key throws { code: 11000 }), findByStep(planId, stepId) }
 //   audit    = { recordOnce(entry) } — the entry carries `actorId`; the adapter resolves the person.
+//   events   = { emit(input) } — webhook emissions (spec §9.2); the adapter resolves `projectId` to the project.
 
 export const STALE_CLAIM_MS = 120000;
 export const appliedKey = (planId, stepId) => `rollout:${planId}:${stepId}:applied`;
@@ -25,7 +26,7 @@ const sameServe = (left, right) => {
 	);
 };
 
-export function createReconciler({ plans, flags, versions, audit, staleClaimMs = STALE_CLAIM_MS }) {
+export function createReconciler({ plans, flags, versions, audit, events = { emit: async () => {} }, staleClaimMs = STALE_CLAIM_MS }) {
 	const snapshotOf = (plan, flag, step, config, version) => ({
 		flagId: flag._id,
 		projectId: flag.projectId,
@@ -54,6 +55,31 @@ export function createReconciler({ plans, flags, versions, audit, staleClaimMs =
 			metadata: { environment: plan.environment, flagKey: flag.key, percent: step.percent, version, stepId: step.id },
 			at: now,
 		});
+		// Deterministic event ids: a re-run of this recovery path maps onto the same delivery rows.
+		await events.emit({
+			event: "flag.config.updated",
+			eventId: `flag:${flag._id}:${plan.environment}:v${version}:config`,
+			projectId: flag.projectId,
+			environment: plan.environment,
+			flag,
+			data: {
+				environment: plan.environment,
+				version,
+				source: "rollout",
+				reason: `Rollout step ${step.percent}%`,
+				actorId: String(plan.createdBy),
+				rolloutPlanId: String(plan._id),
+				stepId: step.id,
+			},
+		});
+		await events.emit({
+			event: "rollout.stepApplied",
+			eventId: appliedKey(plan._id, step.id),
+			projectId: flag.projectId,
+			environment: plan.environment,
+			flag,
+			data: { planId: String(plan._id), environment: plan.environment, percent: step.percent, version },
+		});
 		const updated = await plans.markApplied(plan._id, step.id, version, now);
 		if (updated && isComplete(updated)) {
 			await plans.complete(plan._id, now);
@@ -69,6 +95,14 @@ export function createReconciler({ plans, flags, versions, audit, staleClaimMs =
 				summary: `Rollout of ${flag.key} in ${plan.environment} completed at ${step.percent}%.`,
 				metadata: { environment: plan.environment, flagKey: flag.key, percent: step.percent },
 				at: now,
+			});
+			await events.emit({
+				event: "rollout.completed",
+				eventId: `rollout:${plan._id}:completed`,
+				projectId: flag.projectId,
+				environment: plan.environment,
+				flag,
+				data: { planId: String(plan._id), environment: plan.environment, percent: step.percent },
 			});
 			return { ...updated, status: "completed" };
 		}
@@ -92,6 +126,20 @@ export function createReconciler({ plans, flags, versions, audit, staleClaimMs =
 					: `Rollout of ${flag.key} in ${plan.environment} stalled: a step could not be recovered unambiguously.`,
 			metadata: { environment: plan.environment, flagKey: flag.key, reason, expectedVersion: plan.expectedVersion, ...extra },
 			at: now,
+		});
+		await events.emit({
+			event: "rollout.stalled",
+			eventId: `rollout:${plan._id}:stalled:${extra.version ?? "?"}`,
+			projectId: flag.projectId,
+			environment: plan.environment,
+			flag,
+			data: {
+				planId: String(plan._id),
+				environment: plan.environment,
+				stallReason: reason,
+				expectedVersion: plan.expectedVersion,
+				currentVersion: extra.version ?? null,
+			},
 		});
 	}
 

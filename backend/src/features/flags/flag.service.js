@@ -4,6 +4,8 @@ import { escapeRegex, shortId } from "../../shared/utils/keys.js";
 import { pageResult } from "../../shared/utils/pagination.js";
 import { auditService } from "../audit/audit.service.js";
 import { ENVIRONMENT_KEYS } from "../projects/project.model.js";
+import { projectService } from "../projects/project.service.js";
+import { webhookEvents } from "../webhooks/events.js";
 import { diffEnvConfig, normalizeConfig } from "./config-diff.js";
 import { initialConfig, variationValueSchema } from "./env-config.js";
 import { flagRepository } from "./flag.repository.js";
@@ -228,7 +230,7 @@ export const flagService = {
 		if (flag.archived === archived)
 			throw new AppError(422, "INVALID_TRANSITION", archived ? "This flag is already archived." : "This flag is not archived.");
 		const updated = await flagRepository.setArchived(flag._id, archived, actor._id);
-		await auditService.record({
+		const entry = await auditService.record({
 			actor,
 			action: archived ? "flag.archived" : "flag.restored",
 			entityType: "flag",
@@ -236,6 +238,14 @@ export const flagService = {
 			entityLabel: flag.key,
 			projectId: project._id,
 			summary: `${actor.name} ${archived ? "archived" : "restored"} flag ${flag.key}.`,
+		});
+		// The audit entry is the durable record of the transition, so its id is the event's identity (spec §9.2).
+		await webhookEvents.emit({
+			event: archived ? "flag.archived" : "flag.restored",
+			eventId: `audit:${entry._id}`,
+			project,
+			flag,
+			data: { actorId: String(actor._id) },
 		});
 		return decorateFlag(updated);
 	},
@@ -266,6 +276,23 @@ export const flagService = {
 				projectId: flag.projectId,
 				summary: audit.summary,
 				metadata: { environment, version: version.version, reason, ...(audit.metadata || {}) },
+			});
+			// Emitted only when this call also owns the audit entry; with `audit: false` the caller emits.
+			const project = await projectService.getById(flag.projectId);
+			await webhookEvents.emit({
+				event: "flag.config.updated",
+				eventId: `flag:${flag._id}:${environment}:v${version.version}:config`,
+				project,
+				environment,
+				flag,
+				data: {
+					environment,
+					version: version.version,
+					source,
+					reason,
+					actorId: String(actorId),
+					changeRequestId: changeRequestId ? String(changeRequestId) : null,
+				},
 			});
 		}
 		return { flag: decorateFlag(updated), version };
@@ -301,7 +328,7 @@ export const flagService = {
 		const flag = await this.getRawByKey(project, key);
 		if (flag.killSwitch.active) throw new AppError(422, "INVALID_TRANSITION", "The kill switch is already active for this flag.");
 		const updated = await flagRepository.setKillSwitch(flag._id, { active: true, reason, actorId: actor._id, activatedAt: new Date() });
-		await auditService.record({
+		const entry = await auditService.record({
 			actor,
 			action: "flag.killSwitch.activated",
 			entityType: "flag",
@@ -311,6 +338,13 @@ export const flagService = {
 			summary: `${actor.name} activated the kill switch on ${flag.key}: ${reason}`,
 			metadata: { reason },
 		});
+		await webhookEvents.emit({
+			event: "flag.killSwitch.activated",
+			eventId: `audit:${entry._id}`,
+			project,
+			flag,
+			data: { reason, actorId: String(actor._id) },
+		});
 		return decorateFlag(updated);
 	},
 	async clearKillSwitch(project, key, actor) {
@@ -318,7 +352,7 @@ export const flagService = {
 		const flag = await this.getRawByKey(project, key);
 		if (!flag.killSwitch.active) throw new AppError(422, "INVALID_TRANSITION", "The kill switch is not active for this flag.");
 		const updated = await flagRepository.setKillSwitch(flag._id, { active: false, reason: "", actorId: null, activatedAt: null });
-		await auditService.record({
+		const entry = await auditService.record({
 			actor,
 			action: "flag.killSwitch.cleared",
 			entityType: "flag",
@@ -327,6 +361,13 @@ export const flagService = {
 			projectId: project._id,
 			summary: `${actor.name} cleared the kill switch on ${flag.key}.`,
 			metadata: { previousReason: flag.killSwitch.reason },
+		});
+		await webhookEvents.emit({
+			event: "flag.killSwitch.cleared",
+			eventId: `audit:${entry._id}`,
+			project,
+			flag,
+			data: { actorId: String(actor._id) },
 		});
 		return decorateFlag(updated);
 	},

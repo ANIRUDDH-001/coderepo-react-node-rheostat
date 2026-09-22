@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { buildPath, matchPath, parseQuery, stringifyQuery } from "./match.js";
+import { buildPath, matchPath, matchRoute, parseQuery, stringifyQuery } from "./match.js";
 
 describe("matchPath", () => {
 	test("extracts named params", () => {
@@ -19,6 +19,10 @@ describe("matchPath", () => {
 		expect(matchPath("/projects/:projectKey/flags", "/projects/storefront/flags/extra")).toBeNull();
 		expect(matchPath("/", "/projects")).toBeNull();
 		expect(matchPath("/", "/")).toEqual({});
+	});
+
+	test("matchRoute resolves the webhook detail route", () => {
+		expect(matchRoute("/projects/storefront/webhooks/abc")).toEqual({ name: "webhook", params: { projectKey: "storefront", id: "abc" } });
 	});
 });
 

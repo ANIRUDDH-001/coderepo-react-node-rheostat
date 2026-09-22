@@ -10,6 +10,7 @@ import { validateEnvConfig } from "../flags/config-validation.js";
 import { flagService } from "../flags/flag.service.js";
 import { environmentOf, projectService } from "../projects/project.service.js";
 import { segmentService } from "../segments/segment.service.js";
+import { webhookEvents } from "../webhooks/events.js";
 import { changeRequestDeps } from "./change-request.deps.js";
 import { changeRequestRepository } from "./change-request.repository.js";
 import { canComment, detectStale, transition } from "./transitions.js";
@@ -281,6 +282,38 @@ export const changeRequestService = {
 				appliedVersion: saved.appliedVersion,
 			},
 		);
+		// The apply owns both emissions (spec §9.2): the version write above passed `audit: false`, so nothing was
+		// emitted there. Both follow the audit record on the same path.
+		await webhookEvents.emit({
+			event: "flag.config.updated",
+			eventId: `flag:${flag._id}:${environment.key}:v${written.version.version}:config`,
+			project,
+			environment: environment.key,
+			flag,
+			data: {
+				environment: environment.key,
+				version: written.version.version,
+				source: "changeRequest",
+				reason: changeRequest.title,
+				actorId: String(profile._id),
+				changeRequestId: String(changeRequest._id),
+			},
+		});
+		await webhookEvents.emit({
+			event: "changeRequest.applied",
+			eventId: `cr:${changeRequest._id}:applied`,
+			project,
+			environment: environment.key,
+			flag,
+			data: {
+				changeRequestId: String(changeRequest._id),
+				environment: environment.key,
+				appliedVersion: written.version.version,
+				title: changeRequest.title,
+				authorId: String(changeRequest.authorId),
+				appliedBy: String(profile._id),
+			},
+		});
 		return { ...saved, flag: written.flag };
 	},
 

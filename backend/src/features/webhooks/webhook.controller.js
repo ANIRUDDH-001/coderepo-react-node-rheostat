@@ -19,7 +19,12 @@ const urlSchema = z
 		}
 	}, "Enter an absolute http(s) URL.");
 export const createSchema = z
-	.object({ name: z.string().trim().min(1).max(80), url: urlSchema, events: z.array(z.enum(WEBHOOK_EVENTS)).min(1), environments: z.array(z.enum(ENVIRONMENT_KEYS)).default([]) })
+	.object({
+		name: z.string().trim().min(1).max(80),
+		url: urlSchema,
+		events: z.array(z.enum(WEBHOOK_EVENTS)).min(1),
+		environments: z.array(z.enum(ENVIRONMENT_KEYS)).default([]),
+	})
 	.strict();
 export const updateSchema = z
 	.object({
@@ -32,7 +37,11 @@ export const updateSchema = z
 	})
 	.strict()
 	.refine((value) => Object.keys(value).length > 0, "Provide at least one field to update.");
-export const deliveriesSchema = z.object({ status: z.enum(DELIVERY_STATUSES).optional(), cursor: z.string().max(80).optional(), limit: z.coerce.number().int().min(1).max(100).default(25) });
+export const deliveriesSchema = z.object({
+	status: z.enum(DELIVERY_STATUSES).optional(),
+	cursor: z.string().max(80).optional(),
+	limit: z.coerce.number().int().min(1).max(100).default(25),
+});
 
 const id = (request) => objectIdSchema.parse(request.params.id);
 
@@ -51,13 +60,25 @@ export function createWebhookHandlers(service, { projects = projectService, peop
 			response.status(201).json({ data: await service.create(project, input, request.profile) });
 		}),
 		get: wrap(async (request, response) => response.json({ data: await service.get(id(request), request.profile) })),
-		update: wrap(async (request, response) => response.json({ data: await service.update(id(request), updateSchema.parse(request.body), request.profile) })),
-		remove: wrap(async (request, response) => { await service.remove(id(request), request.profile); response.status(204).end(); }),
-		deliveries: wrap(async (request, response) => response.json({ data: await service.deliveries(id(request), deliveriesSchema.parse(request.query), request.profile) })),
+		update: wrap(async (request, response) =>
+			response.json({ data: await service.update(id(request), updateSchema.parse(request.body), request.profile) }),
+		),
+		remove: wrap(async (request, response) => {
+			await service.remove(id(request), request.profile);
+			response.status(204).end();
+		}),
+		deliveries: wrap(async (request, response) =>
+			response.json({ data: await service.deliveries(id(request), deliveriesSchema.parse(request.query), request.profile) }),
+		),
 		test: wrap(async (request, response) => response.json({ data: await service.test(id(request), request.profile) })),
 		getDelivery: wrap(async (request, response) => response.json({ data: await service.getDelivery(id(request), request.profile) })),
 		redeliver: wrap(async (request, response) => response.json({ data: await service.redeliver(id(request), request.profile) })),
-		receipts: wrap(async (request, response) => response.json({ data: await service.receipts(await projects.getByKey(request.params.projectKey), request.profile) })),
-		clearReceipts: wrap(async (request, response) => { await service.clearReceipts(await projects.getByKey(request.params.projectKey), request.profile); response.status(204).end(); }),
+		receipts: wrap(async (request, response) =>
+			response.json({ data: await service.receipts(await projects.getByKey(request.params.projectKey), request.profile) }),
+		),
+		clearReceipts: wrap(async (request, response) => {
+			await service.clearReceipts(await projects.getByKey(request.params.projectKey), request.profile);
+			response.status(204).end();
+		}),
 	};
 }

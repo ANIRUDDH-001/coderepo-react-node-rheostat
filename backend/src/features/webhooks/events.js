@@ -22,13 +22,31 @@ export function createEvents({ subscriptions, deliveries, log = logger, dispatch
 		// Inserts one delivery per matching subscription and returns exactly those documents. Throws on failure.
 		// Enqueue success is the insert; the dispatch kick afterwards is fire-and-forget and logged on its own.
 		// Business events carry deterministic ids (spec §9.2); only webhook.test may use a random one.
-		async enqueue({ event, eventId, project, environment = null, flag = null, data = {}, occurredAt = new Date(), onlySubscriptionId = null }) {
+		async enqueue({
+			event,
+			eventId,
+			project,
+			environment = null,
+			flag = null,
+			data = {},
+			occurredAt = new Date(),
+			onlySubscriptionId = null,
+		}) {
 			if (!WEBHOOK_EVENTS.includes(event)) throw new Error(`Unknown webhook event ${event}`);
 			if (!eventId && event !== "webhook.test") throw new Error(`eventId is required for ${event}`);
 			const id = eventId || `test:${randomUUID()}`;
 			const candidates = await subscriptions.findEnabledByProject(project._id);
 			const payload = buildPayload({ event, eventId: id, project, environment, flag, data, occurredAt });
-			const docs = fanout({ subscriptions: candidates, event, environment, eventId: id, payload, projectId: project._id, now: occurredAt, onlySubscriptionId });
+			const docs = fanout({
+				subscriptions: candidates,
+				event,
+				environment,
+				eventId: id,
+				payload,
+				projectId: project._id,
+				now: occurredAt,
+				onlySubscriptionId,
+			});
 			if (!docs.length) return [];
 			const inserted = await deliveries.insertMany(docs);
 			Promise.resolve()
@@ -52,4 +70,8 @@ let dispatchNow = async () => {};
 export const setDispatcher = (fn) => {
 	dispatchNow = fn;
 };
-export const webhookEvents = createEvents({ subscriptions: subscriptionRepository, deliveries: deliveryRepository, dispatchNow: () => dispatchNow().catch((error) => logger.warn("webhook.dispatch.failed", { error })) });
+export const webhookEvents = createEvents({
+	subscriptions: subscriptionRepository,
+	deliveries: deliveryRepository,
+	dispatchNow: () => dispatchNow().catch((error) => logger.warn("webhook.dispatch.failed", { error })),
+});

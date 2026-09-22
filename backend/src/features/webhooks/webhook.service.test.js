@@ -1,7 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { diego, harness, input, marcus, mobile, sam, storefront } from "./test-harness.js";
 
-
 describe("webhookService", () => {
 	test("create returns the secret once; get hides it; developers cannot create", async () => {
 		const { service } = harness();
@@ -68,7 +67,10 @@ describe("webhookService", () => {
 		const { service, state } = harness();
 		const a = await service.create(storefront, input({ url: "http://127.0.0.1:9/dead" }), marcus);
 		const first = await service.test(a._id, marcus);
-		Object.assign(state.deliveries[0], { status: "dead", attempts: Array(5).fill({ at: new Date(), outcome: "failed", durationMs: 1 }) });
+		Object.assign(state.deliveries[0], {
+			status: "dead",
+			attempts: Array(5).fill({ at: new Date(), outcome: "failed", durationMs: 1 }),
+		});
 		const redelivered = await service.redeliver(first._id, marcus);
 		expect(redelivered._id).toBe(first._id);
 		expect(redelivered.budgetFrom).toBe(5);
@@ -103,5 +105,15 @@ describe("webhookService", () => {
 
 // Wraps a service's events with a failing insert to prove enqueue errors surface from test().
 function createWebhookServiceWithFailingInsert(service, state) {
-	return { test: (id, profile) => service.__withDeliveries({ ...service.__deps.deliveries, insertMany: async () => { throw new Error("db down"); } }).test(id, profile) };
+	return {
+		test: (id, profile) =>
+			service
+				.__withDeliveries({
+					...service.__deps.deliveries,
+					insertMany: async () => {
+						throw new Error("db down");
+					},
+				})
+				.test(id, profile),
+	};
 }

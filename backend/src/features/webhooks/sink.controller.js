@@ -23,7 +23,9 @@ export function createSinkRouter({ projects, subscriptions, receipts, now = () =
 			const found = mongoose.isValidObjectId(subscriptionId) ? await subscriptions.findById(subscriptionId) : null;
 			// Binding invariant: the subscription must belong to the project that owns this sink token.
 			const subscription = found && String(found.projectId) === String(project._id) ? found : null;
-			const check = subscription ? verify(subscription.secret, body, request.get("x-rheostat-signature"), { nowSeconds: Math.floor(now() / 1000) }) : { valid: false, error: "unknown subscription" };
+			const check = subscription
+				? verify(subscription.secret, body, request.get("x-rheostat-signature"), { nowSeconds: Math.floor(now() / 1000) })
+				: { valid: false, error: "unknown subscription" };
 			const receivedAt = new Date(now());
 			// Atomic dedupe: valid deliveries key on the delivery id; invalid attempts are always recorded individually.
 			const receipt = await receipts.record({
@@ -48,4 +50,8 @@ export function createSinkRouter({ projects, subscriptions, receipts, now = () =
 	return router;
 }
 
-export const sinkRouter = createSinkRouter({ projects: projectRepository, subscriptions: subscriptionRepository, receipts: receiptRepository });
+export const sinkRouter = createSinkRouter({
+	projects: projectRepository,
+	subscriptions: subscriptionRepository,
+	receipts: receiptRepository,
+});
