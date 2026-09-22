@@ -34,7 +34,9 @@ export function SegmentsPage() {
 	const { project } = useProject();
 	const { can } = useSession();
 	const { notify } = useToast();
-	const { data, error, loading, reload } = useAsync(() => segmentApi.list(project.key), [project.key]);
+	const { data, error, loading, reload } = useAsync(() => segmentApi.list(project.key), [project.key], {
+		key: `segments:${project.key}`,
+	});
 	const [deleting, setDeleting] = useState(null);
 	const [busy, setBusy] = useState(false);
 	const [failure, setFailure] = useState(null);

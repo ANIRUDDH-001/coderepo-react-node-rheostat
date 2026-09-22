@@ -27,7 +27,7 @@ export function AuditPage() {
 	const { query, setQuery } = useRoute();
 	const scope = query.scope === "all" ? "" : project.key;
 	const filters = { projectKey: scope, entityType: query.entityType || "", actorId: query.actorId || "", limit: PAGE_SIZE };
-	const people = useAsync(() => profileApi.list(), []);
+	const people = useAsync(() => profileApi.list(), [], { key: "profiles" });
 	const first = useAsync(() => auditApi.list(filters), [scope, filters.entityType, filters.actorId]);
 	const [extra, setExtra] = useState({ items: [], nextBefore: undefined, error: null, loading: false });
 

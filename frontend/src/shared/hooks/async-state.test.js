@@ -12,7 +12,12 @@ describe("async-state", () => {
 		clearCache();
 		writeCache("k", [1]);
 		expect(initialStateFor("k", 30000)).toMatchObject({ data: [1], loading: false, revalidating: false, fresh: true });
-		expect(initialStateFor("k", 30000, Date.now() + 31000)).toMatchObject({ data: [1], loading: false, revalidating: true, fresh: false });
+		expect(initialStateFor("k", 30000, Date.now() + 31000)).toMatchObject({
+			data: [1],
+			loading: false,
+			revalidating: true,
+			fresh: false,
+		});
 	});
 	test("a key change to an uncached key drops the old data and shows loading", () => {
 		clearCache();

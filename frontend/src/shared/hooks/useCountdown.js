@@ -10,5 +10,11 @@ export function useCountdown() {
 		return () => window.clearInterval(timer);
 	}, [until]);
 	const secondsLeft = Math.max(0, Math.ceil((until - now) / 1000));
-	return { secondsLeft, start: (seconds) => { setNow(Date.now()); setUntil(Date.now() + seconds * 1000); } };
+	return {
+		secondsLeft,
+		start: (seconds) => {
+			setNow(Date.now());
+			setUntil(Date.now() + seconds * 1000);
+		},
+	};
 }

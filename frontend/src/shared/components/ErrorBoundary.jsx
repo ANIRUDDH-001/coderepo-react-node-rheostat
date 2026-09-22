@@ -27,7 +27,13 @@ export class ErrorBoundary extends Component {
 export function RouteErrorFallback({ error, onRetry, projectKey }) {
 	return (
 		<section className="page" aria-labelledby="route-error-title">
-			<EmptyState action={{ label: "Try again", onClick: onRetry }} description={`${error.message}. Your other pages are unaffected.`} icon="error_outline" id="route-error-title" title="This page ran into a problem" />
+			<EmptyState
+				action={{ label: "Try again", onClick: onRetry }}
+				description={`${error.message}. Your other pages are unaffected.`}
+				icon="error_outline"
+				id="route-error-title"
+				title="This page ran into a problem"
+			/>
 			<p className="route-error-links">
 				<a href={`/projects/${projectKey}/dashboard`}>Go to dashboard</a>
 			</p>

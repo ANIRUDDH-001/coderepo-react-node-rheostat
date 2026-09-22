@@ -23,7 +23,7 @@ const ROLE_SUMMARY = {
 export function PeopleRolesTable({ editable }) {
 	const { profile } = useSession();
 	const { notify } = useToast();
-	const { data, error, loading, reload, mutate } = useAsync(() => peopleApi.search(""), []);
+	const { data, error, loading, reload, mutate } = useAsync(() => peopleApi.search(""), [], { key: "people:" });
 	const [failure, setFailure] = useState({});
 	const [busyId, setBusyId] = useState("");
 	if (loading && !data) return <Skeleton rows={5} />;

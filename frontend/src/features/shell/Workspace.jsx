@@ -62,7 +62,7 @@ export function Workspace({ onLogout, onProfileSwitch }) {
 	const { profile } = useSession();
 	const route = useRoute();
 	const [drawerOpen, setDrawerOpen] = useState(false);
-	const { data: projects, error, loading, reload } = useAsync(() => projectApi.list(), []);
+	const { data: projects, error, loading, reload } = useAsync(() => projectApi.list(), [], { key: "projects" });
 	const closeDrawer = useCallback(() => setDrawerOpen(false), []);
 
 	const project = useMemo(() => {

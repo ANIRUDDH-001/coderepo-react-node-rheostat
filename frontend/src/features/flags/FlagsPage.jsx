@@ -48,9 +48,10 @@ export function FlagsPage() {
 		page,
 		pageSize,
 	};
-	const { data, error, loading, reload } = useAsync(
+	const { data, error, loading, revalidating, reload } = useAsync(
 		() => flagApi.list(project.key, requestFilters),
 		[project.key, JSON.stringify(requestFilters)],
+		{ key: `flags:${project.key}:${JSON.stringify(requestFilters)}` },
 	);
 
 	const filtered = Object.entries(filters).some(([key, value]) => key in DEFAULT_FILTERS && value !== DEFAULT_FILTERS[key]);
@@ -75,7 +76,9 @@ export function FlagsPage() {
 	} else {
 		body = (
 			<>
-				<FlagTable environments={project.environments} flags={data.items} projectKey={project.key} />
+				<div aria-busy={revalidating || undefined}>
+					<FlagTable environments={project.environments} flags={data.items} projectKey={project.key} />
+				</div>
 				<Pagination
 					onPage={(next) => setQuery({ page: next === 1 ? "" : String(next) })}
 					page={data.page}

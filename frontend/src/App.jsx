@@ -12,6 +12,7 @@ import {
 	setProfileToken,
 	setSessionToken,
 } from "./shared/api/client.js";
+import { clearCache } from "./shared/api/cache.js";
 import { BrandMark } from "./shared/components/BrandMark.jsx";
 import { AppErrorFallback, ErrorBoundary } from "./shared/components/ErrorBoundary.jsx";
 import { ToastProvider } from "./shared/components/Toast.jsx";
@@ -32,6 +33,7 @@ function AppBootScreen() {
 }
 
 const clearStoredSession = () => {
+	clearCache();
 	setProfileToken("");
 	setSessionToken("");
 	localStorage.removeItem(PROFILE_ID_KEY);
@@ -167,6 +169,7 @@ function AppRoot() {
 	};
 
 	const switchProfile = async () => {
+		clearCache();
 		setSwitchingFrom(session.profile);
 		localStorage.removeItem(PROFILE_ID_KEY);
 		setProfileToken("");

@@ -4,7 +4,7 @@ import { peopleApi } from "./people.api.js";
 
 // Owner / reviewer picker over the workspace people list. `value` is a person id or "" (unassigned).
 export function PersonPicker({ allowNone = true, ariaLabel = "Person", disabled = false, noneLabel = "Unassigned", onChange, value }) {
-	const { data: people, error } = useAsync(() => peopleApi.search(""), []);
+	const { data: people, error } = useAsync(() => peopleApi.search(""), [], { key: "people:" });
 	const options = [
 		...(allowNone ? [{ value: "", label: noneLabel }] : []),
 		...(people || []).map((person) => ({ value: person._id, label: person.name })),

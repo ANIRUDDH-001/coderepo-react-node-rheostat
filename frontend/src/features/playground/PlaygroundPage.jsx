@@ -28,7 +28,9 @@ export function PlaygroundPage() {
 	const [rows, setRows] = useState(DEFAULT_ROWS);
 	const [flagKey, setFlagKey] = useState(query.flag || "");
 	const [state, setState] = useState({ result: null, loading: false, error: null });
-	const flagsState = useAsync(() => flagApi.list(project.key, { pageSize: 100, sort: "key" }), [project.key]);
+	const flagsState = useAsync(() => flagApi.list(project.key, { pageSize: 100, sort: "key" }), [project.key], {
+		key: `flags:${project.key}:playground`,
+	});
 	const flags = flagsState.data?.items || [];
 	const rulesByFlag = Object.fromEntries(
 		flags.map((flag) => [flag.key, { variations: flag.variations, rules: flag.environments[environment.key]?.rules || [] }]),

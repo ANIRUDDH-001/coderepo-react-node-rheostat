@@ -59,7 +59,7 @@ export function FlagDetailPage({ flagKey }) {
 	const { query, setQuery } = useRoute();
 	const { notify } = useToast();
 	const { data: flag, error, loading, reload } = useAsync(() => flagApi.get(project.key, flagKey), [project.key, flagKey]);
-	const segmentsState = useAsync(() => segmentApi.list(project.key), [project.key]);
+	const segmentsState = useAsync(() => segmentApi.list(project.key), [project.key], { key: `segments:${project.key}` });
 	const [dialog, setDialog] = useState(null);
 	const [busy, setBusy] = useState(false);
 	const [dialogError, setDialogError] = useState("");

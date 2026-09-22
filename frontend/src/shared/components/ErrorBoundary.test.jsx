@@ -8,12 +8,18 @@ describe("ErrorBoundary", () => {
 		expect(ErrorBoundary.getDerivedStateFromError(error)).toEqual({ error });
 	});
 	test("renders children when nothing failed", () => {
-		const html = renderToStaticMarkup(<ErrorBoundary fallback={() => <p>fallback</p>}><p>content</p></ErrorBoundary>);
+		const html = renderToStaticMarkup(
+			<ErrorBoundary fallback={() => <p>fallback</p>}>
+				<p>content</p>
+			</ErrorBoundary>,
+		);
 		expect(html).toContain("content");
 		expect(html).not.toContain("fallback");
 	});
 	test("route fallback names the error and offers retry and dashboard", () => {
-		const html = renderToStaticMarkup(<RouteErrorFallback error={new Error("Cannot read x")} onRetry={() => {}} projectKey="storefront" />);
+		const html = renderToStaticMarkup(
+			<RouteErrorFallback error={new Error("Cannot read x")} onRetry={() => {}} projectKey="storefront" />,
+		);
 		expect(html).toContain('id="route-error-title"');
 		expect(html).toContain("This page ran into a problem");
 		expect(html).toContain("Cannot read x");
