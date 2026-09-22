@@ -8,7 +8,9 @@ const attempts = [
 ];
 describe("AttemptTimeline", () => {
 	test("lists attempts with status, duration, error, and the next attempt", () => {
-		const html = renderToStaticMarkup(<AttemptTimeline attempts={attempts} budgetFrom={0} nextAttemptAt="2026-09-21T10:02:30Z" status="pending" />);
+		const html = renderToStaticMarkup(
+			<AttemptTimeline attempts={attempts} budgetFrom={0} nextAttemptAt="2026-09-21T10:02:30Z" status="pending" />,
+		);
 		expect(html).toContain("Attempt 1");
 		expect(html).toContain("HTTP 503");
 		expect(html).toContain("5 ms");

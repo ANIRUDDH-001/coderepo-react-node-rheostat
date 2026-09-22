@@ -55,7 +55,7 @@ export function RolloutsPage() {
 					title="No rollouts found"
 				/>
 			) : (
-				<div className="table-wrap">
+				<div className="table-scroll">
 					<table className="data-table rollout-table">
 						<thead>
 							<tr>

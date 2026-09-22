@@ -51,17 +51,30 @@ export function DeliveryList({ subscriptionId, canManage, projectKey, epoch = 0 
 		<section className="editor-section" aria-labelledby="deliveries-title">
 			<div className="editor-section-header">
 				<h3 id="deliveries-title">Deliveries</h3>
-				<SelectMenu ariaLabel="Delivery status" onChange={(value) => setQuery({ status: value })} options={STATUS_OPTIONS} value={status} />
+				<SelectMenu
+					ariaLabel="Delivery status"
+					onChange={(value) => setQuery({ status: value })}
+					options={STATUS_OPTIONS}
+					value={status}
+				/>
 			</div>
 			{state.error && (
-				<ErrorBanner message={state.error.message} requestId={state.error.status >= 500 ? state.error.requestId : ""} onRetry={() => load(null)} />
+				<ErrorBanner
+					message={state.error.message}
+					requestId={state.error.status >= 500 ? state.error.requestId : ""}
+					onRetry={() => load(null)}
+				/>
 			)}
 			{state.loading && !state.items.length && !state.error && <Skeleton rows={4} />}
 			{!state.loading && !state.items.length && !state.error && (
-				<EmptyState description={status ? "Nothing matches this status." : "Send a test to see the first delivery here."} icon="send" title="No deliveries yet" />
+				<EmptyState
+					description={status ? "Nothing matches this status." : "Send a test to see the first delivery here."}
+					icon="send"
+					title="No deliveries yet"
+				/>
 			)}
 			{state.items.length > 0 && (
-				<div className="table-wrap">
+				<div className="table-scroll">
 					<table className="data-table delivery-table">
 						<thead>
 							<tr>

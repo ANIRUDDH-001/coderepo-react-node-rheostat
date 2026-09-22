@@ -27,7 +27,9 @@ const hostOf = (url) => {
 export function WebhooksTab() {
 	const { project, reloadBadges } = useProject();
 	const { notify } = useToast();
-	const { data, error, loading, reload } = useAsync(() => webhookApi.list(project.key), [project.key], { key: `webhooks:${project.key}` });
+	const { data, error, loading, reload } = useAsync(() => webhookApi.list(project.key), [project.key], {
+		key: `webhooks:${project.key}`,
+	});
 	const [dialog, setDialog] = useState(null); // { kind: "create" } | { kind: "edit", subscription } | { kind: "delete", subscription } | { kind: "clear" }
 	const [busyId, setBusyId] = useState("");
 	const [actionError, setActionError] = useState("");
@@ -67,14 +69,18 @@ export function WebhooksTab() {
 		}
 	};
 	const environmentNames = (keys) =>
-		keys.length ? keys.map((key) => project.environments.find((environment) => environment.key === key)?.name || key).join(", ") : "All";
+		keys.length
+			? keys.map((key) => project.environments.find((environment) => environment.key === key)?.name || key).join(", ")
+			: "All";
 
 	return (
 		<>
 			<section className="editor-section sink-card" aria-labelledby="settings-sink-title">
 				<div className="editor-section-header">
 					<h3 id="settings-sink-title">Built-in test receiver</h3>
-					<span className="muted">Point a webhook here to see signed deliveries land in the inbox without any external service.</span>
+					<span className="muted">
+						Point a webhook here to see signed deliveries land in the inbox without any external service.
+					</span>
 				</div>
 				<div className="sink-card-row">
 					<code className="sink-url">{sinkUrl}</code>
@@ -114,7 +120,7 @@ export function WebhooksTab() {
 						title="No webhooks yet"
 					/>
 				) : (
-					<div className="table-wrap">
+					<div className="table-scroll">
 						<table className="data-table webhook-table">
 							<thead>
 								<tr>
@@ -134,7 +140,9 @@ export function WebhooksTab() {
 								{items.map((subscription) => (
 									<tr key={subscription._id}>
 										<td>
-											<Link to={buildPath("webhook", { projectKey: project.key, id: subscription._id })}>{subscription.name}</Link>
+											<Link to={buildPath("webhook", { projectKey: project.key, id: subscription._id })}>
+												{subscription.name}
+											</Link>
 										</td>
 										<td>
 											<code>{hostOf(subscription.url)}</code>
@@ -147,7 +155,9 @@ export function WebhooksTab() {
 											<StatusBadge subscription={subscription} />
 										</td>
 										<td className="numeric-cell">{subscription.counts.delivered}</td>
-										<td className={`numeric-cell ${subscription.counts.dead ? "danger-text" : ""}`}>{subscription.counts.dead}</td>
+										<td className={`numeric-cell ${subscription.counts.dead ? "danger-text" : ""}`}>
+											{subscription.counts.dead}
+										</td>
 										<td className="numeric-cell">{subscription.counts.held}</td>
 										<td>{subscription.lastDeliveryAt ? relativeTime(subscription.lastDeliveryAt) : "Never"}</td>
 										{canManage && (
@@ -155,9 +165,19 @@ export function WebhooksTab() {
 												<button
 													className="text-button"
 													disabled={busyId === subscription._id || !subscription.enabled}
-													title={subscription.enabled ? "Send a webhook.test event now" : "Enable the webhook before sending a test"}
+													title={
+														subscription.enabled
+															? "Send a webhook.test event now"
+															: "Enable the webhook before sending a test"
+													}
 													type="button"
-													onClick={() => run(subscription._id, () => webhookApi.test(subscription._id, project.key), describeTest)}
+													onClick={() =>
+														run(
+															subscription._id,
+															() => webhookApi.test(subscription._id, project.key),
+															describeTest,
+														)
+													}
 												>
 													<MaterialIcon size={18}>send</MaterialIcon> Test
 												</button>
@@ -168,8 +188,15 @@ export function WebhooksTab() {
 													onClick={() =>
 														run(
 															subscription._id,
-															() => webhookApi.update(subscription._id, { enabled: !subscription.enabled }, project.key),
-															subscription.enabled ? "Webhook disabled; pending deliveries are held." : "Webhook enabled; held deliveries resume.",
+															() =>
+																webhookApi.update(
+																	subscription._id,
+																	{ enabled: !subscription.enabled },
+																	project.key,
+																),
+															subscription.enabled
+																? "Webhook disabled; pending deliveries are held."
+																: "Webhook enabled; held deliveries resume.",
 														)
 													}
 												>
@@ -212,7 +239,10 @@ export function WebhooksTab() {
 					onClose={() => setDialog(null)}
 					onSaved={(saved) => {
 						setDialog(null);
-						notify({ kind: "success", message: dialog.kind === "edit" ? `Webhook "${saved.name}" saved.` : `Webhook "${saved.name}" created.` });
+						notify({
+							kind: "success",
+							message: dialog.kind === "edit" ? `Webhook "${saved.name}" saved.` : `Webhook "${saved.name}" created.`,
+						});
 						reload();
 						reloadBadges?.();
 					}}
@@ -226,7 +256,11 @@ export function WebhooksTab() {
 					title="Delete webhook"
 					onCancel={() => setDialog(null)}
 					onConfirm={async () => {
-						await run(dialog.subscription._id, () => webhookApi.remove(dialog.subscription._id, project.key), `Webhook "${dialog.subscription.name}" deleted.`);
+						await run(
+							dialog.subscription._id,
+							() => webhookApi.remove(dialog.subscription._id, project.key),
+							`Webhook "${dialog.subscription.name}" deleted.`,
+						);
 						setDialog(null);
 					}}
 				/>

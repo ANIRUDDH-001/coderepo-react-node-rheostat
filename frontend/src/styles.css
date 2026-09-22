@@ -389,6 +389,7 @@ dialog::backdrop { background: rgb(32 33 36 / 18%); }
 /* Targeting editor */
 .targeting-editor, .segment-form { display: grid; gap: 16px; }
 .editor-section { display: grid; gap: 12px; padding: 16px 20px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
+.editor-section > * { min-width: 0; }
 .editor-section-header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
 .editor-section-header h3 { margin: 0; color: var(--ink-strong); font-size: 16px; font-weight: 500; }
 .editor-empty { margin: 0; font-size: 14px; }
@@ -760,7 +761,6 @@ dialog::backdrop { background: rgb(32 33 36 / 18%); }
     .event-picker { grid-template-columns: minmax(0, 1fr); }
     .attempt { grid-template-columns: minmax(0, 1fr); gap: 2px; }
     .headers-table th { width: 120px; }
-    .webhook-table .row-actions { white-space: normal; }
     .editor-section { padding: 12px; }
     .project-switcher { width: 132px; }
     .dashboard-panel { padding: 12px; }

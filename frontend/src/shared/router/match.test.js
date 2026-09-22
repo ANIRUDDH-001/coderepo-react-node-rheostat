@@ -22,7 +22,10 @@ describe("matchPath", () => {
 	});
 
 	test("matchRoute resolves the webhook detail route", () => {
-		expect(matchRoute("/projects/storefront/webhooks/abc")).toEqual({ name: "webhook", params: { projectKey: "storefront", id: "abc" } });
+		expect(matchRoute("/projects/storefront/webhooks/abc")).toEqual({
+			name: "webhook",
+			params: { projectKey: "storefront", id: "abc" },
+		});
 	});
 });
 

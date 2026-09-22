@@ -30,7 +30,11 @@ export function Inbox({ projectKey, epoch = 0 }) {
 			{error && <ErrorBanner message={error.message} requestId={error.status >= 500 ? error.requestId : ""} onRetry={reload} />}
 			{loading && !data && <Skeleton rows={3} />}
 			{data && !data.length && (
-				<EmptyState description="Send a test from a webhook that points at the receiver." icon="inbox" title="The test receiver has not received anything yet." />
+				<EmptyState
+					description="Send a test from a webhook that points at the receiver."
+					icon="inbox"
+					title="The test receiver has not received anything yet."
+				/>
 			)}
 			{data && data.length > 0 && (
 				<ul aria-labelledby="inbox-title" className="inbox-list">
@@ -48,7 +52,10 @@ export function Inbox({ projectKey, epoch = 0 }) {
 									</Badge>
 								)}
 								{receipt.receivedCount > 1 && (
-									<Badge title={`Received ${receipt.receivedCount} times — the sender retried; deduplicated by delivery id`} tone="warning">
+									<Badge
+										title={`Received ${receipt.receivedCount} times — the sender retried; deduplicated by delivery id`}
+										tone="warning"
+									>
 										×{receipt.receivedCount}
 									</Badge>
 								)}

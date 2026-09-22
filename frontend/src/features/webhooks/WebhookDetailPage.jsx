@@ -63,7 +63,9 @@ export function WebhookDetailPage({ id }) {
 		}
 	};
 	const environmentNames = subscription.environments.length
-		? subscription.environments.map((key) => project.environments.find((environment) => environment.key === key)?.name || key).join(", ")
+		? subscription.environments
+				.map((key) => project.environments.find((environment) => environment.key === key)?.name || key)
+				.join(", ")
 		: "All environments";
 
 	return (
@@ -111,7 +113,9 @@ export function WebhookDetailPage({ id }) {
 							onClick={() =>
 								run(
 									() => webhookApi.update(id, { enabled: !subscription.enabled }, project.key),
-									subscription.enabled ? "Webhook disabled; pending deliveries are held." : "Webhook enabled; held deliveries resume.",
+									subscription.enabled
+										? "Webhook disabled; pending deliveries are held."
+										: "Webhook enabled; held deliveries resume.",
 								)
 							}
 						>

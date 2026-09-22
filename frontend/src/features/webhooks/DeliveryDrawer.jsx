@@ -41,7 +41,12 @@ export function DeliveryDrawer({ deliveryId, canManage, projectKey, onClose, onC
 			notify(
 				updated.status === "delivered"
 					? { kind: "success", message: "Delivered." }
-					: { kind: "error", message: updated.nextAttemptAt ? `Failed — next attempt in ${secondsUntil(updated.nextAttemptAt)} s.` : "Failed — dead-lettered." },
+					: {
+							kind: "error",
+							message: updated.nextAttemptAt
+								? `Failed — next attempt in ${secondsUntil(updated.nextAttemptAt)} s.`
+								: "Failed — dead-lettered.",
+						},
 			);
 			onChanged?.();
 		} catch (caught) {
@@ -51,7 +56,8 @@ export function DeliveryDrawer({ deliveryId, canManage, projectKey, onClose, onC
 		}
 	};
 	const blocked = delivery && (delivery.status === "delivering" || delivery.status === "held");
-	const blockedReason = delivery?.status === "held" ? "Held deliveries resume when the webhook is enabled." : "A delivery in flight cannot be requeued.";
+	const blockedReason =
+		delivery?.status === "held" ? "Held deliveries resume when the webhook is enabled." : "A delivery in flight cannot be requeued.";
 
 	return createPortal(
 		<Modal className="delivery-drawer" labelledBy={titleId} onClose={onClose}>

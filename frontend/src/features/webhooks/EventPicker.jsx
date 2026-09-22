@@ -7,13 +7,22 @@ export function EventPicker({ value, onChange, disabled = false }) {
 		const next = new Set(selected);
 		if (checked) next.add(event);
 		else next.delete(event);
-		onChange(WEBHOOK_EVENT_GROUPS.flag.concat(WEBHOOK_EVENT_GROUPS.changeRequest, WEBHOOK_EVENT_GROUPS.rollout).filter((entry) => next.has(entry)));
+		onChange(
+			WEBHOOK_EVENT_GROUPS.flag
+				.concat(WEBHOOK_EVENT_GROUPS.changeRequest, WEBHOOK_EVENT_GROUPS.rollout)
+				.filter((entry) => next.has(entry)),
+		);
 	};
 	const toggleGroup = (events, checked) => {
 		const next = new Set(selected);
-		for (const event of events) if (checked) next.add(event);
-		else next.delete(event);
-		onChange(Object.values(WEBHOOK_EVENT_GROUPS).flat().filter((entry) => next.has(entry)));
+		for (const event of events)
+			if (checked) next.add(event);
+			else next.delete(event);
+		onChange(
+			Object.values(WEBHOOK_EVENT_GROUPS)
+				.flat()
+				.filter((entry) => next.has(entry)),
+		);
 	};
 	return (
 		<div className="event-picker">
