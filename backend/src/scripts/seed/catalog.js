@@ -16,7 +16,7 @@ const boolean = [
 ];
 const booleanOn = config(true, "v_false", on("v_true"));
 const booleanOff = config(false, "v_false", on("v_true"));
-// Targeting on while everyone still gets the old behaviour: the baseline a rollout starts from.
+// Targeting on while everyone still gets the old behavior: the baseline a rollout starts from.
 const booleanArmed = config(true, "v_false", on("v_false"));
 const ramp = (percent) => config(true, "v_false", split(["v_true", percent * 1000], ["v_false", 100000 - percent * 1000]));
 const step = (env, daysAgo, actor, source, reason, configuration) => ({ env, daysAgo, actor, source, reason, config: configuration });

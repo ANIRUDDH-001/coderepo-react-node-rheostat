@@ -24,7 +24,7 @@ describe("RolloutTimeline", () => {
 		expect(html).toContain('role="img"');
 		expect(html).toContain("Current audience: 10%");
 	});
-	test("applied steps carry the applied status class and colour", () => {
+	test("applied steps carry the applied status class and color", () => {
 		const html = renderToStaticMarkup(<RolloutTimeline plan={plan()} />);
 		expect(html).toContain("rollout-status-applied");
 		expect(html).toContain('fill="var(--success)"');

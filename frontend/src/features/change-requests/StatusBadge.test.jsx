@@ -15,7 +15,7 @@ describe("change request badges", () => {
 		expect(html).toContain(label);
 		expect(html).toContain(tone);
 	});
-	test("kinds are labelled", () => {
+	test("kinds are labeled", () => {
 		expect(renderToStaticMarkup(<KindBadge kind="manual" />)).toContain("Targeting change");
 		expect(renderToStaticMarkup(<KindBadge kind="promotion" />)).toContain("Promotion");
 		expect(renderToStaticMarkup(<KindBadge kind="rollback" />)).toContain("Rollback");

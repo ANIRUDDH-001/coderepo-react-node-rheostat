@@ -114,7 +114,7 @@ export function WebhookFormDialog({ initial, projectKey, sinkUrl, onClose, onSav
 						<button className="text-button webhook-use-sink" disabled={!sinkUrl} type="button" onClick={() => setUrl(sinkUrl)}>
 							<MaterialIcon size={18}>inbox</MaterialIcon> Use the built-in test receiver
 						</button>
-						{/* Group controls are labelled by their own heading rather than a <label for>. */}
+						{/* Group controls are labeled by their own heading rather than a <label for>. */}
 						<div className={`form-field ${errors.fields.events ? "form-field-invalid" : ""}`}>
 							<span className="form-field-heading" id={`${titleId}-events`}>
 								Events<span aria-hidden="true"> *</span>

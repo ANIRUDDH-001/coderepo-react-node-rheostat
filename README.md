@@ -110,7 +110,7 @@ On HackerRank the same commands are declared in `hackerrank.yml`: install `bun i
 | `bun run dev:backend` | Backend only (`bun --watch src/index.js`, port 8000) |
 | `bun run dev:frontend` | Frontend only (Vite, port 3000, proxies `/api` to 8000) |
 | `bun test` | All tests, backend and frontend, from the repository root |
-| `MONGODB_TEST_URI=mongodb://localhost:27017/rheostat_test bun test` | Also runs the MongoDB integration suite (concurrency and unique-index behaviour) |
+| `MONGODB_TEST_URI=mongodb://localhost:27017/rheostat_test bun test` | Also runs the MongoDB integration suite (concurrency and unique-index behavior) |
 | `bunx prettier@3.6.2 --check "backend/src/**/*.js" "frontend/src/**/*.{js,jsx}"` | Formatting check |
 | `cd frontend && bun run build` | Production build of the frontend |
 
