@@ -85,6 +85,14 @@ export function DashboardPage() {
 				/>
 				<StatTile icon="event_busy" label="Overdue" to={flagsPath({ stale: "overdue" })} tone="danger" value={flagCounts.overdue} />
 				<StatTile icon="bolt" label="Kill switches" tone="danger" value={flagCounts.killSwitched} />
+				<StatTile
+					caption={`${data.webhooks.subscriptions} webhook${data.webhooks.subscriptions === 1 ? "" : "s"}`}
+					icon="webhook"
+					label="Dead-lettered deliveries"
+					to={buildPath("settings", { projectKey: project.key }, { tab: "webhooks" })}
+					tone={data.webhooks.deadDeliveries > 0 ? "danger" : "neutral"}
+					value={data.webhooks.deadDeliveries}
+				/>
 			</div>
 
 			<div className="dashboard-columns">

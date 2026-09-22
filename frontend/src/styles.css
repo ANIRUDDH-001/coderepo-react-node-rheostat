@@ -567,6 +567,7 @@ dialog::backdrop { background: rgb(32 33 36 / 18%); }
 .stat-tile-danger { background: var(--danger-container); color: var(--danger); }
 .stat-tile-value { color: var(--ink-strong); font-size: 26px; font-weight: 400; line-height: 30px; }
 .stat-tile-label { color: var(--muted); font-size: 12px; }
+.stat-tile-caption { color: var(--muted); }
 .dashboard-columns { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr)); gap: 16px; align-items: start; }
 .dashboard-stack { display: grid; gap: 16px; }
 .dashboard-panel { display: grid; gap: 12px; min-width: 0; padding: 16px 20px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
