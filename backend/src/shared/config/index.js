@@ -12,12 +12,15 @@ let configInstance = null;
 
 export function loadConfig() {
 	const mongodbUri = getRequiredEnv("MONGODB_URI");
+	const port = parseInt(getOptionalEnv("PORT", "8000"), 10);
 	configInstance = {
 		mongodbUri,
 		jwtSecret: getRequiredEnv("JWT_SECRET"),
 		jwtExpiresIn: getOptionalEnv("JWT_EXPIRES_IN", "24h"),
-		port: parseInt(getOptionalEnv("PORT", "8000"), 10),
+		port,
 		nodeEnv: getOptionalEnv("NODE_ENV", "development"),
+		logLevel: getOptionalEnv("LOG_LEVEL", "info"),
+		apiOrigin: getOptionalEnv("API_ORIGIN", `http://localhost:${port}`),
 	};
 	return configInstance;
 }

@@ -71,11 +71,7 @@ export function DashboardPage() {
 				<StatTile
 					icon="rate_review"
 					label={can("changeRequest:review") ? "Awaiting my review" : "Open proposals of mine"}
-					to={buildPath(
-						"changeRequests",
-						{ projectKey: project.key },
-						{ tab: can("changeRequest:review") ? "review" : "mine" },
-					)}
+					to={buildPath("changeRequests", { projectKey: project.key }, { tab: can("changeRequest:review") ? "review" : "mine" })}
 					tone="info"
 					value={can("changeRequest:review") ? data.pendingChangeRequests.needsMyReview : data.pendingChangeRequests.mine}
 				/>
@@ -174,8 +170,8 @@ export function DashboardPage() {
 											{version.flagKey} · v{version.version}
 										</Link>
 										<span className="muted">
-											{version.reason || SOURCE_LABELS[version.source] || version.source} · {version.actor?.name || "Unknown"}{" "}
-											· {relativeTime(version.createdAt)}
+											{version.reason || SOURCE_LABELS[version.source] || version.source} ·{" "}
+											{version.actor?.name || "Unknown"} · {relativeTime(version.createdAt)}
 										</span>
 									</div>
 									<Badge tone="neutral">{SOURCE_LABELS[version.source] || version.source}</Badge>
@@ -193,7 +189,9 @@ export function DashboardPage() {
 								{data.staleFlags.map((flag) => (
 									<li className="dashboard-row" key={flag.flagKey}>
 										<div className="dashboard-row-main">
-											<Link to={buildPath("flag", { projectKey: project.key, flagKey: flag.flagKey })}>{flag.flagKey}</Link>
+											<Link to={buildPath("flag", { projectKey: project.key, flagKey: flag.flagKey })}>
+												{flag.flagKey}
+											</Link>
 											<span className="muted">
 												{flag.overdue && flag.removeBy
 													? `Remove-by date passed on ${formatDate(flag.removeBy)}`
@@ -222,7 +220,9 @@ export function DashboardPage() {
 								{data.killSwitches.map((entry) => (
 									<li className="dashboard-row" key={entry.flagKey}>
 										<div className="dashboard-row-main">
-											<Link to={buildPath("flag", { projectKey: project.key, flagKey: entry.flagKey })}>{entry.flagKey}</Link>
+											<Link to={buildPath("flag", { projectKey: project.key, flagKey: entry.flagKey })}>
+												{entry.flagKey}
+											</Link>
 											<span className="muted">
 												{entry.reason} · {entry.actor?.name || "Unknown"} · {relativeTime(entry.activatedAt)}
 											</span>

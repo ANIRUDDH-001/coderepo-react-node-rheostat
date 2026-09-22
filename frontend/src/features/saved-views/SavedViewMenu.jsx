@@ -32,7 +32,15 @@ function NameDialog({ busy, error, initial = "", onClose, onSubmit, title }) {
 				<div className="dialog-body">
 					<FormField error={error} hint="Shown as a chip above the flags list. Only you can see it." label="View name" required>
 						{(props) => (
-							<input {...props} data-autofocus maxLength={60} required type="text" value={name} onChange={(event) => setName(event.target.value)} />
+							<input
+								{...props}
+								data-autofocus
+								maxLength={60}
+								required
+								type="text"
+								value={name}
+								onChange={(event) => setName(event.target.value)}
+							/>
 						)}
 					</FormField>
 				</div>
@@ -112,7 +120,8 @@ export function SavedViewMenu({ filters, onApply, projectKey }) {
 					onClose={() => setDialog(null)}
 					onSubmit={(name) =>
 						run(
-							() => savedViewApi.create(projectKey, { name, filters: filtersToView(filters), sort: filters.sort || "updated" }),
+							() =>
+								savedViewApi.create(projectKey, { name, filters: filtersToView(filters), sort: filters.sort || "updated" }),
 							`View "${name}" saved.`,
 						)
 					}

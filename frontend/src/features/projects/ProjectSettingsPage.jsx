@@ -52,7 +52,15 @@ function ProjectDetailsForm({ editable, project, onSaved }) {
 			<div className="settings-details-grid">
 				<FormField error={errors.fields.name} label="Name" required>
 					{(props) => (
-						<input {...props} disabled={!editable || busy} maxLength={80} required type="text" value={name} onChange={(event) => setName(event.target.value)} />
+						<input
+							{...props}
+							disabled={!editable || busy}
+							maxLength={80}
+							required
+							type="text"
+							value={name}
+							onChange={(event) => setName(event.target.value)}
+						/>
 					)}
 				</FormField>
 				<FormField error={errors.fields.description} label="Description">
@@ -130,17 +138,34 @@ export function ProjectSettingsPage() {
 					tone="info"
 				/>
 			)}
-			<Tabs ariaLabel="Settings sections" items={TABS} onChange={(value) => setQuery({ tab: value === "environments" ? "" : value })} value={tab} />
+			<Tabs
+				ariaLabel="Settings sections"
+				items={TABS}
+				onChange={(value) => setQuery({ tab: value === "environments" ? "" : value })}
+				value={tab}
+			/>
 			{tab === "environments" && (
 				<>
-					<ProjectDetailsForm editable={editable} key={`${project.key}:${project.updatedAt}`} onSaved={reloadProjects} project={project} />
+					<ProjectDetailsForm
+						editable={editable}
+						key={`${project.key}:${project.updatedAt}`}
+						onSaved={reloadProjects}
+						project={project}
+					/>
 					<section className="editor-section" aria-labelledby="settings-environments-title">
 						<div className="editor-section-header">
 							<h3 id="settings-environments-title">Environment protection</h3>
-							<span className="muted">Protected environments require a reviewed change request for every targeting change.</span>
+							<span className="muted">
+								Protected environments require a reviewed change request for every targeting change.
+							</span>
 						</div>
 						{policyError && <ErrorBanner message={policyError} />}
-						<EnvironmentPolicyTable busy={policyBusy} editable={editable} environments={project.environments} onChange={changePolicy} />
+						<EnvironmentPolicyTable
+							busy={policyBusy}
+							editable={editable}
+							environments={project.environments}
+							onChange={changePolicy}
+						/>
 					</section>
 				</>
 			)}

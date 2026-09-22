@@ -23,19 +23,25 @@ export const hasSessionToken = () => Boolean(sessionToken || profileToken);
 export const hasProfileToken = () => Boolean(profileToken);
 
 export class ApiError extends Error {
-	constructor(status, code, message, details) {
+	constructor(status, code, message, details, { requestId = "", retryAfterSeconds = 0 } = {}) {
 		super(message);
 		this.status = status;
 		this.code = code;
 		this.details = details;
+		this.requestId = requestId;
+		this.retryAfterSeconds = retryAfterSeconds;
 	}
 }
 
+const newRequestId = () => (globalThis.crypto?.randomUUID ? crypto.randomUUID() : `req-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`);
+
 export async function request(path, options = {}) {
+	const requestId = newRequestId();
 	const response = await fetch(`${baseUrl}${path}`, {
 		...options,
 		headers: {
 			"Content-Type": "application/json",
+			"X-Request-Id": requestId,
 			...(profileToken || sessionToken ? { Authorization: `Bearer ${profileToken || sessionToken}` } : {}),
 			...options.headers,
 		},
@@ -52,9 +58,12 @@ export async function request(path, options = {}) {
 			localStorage.removeItem(PROFILE_ID_KEY);
 			window.dispatchEvent(new CustomEvent(SESSION_EXPIRED_EVENT, { detail: message }));
 		}
-		throw new ApiError(response.status, code, message, payload?.error?.details);
+		throw new ApiError(response.status, code, message, payload?.error?.details, {
+			requestId: response.headers?.get?.("x-request-id") || payload?.error?.requestId || requestId,
+			retryAfterSeconds: Number(response.headers?.get?.("retry-after")) || payload?.error?.details?.retryAfterSeconds || 0,
+		});
 	}
 	if (!payload || !("data" in payload))
-		throw new ApiError(response.status, "INVALID_RESPONSE", "Rheostat service returned an invalid response.");
+		throw new ApiError(response.status, "INVALID_RESPONSE", "Rheostat service returned an invalid response.", undefined, { requestId });
 	return payload.data;
 }

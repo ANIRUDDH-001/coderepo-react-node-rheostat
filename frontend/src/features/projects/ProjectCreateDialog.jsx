@@ -81,7 +81,13 @@ export function ProjectCreateDialog({ onClose, onCreated }) {
 					</FormField>
 					<FormField error={errors.fields.description} label="Description">
 						{(props) => (
-							<textarea {...props} maxLength={500} rows={3} value={description} onChange={(event) => setDescription(event.target.value)} />
+							<textarea
+								{...props}
+								maxLength={500}
+								rows={3}
+								value={description}
+								onChange={(event) => setDescription(event.target.value)}
+							/>
 						)}
 					</FormField>
 					<p className="muted">

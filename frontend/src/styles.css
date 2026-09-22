@@ -281,6 +281,7 @@ dialog::backdrop { background: rgb(32 33 36 / 18%); }
 .banner-warning { background: var(--warning-container); color: var(--warning-ink); }
 .banner-warning .text-button { color: var(--warning-ink); }
 .banner-info { background: var(--accent-tint); color: var(--accent-ink); }
+.error-reference { display: block; margin-top: 4px; color: var(--muted); font-family: monospace; font-size: 12px; }
 .kill-banner strong { font-weight: 500; }
 
 /* Filters and tables */

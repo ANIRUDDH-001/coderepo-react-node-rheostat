@@ -15,13 +15,17 @@ export function DistributionBars({ byFlag, projectKey }) {
 				return (
 					<li className="distribution-row" key={entry.flagKey}>
 						<div className="distribution-heading">
-							<Link to={buildPath("flag", { projectKey, flagKey: entry.flagKey }, { env: "production" })}>{entry.flagKey}</Link>
+							<Link to={buildPath("flag", { projectKey, flagKey: entry.flagKey }, { env: "production" })}>
+								{entry.flagKey}
+							</Link>
 							<span className="muted">{entry.total} evaluations</span>
 						</div>
 						<div
 							className="distribution-bar"
 							role="img"
-							aria-label={segments.map((segment) => `${segment.name} ${Math.round((segment.count / entry.total) * 100)}%`).join(", ")}
+							aria-label={segments
+								.map((segment) => `${segment.name} ${Math.round((segment.count / entry.total) * 100)}%`)
+								.join(", ")}
 						>
 							{segments.map((segment, index) => (
 								<span

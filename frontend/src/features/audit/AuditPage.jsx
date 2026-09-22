@@ -32,7 +32,10 @@ export function AuditPage() {
 	const [extra, setExtra] = useState({ items: [], nextBefore: undefined, error: null, loading: false });
 
 	// Later pages hang off the first page's cursor; a filter change resets them.
-	useEffect(() => setExtra({ items: [], nextBefore: undefined, error: null, loading: false }), [scope, filters.entityType, filters.actorId]);
+	useEffect(
+		() => setExtra({ items: [], nextBefore: undefined, error: null, loading: false }),
+		[scope, filters.entityType, filters.actorId],
+	);
 
 	const nextBefore = extra.nextBefore === undefined ? first.data?.nextBefore : extra.nextBefore;
 	const loadMore = useCallback(async () => {
@@ -40,7 +43,12 @@ export function AuditPage() {
 		setExtra((previous) => ({ ...previous, loading: true, error: null }));
 		try {
 			const page = await auditApi.list({ ...filters, before: nextBefore });
-			setExtra((previous) => ({ items: [...previous.items, ...page.items], nextBefore: page.nextBefore, error: null, loading: false }));
+			setExtra((previous) => ({
+				items: [...previous.items, ...page.items],
+				nextBefore: page.nextBefore,
+				error: null,
+				loading: false,
+			}));
 		} catch (error) {
 			setExtra((previous) => ({ ...previous, loading: false, error }));
 		}
@@ -72,8 +80,18 @@ export function AuditPage() {
 					options={ENTITY_OPTIONS}
 					value={filters.entityType}
 				/>
-				<SelectMenu ariaLabel="Actor" onChange={(actorId) => setQuery({ actorId })} options={actorOptions} value={filters.actorId} />
-				<SelectMenu ariaLabel="Project scope" onChange={(scopeValue) => setQuery({ scope: scopeValue })} options={scopeOptions} value={query.scope || ""} />
+				<SelectMenu
+					ariaLabel="Actor"
+					onChange={(actorId) => setQuery({ actorId })}
+					options={actorOptions}
+					value={filters.actorId}
+				/>
+				<SelectMenu
+					ariaLabel="Project scope"
+					onChange={(scopeValue) => setQuery({ scope: scopeValue })}
+					options={scopeOptions}
+					value={query.scope || ""}
+				/>
 			</div>
 			{first.loading && !first.data ? (
 				<Skeleton rows={8} />
@@ -85,7 +103,15 @@ export function AuditPage() {
 				<>
 					<ol className="audit-list">
 						{items.map((entry) => (
-							<AuditRow entry={entry} key={entry._id} projectKey={scope ? project.key : projects.find((candidate) => String(candidate._id) === String(entry.projectId))?.key || ""} />
+							<AuditRow
+								entry={entry}
+								key={entry._id}
+								projectKey={
+									scope
+										? project.key
+										: projects.find((candidate) => String(candidate._id) === String(entry.projectId))?.key || ""
+								}
+							/>
 						))}
 					</ol>
 					{extra.error && <ErrorBanner message={extra.error.message} onRetry={loadMore} />}

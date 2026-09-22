@@ -35,7 +35,13 @@ describe("dailySeries", () => {
 
 describe("topFlagDistributions", () => {
 	const flags = [
-		{ key: "alpha", variations: [{ id: "v_true", name: "True" }, { id: "v_false", name: "False" }] },
+		{
+			key: "alpha",
+			variations: [
+				{ id: "v_true", name: "True" },
+				{ id: "v_false", name: "False" },
+			],
+		},
 		{ key: "beta", variations: [{ id: "v_a", name: "A" }] },
 	];
 	test("groups counts per flag with variation names, sorted by total, limited", () => {

@@ -17,6 +17,7 @@ import { projectSavedViewRouter, savedViewRouter } from "./features/saved-views/
 import { segmentRouter } from "./features/segments/segment.routes.js";
 import { errorHandler, notFoundHandler } from "./shared/middleware/error-handler.js";
 import { resolveProfileContext } from "./shared/middleware/profile-context.js";
+import { requestContext } from "./shared/middleware/request-context.js";
 import { requireWorkspaceAuth } from "./shared/middleware/auth.js";
 
 const publicDirectory = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../public");
@@ -24,7 +25,9 @@ const publicDirectory = path.resolve(path.dirname(fileURLToPath(import.meta.url)
 export function createApp() {
 	const app = express();
 	app.disable("x-powered-by");
-	app.use(cors());
+	app.use(cors({ exposedHeaders: ["X-Request-Id", "RateLimit-Limit", "RateLimit-Remaining", "RateLimit-Reset", "Retry-After"] }));
+	app.use("/api", requestContext);
+	// The webhook sink verifies an HMAC over the exact bytes, so it reads the raw body ahead of the JSON parser (Task W5C mounts it here).
 	app.use(express.json({ limit: "200kb" }));
 	app.use(express.static(publicDirectory));
 	app.get("/api/v1/health", (request, response) => {

@@ -16,7 +16,15 @@ describe("saved view guards", () => {
 
 	test("normalizeFilters drops defaults and empty values, keeps tags as a sorted unique list", () => {
 		expect(
-			normalizeFilters({ query: "  ", type: "", stale: "any", state: "any", environment: "", archived: false, tags: ["b", "a", "b"] }),
+			normalizeFilters({
+				query: "  ",
+				type: "",
+				stale: "any",
+				state: "any",
+				environment: "",
+				archived: false,
+				tags: ["b", "a", "b"],
+			}),
 		).toEqual({ tags: ["a", "b"] });
 		expect(normalizeFilters({ query: "check", environment: "production", state: "on", stale: "overdue", archived: true })).toEqual({
 			query: "check",

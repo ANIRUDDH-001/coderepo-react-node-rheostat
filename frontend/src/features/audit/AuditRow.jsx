@@ -65,11 +65,7 @@ export function AuditRow({ entry, projectKey }) {
 				<p className="audit-row-summary">{entry.summary}</p>
 				<div className="audit-row-meta">
 					<Badge tone={toneFor(entry.action)}>{actionLabel(entry.action)}</Badge>
-					{link ? (
-						<Link to={link}>{entry.entityLabel}</Link>
-					) : (
-						<span>{entry.entityLabel}</span>
-					)}
+					{link ? <Link to={link}>{entry.entityLabel}</Link> : <span>{entry.entityLabel}</span>}
 					{automated ? (
 						<Badge icon="smart_toy" tone="info" title="Written by Rheostat on the actor's behalf">
 							Automated

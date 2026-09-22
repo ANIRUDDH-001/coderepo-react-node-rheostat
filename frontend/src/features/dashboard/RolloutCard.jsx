@@ -17,7 +17,9 @@ export function RolloutCard({ environmentName, projectKey, rollout }) {
 					{environmentName} · {rollout.currentPercent}% of the audience
 				</span>
 				<span className="muted">
-					{rollout.nextStep ? `Next: ${rollout.nextStep.percent}% ${relativeTime(rollout.nextStep.startAt)}` : "All steps applied"}
+					{rollout.nextStep
+						? `Next: ${rollout.nextStep.percent}% ${relativeTime(rollout.nextStep.startAt)}`
+						: "All steps applied"}
 				</span>
 			</div>
 		</li>

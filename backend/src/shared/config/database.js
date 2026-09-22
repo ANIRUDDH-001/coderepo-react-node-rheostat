@@ -1,10 +1,12 @@
 import mongoose from "mongoose";
+import { logger } from "../logging/logger.js";
 
 export async function connectDatabase(uri) {
 	try {
 		await mongoose.connect(uri);
+		logger.info("database.connected");
 	} catch (error) {
-		console.error(`Error: ${error.message}`);
+		logger.error("database.connect.failed", { error });
 		process.exit(1);
 	}
 }

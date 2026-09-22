@@ -3,6 +3,7 @@ import { createApp } from "./app.js";
 import { rolloutService } from "./features/rollouts/rollout.service.js";
 import { connectDatabase, disconnectDatabase } from "./shared/config/database.js";
 import { initConfig } from "./shared/config/index.js";
+import { logger } from "./shared/logging/logger.js";
 
 dotenv.config({ quiet: true });
 
@@ -12,18 +13,17 @@ const HOST = "0.0.0.0";
 await connectDatabase(config.mongodbUri);
 
 const server = createApp().listen(config.port, HOST, () => {
-	console.log(`Server running on port ${config.port}`);
-	console.log(`Environment: ${config.nodeEnv}`);
+	logger.info("server.started", { port: config.port, env: config.nodeEnv });
 });
 
 // Rollout steps apply on a 30-second tick (spec §5.5); reads also reconcile, so this only bounds the latency.
 const ROLLOUT_TICK_MS = 30000;
 const rolloutTicker = setInterval(() => {
-	rolloutService.reconcileDue(new Date()).catch((error) => console.error(`Rollout reconciliation failed: ${error.message}`));
+	rolloutService.reconcileDue(new Date()).catch((error) => logger.error("rollout.tick.failed", { error }));
 }, ROLLOUT_TICK_MS);
 
 async function shutdown(signal) {
-	console.log(`${signal} received; closing the Rheostat API.`);
+	logger.info("server.stopping", { signal });
 	clearInterval(rolloutTicker);
 	server.close(async () => {
 		await disconnectDatabase();
