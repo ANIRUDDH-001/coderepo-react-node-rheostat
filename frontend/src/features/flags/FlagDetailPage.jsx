@@ -58,7 +58,13 @@ export function FlagDetailPage({ flagKey }) {
 	const { can } = useSession();
 	const { query, setQuery } = useRoute();
 	const { notify } = useToast();
-	const { data: flag, error, loading, reload } = useAsync(() => flagApi.get(project.key, flagKey), [project.key, flagKey]);
+	const {
+		data: flag,
+		error,
+		loading,
+		reload,
+		mutate,
+	} = useAsync(() => flagApi.get(project.key, flagKey), [project.key, flagKey], { key: `flag:${project.key}:${flagKey}` });
 	const segmentsState = useAsync(() => segmentApi.list(project.key), [project.key], { key: `segments:${project.key}` });
 	const [dialog, setDialog] = useState(null);
 	const [busy, setBusy] = useState(false);
@@ -353,7 +359,23 @@ export function FlagDetailPage({ flagKey }) {
 					error={dialogError}
 					message="Each environment goes back to its saved targeting immediately."
 					onCancel={() => setDialog(null)}
-					onConfirm={() => run(() => flagApi.clearKillSwitch(project.key, flag.key), "Kill switch cleared.").catch(() => {})}
+					onConfirm={async () => {
+						// Optimistic: the banner disappears at once; the server copy replaces it, or the previous state returns.
+						const previous = flag;
+						mutate((current) => ({
+							...current,
+							killSwitch: { active: false, reason: "", actorId: null, activatedAt: null, actor: null },
+						}));
+						setDialog(null);
+						try {
+							await flagApi.clearKillSwitch(project.key, flag.key);
+							notify({ kind: "success", message: "Kill switch cleared." });
+							reload();
+						} catch (caught) {
+							mutate(previous);
+							notify({ kind: "error", message: `Could not clear the kill switch: ${caught.message}` });
+						}
+					}}
 					title="Clear the kill switch?"
 				/>
 			)}

@@ -61,7 +61,9 @@ function NameDialog({ busy, error, initial = "", onClose, onSubmit, title }) {
 // Chips for the current person's saved views. Applying one rewrites the URL filters; the active chip matches the URL.
 export function SavedViewMenu({ filters, onApply, projectKey }) {
 	const { notify } = useToast();
-	const { data, error, loading, reload } = useAsync(() => savedViewApi.list(projectKey), [projectKey]);
+	const { data, error, loading, reload } = useAsync(() => savedViewApi.list(projectKey), [projectKey], {
+		key: `saved-views:${projectKey}`,
+	});
 	const [dialog, setDialog] = useState(null);
 	const [busy, setBusy] = useState(false);
 	const [failure, setFailure] = useState("");

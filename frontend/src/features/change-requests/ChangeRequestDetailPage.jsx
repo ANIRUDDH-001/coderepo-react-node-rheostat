@@ -61,7 +61,7 @@ export function ChangeRequestDetailPage({ id }) {
 	const { project, reloadBadges } = useProject();
 	const { profile, can } = useSession();
 	const { notify } = useToast();
-	const { data, error, loading, reload, mutate } = useAsync(() => changeRequestApi.get(id), [id]);
+	const { data, error, loading, reload, mutate } = useAsync(() => changeRequestApi.get(id), [id], { key: `cr:${id}` });
 	const [dialog, setDialog] = useState(null);
 	const [busy, setBusy] = useState(false);
 	const [failure, setFailure] = useState("");
@@ -278,7 +278,28 @@ export function ChangeRequestDetailPage({ id }) {
 					<CommentThread
 						canComment={permissions.canComment}
 						comments={changeRequest.comments}
-						onSubmit={(body) => run(() => changeRequestApi.comment(changeRequest._id, body))}
+						onSubmit={async (body) => {
+							// Optimistic (hardening spec §5): the comment appears at once in hook state only; the server
+							// copy is committed to the cache; a failure restores the previous state and keeps the draft.
+							const previous = data;
+							const optimistic = {
+								id: `local-${Date.now()}`,
+								authorId: profile._id,
+								author: profile,
+								body,
+								at: new Date().toISOString(),
+								pending: true,
+							};
+							mutate((current) => ({ ...current, comments: [...current.comments, optimistic] }));
+							try {
+								const updated = await changeRequestApi.comment(changeRequest._id, body);
+								mutate((current) => ({ ...current, ...updated, permissions: current.permissions }), { commit: true });
+							} catch (caught) {
+								mutate(previous);
+								notify({ kind: "error", message: `Comment not posted: ${caught.message}` });
+								throw caught;
+							}
+						}}
 					/>
 				</div>
 			</div>

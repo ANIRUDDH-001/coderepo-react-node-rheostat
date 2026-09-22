@@ -1,12 +1,15 @@
+import { invalidate } from "../../shared/api/cache.js";
 import { request } from "../../shared/api/client.js";
 
 const base = (projectKey) => `/projects/${encodeURIComponent(projectKey)}/saved-views`;
+// Views are cached per project; view-scoped calls carry no project key, so every project entry is dropped.
+const refresh = (promise) => promise.then((result) => (invalidate("saved-views:"), result));
 
 export const savedViewApi = {
 	list: (projectKey) => request(base(projectKey)),
-	create: (projectKey, input) => request(base(projectKey), { method: "POST", body: JSON.stringify(input) }),
-	update: (id, patch) => request(`/saved-views/${encodeURIComponent(id)}`, { method: "PATCH", body: JSON.stringify(patch) }),
-	remove: (id) => request(`/saved-views/${encodeURIComponent(id)}`, { method: "DELETE" }),
+	create: (projectKey, input) => refresh(request(base(projectKey), { method: "POST", body: JSON.stringify(input) })),
+	update: (id, patch) => refresh(request(`/saved-views/${encodeURIComponent(id)}`, { method: "PATCH", body: JSON.stringify(patch) })),
+	remove: (id) => refresh(request(`/saved-views/${encodeURIComponent(id)}`, { method: "DELETE" })),
 };
 
 // The flags list keeps filters as URL strings; a saved view stores them typed. These two convert between the shapes.

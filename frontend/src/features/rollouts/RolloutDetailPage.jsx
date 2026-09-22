@@ -17,7 +17,7 @@ import { rolloutApi } from "./rollout.api.js";
 export function RolloutDetailPage({ id }) {
 	const { project, reloadBadges } = useProject();
 	const { notify } = useToast();
-	const { data: plan, error, loading, reload } = useAsync(() => rolloutApi.get(id), [id]);
+	const { data: plan, error, loading, reload, mutate } = useAsync(() => rolloutApi.get(id), [id], { key: `rollout:${id}` });
 	const [dialog, setDialog] = useState(null);
 	const [busy, setBusy] = useState(false);
 	const [failure, setFailure] = useState("");
@@ -46,6 +46,24 @@ export function RolloutDetailPage({ id }) {
 		} catch (caught) {
 			setFailure(caught.message);
 			throw caught;
+		} finally {
+			setBusy(false);
+		}
+	};
+	// Pause and resume-from-paused cannot fail for business reasons, so the status flips before the server answers and
+	// reverts on failure (hardening spec §5). Resume-from-stalled and abort stay confirmed and non-optimistic.
+	const transition = async (action, optimisticStatus, message) => {
+		const previous = plan;
+		setDialog(null);
+		setBusy(true);
+		mutate((current) => ({ ...current, status: optimisticStatus }));
+		try {
+			mutate(await action(), { commit: true });
+			notify({ kind: "success", message });
+			reloadBadges?.();
+		} catch (caught) {
+			mutate(previous);
+			notify({ kind: "error", message: caught.message });
 		} finally {
 			setBusy(false);
 		}
@@ -144,7 +162,7 @@ export function RolloutDetailPage({ id }) {
 					error={failure}
 					message="No pending steps apply while the rollout is paused. Resuming shifts their schedule by the paused time."
 					onCancel={() => setDialog(null)}
-					onConfirm={() => run(() => rolloutApi.pause(id), "Rollout paused.").catch(() => {})}
+					onConfirm={() => transition(() => rolloutApi.pause(id), "paused", "Rollout paused.")}
 					title="Pause this rollout?"
 				/>
 			)}
@@ -159,7 +177,11 @@ export function RolloutDetailPage({ id }) {
 							: "Pending steps resume on a schedule shifted by the paused duration."
 					}
 					onCancel={() => setDialog(null)}
-					onConfirm={() => run(() => rolloutApi.resume(id), "Rollout resumed.").catch(() => {})}
+					onConfirm={() =>
+						plan.status === "paused"
+							? transition(() => rolloutApi.resume(id), "running", "Rollout resumed.")
+							: run(() => rolloutApi.resume(id), "Rollout resumed.").catch(() => {})
+					}
 					title={plan.status === "stalled" ? "Resume this stalled rollout?" : "Resume this rollout?"}
 				/>
 			)}

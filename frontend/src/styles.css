@@ -662,6 +662,8 @@ dialog::backdrop { background: rgb(32 33 36 / 18%); }
 .route-error-links { text-align: center; }
 .route-error-links a { color: var(--accent-ink); }
 
+.comment-pending { opacity: .6; }
+
 /* Responsive shell */
 @media (max-width: 960px) {
     .app-shell { grid-template-columns: 76px minmax(0, 1fr); }

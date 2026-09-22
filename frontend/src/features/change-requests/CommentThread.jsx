@@ -34,7 +34,7 @@ export function CommentThread({ canComment, comments, onSubmit }) {
 			{comments.length === 0 && <p className="muted">No comments yet.</p>}
 			<ol className="comment-list">
 				{comments.map((comment) => (
-					<li className="comment" key={comment.id}>
+					<li className={comment.pending ? "comment comment-pending" : "comment"} key={comment.id}>
 						{comment.author ? (
 							<ProfileAvatar profile={comment.author} size="small" />
 						) : (
@@ -46,6 +46,7 @@ export function CommentThread({ canComment, comments, onSubmit }) {
 								<time dateTime={comment.at} title={formatDateTime(comment.at)}>
 									{relativeTime(comment.at)}
 								</time>
+								{comment.pending && <span className="muted">Posting…</span>}
 							</div>
 							<p>{comment.body}</p>
 						</div>
