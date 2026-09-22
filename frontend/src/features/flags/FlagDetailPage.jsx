@@ -24,6 +24,8 @@ import { FlagMetadataDialog } from "./FlagMetadataDialog.jsx";
 import { KillSwitchDialog } from "./KillSwitchDialog.jsx";
 import { TargetingEditor } from "./TargetingEditor.jsx";
 import { VersionHistory } from "./VersionHistory.jsx";
+import { RolloutPlanner } from "../rollouts/RolloutPlanner.jsx";
+import { rolloutApi } from "../rollouts/rollout.api.js";
 
 const TERMINAL = new Set(["applied", "rejected", "withdrawn"]);
 
@@ -106,6 +108,7 @@ export function FlagDetailPage({ flagKey }) {
 	const canKill = can("flag:killSwitch");
 	const canEditConfig = !flag.archived && !environment.protected && can("flag:editConfig:unprotected");
 	const canPropose = !flag.archived && environment.protected && can("changeRequest:create");
+	const canPlan = !flag.archived && can(`rollout:manage:${environment.protected ? "protected" : "unprotected"}`) && config.enabled;
 	const editingRequest = editing.data;
 	const editable = Boolean(
 		editingRequest &&
@@ -231,7 +234,9 @@ export function FlagDetailPage({ flagKey }) {
 				environments={environments}
 				flag={flag}
 				onEnvironment={(env) => setQuery({ env, cr: "" })}
+				onPlan={canPlan ? () => setDialog("rollout") : null}
 				onTab={(next) => setQuery({ tab: next === "targeting" ? "" : next })}
+				projectKey={project.key}
 				tab={tab}
 			/>
 			{editingProblem && (
@@ -310,6 +315,19 @@ export function FlagDetailPage({ flagKey }) {
 					onPromoted={() => {
 						setDialog(null);
 						reload();
+					}}
+				/>
+			)}
+			{dialog === "rollout" && (
+				<RolloutPlanner
+					config={config}
+					environment={environment}
+					flag={flag}
+					onClose={() => setDialog(null)}
+					onCreate={async (input) => {
+						const created = await rolloutApi.create(project.key, input);
+						notify({ kind: "success", message: "Rollout created." });
+						navigate(buildPath("rollout", { projectKey: project.key, id: created._id }));
 					}}
 				/>
 			)}

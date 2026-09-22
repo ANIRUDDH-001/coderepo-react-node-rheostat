@@ -1,7 +1,10 @@
 import { MaterialIcon } from "../../shared/components/MaterialIcon.jsx";
+import { Link } from "../../shared/router/Link.jsx";
+import { buildPath } from "../../shared/router/match.js";
 import { Tabs } from "../../shared/components/Tabs.jsx";
 
-export function EnvironmentTabs({ actions = null, environment, environments, flag, onEnvironment, onTab, tab }) {
+export function EnvironmentTabs({ actions = null, environment, environments, flag, onEnvironment, onPlan = null, onTab, projectKey, tab }) {
+	const rollout = flag.activeRollouts?.[environment.key];
 	return (
 		<div className="environment-tabs">
 			<Tabs
@@ -30,6 +33,13 @@ export function EnvironmentTabs({ actions = null, environment, environments, fla
 					value={tab}
 				/>
 				<div className="environment-info">
+					{rollout ? (
+						<Link className="rollout-active-card" to={buildPath("rollout", { projectKey, id: rollout._id })}>
+							<MaterialIcon size={16}>timeline</MaterialIcon> Rolling out · {rollout.currentPercent}%
+						</Link>
+					) : onPlan ? (
+						<button className="text-button" type="button" onClick={onPlan}><MaterialIcon size={18}>timeline</MaterialIcon> Plan a rollout</button>
+					) : null}
 					{environment.protected && (
 						<span
 							className="protected-note"

@@ -14,6 +14,9 @@ import { FlagDetailPage } from "../flags/FlagDetailPage.jsx";
 import { FlagsPage } from "../flags/FlagsPage.jsx";
 import { PlaygroundPage } from "../playground/PlaygroundPage.jsx";
 import { projectApi } from "../projects/project.api.js";
+import { RolloutDetailPage } from "../rollouts/RolloutDetailPage.jsx";
+import { RolloutsPage } from "../rollouts/RolloutsPage.jsx";
+import { rolloutApi } from "../rollouts/rollout.api.js";
 import { SegmentEditorPage } from "../segments/SegmentEditorPage.jsx";
 import { SegmentsPage } from "../segments/SegmentsPage.jsx";
 import { NavRail } from "./NavRail.jsx";
@@ -48,6 +51,8 @@ function RouteSwitch({ project, projects, route }) {
 	if (name === "playground") return <PlaygroundPage key={project.key} />;
 	if (name === "changeRequests") return <ChangeRequestsPage key={project.key} />;
 	if (name === "changeRequest") return <ChangeRequestDetailPage id={params.id} key={params.id} />;
+	if (name === "rollouts") return <RolloutsPage key={project.key} />;
+	if (name === "rollout") return <RolloutDetailPage id={params.id} key={params.id} />;
 	if (PLACEHOLDERS[name])
 		return <EmptyState description={PLACEHOLDERS[name].description} icon="hourglass_empty" title={PLACEHOLDERS[name].title} />;
 	return <NotFound projectKey={project?.key || projects[0]?.key} />;
@@ -85,8 +90,11 @@ export function Workspace({ onLogout, onProfileSwitch }) {
 	const projectKey = project?.key;
 	const badges = useAsync(async () => {
 		if (!projectKey) return {};
-		const result = await changeRequestApi.list(projectKey, { pageSize: 1, needsMyReview: "true" });
-		return { pendingChangeRequests: result.counts.needsMyReview };
+		const [changeRequests, rollouts] = await Promise.all([
+			changeRequestApi.list(projectKey, { pageSize: 1, needsMyReview: "true" }),
+			rolloutApi.list(projectKey, { pageSize: 1, status: "active" }),
+		]);
+		return { pendingChangeRequests: changeRequests.counts.needsMyReview, activeRollouts: rollouts.counts.active };
 	}, [projectKey, route.path, profile._id]);
 
 	const reloadBadges = badges.reload;

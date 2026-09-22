@@ -522,6 +522,37 @@ dialog::backdrop { background: rgb(32 33 36 / 18%); }
 .compare-controls .select-menu { width: auto; min-width: 170px; }
 .editor-reason.muted { align-self: center; font-size: 13px; }
 
+/* Rollouts */
+.rollout-active-count, .rollout-status, .rollout-active-card { display: inline-flex; align-items: center; gap: 5px; width: fit-content; border-radius: 12px; font-size: 12px; font-weight: 600; text-transform: capitalize; }
+.rollout-active-count { min-height: 28px; padding: 0 10px; background: var(--accent-tint); color: var(--accent-ink); }
+.rollout-status { padding: 3px 8px; background: var(--hover); color: var(--ink); }
+.rollout-status-running { background: var(--success-container); color: var(--success); }
+.rollout-status-scheduled, .rollout-status-paused { background: var(--blue-tint); color: var(--blue); }
+.rollout-status-stalled { background: var(--warning-container); color: var(--warning-ink); }
+.rollout-status-aborted { background: var(--danger-container); color: var(--danger); }
+.rollout-status-completed, .rollout-status-applied { background: var(--success-container); color: var(--success); }
+.rollout-active-card { min-height: 30px; padding: 0 9px; background: var(--success-container); color: var(--success); text-decoration: none; }
+.rollout-active-card:hover { text-decoration: underline; }
+.rollout-presets { display: flex; flex-wrap: wrap; gap: 8px; }
+.rollout-presets button { min-height: 32px; padding: 0 10px; border: 1px solid var(--border); border-radius: 16px; background: var(--surface-muted); color: var(--accent-ink); font-size: 12px; }
+.rollout-presets button:hover:not(:disabled) { background: var(--accent-tint); }
+.rollout-step-builder, .rollout-step-rows, .rollout-timeline { display: grid; gap: 12px; }
+.rollout-step-row { display: grid; grid-template-columns: minmax(120px, 160px) minmax(180px, 1fr) 40px; align-items: end; gap: 10px; }
+.rollout-step-row label { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 6px; color: var(--muted); font-size: 12px; }
+.rollout-step-row label:nth-child(2) { grid-template-columns: 1fr; }
+.rollout-step-row input { min-width: 0; min-height: 36px; }
+.rollout-step-error { grid-column: 1 / -1; }
+.rollout-timeline svg { width: 100%; min-height: 106px; overflow: visible; }
+.rollout-axis { stroke: var(--border-strong); stroke-width: 2; }
+.rollout-now { stroke: var(--accent); stroke-width: 2; stroke-dasharray: 4 4; }
+.rollout-now-label, .rollout-step-label { fill: var(--muted); font-size: 12px; }
+.rollout-step-summary { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; font-size: 13px; }
+.rollout-step-summary li { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.rollout-step-summary time { color: var(--muted); }
+.rollout-notice { margin: 0; padding: 8px 10px; border-radius: 8px; background: var(--warning-container); color: var(--warning-ink); font-size: 13px; }
+.rollout-stalled { background: var(--danger-container); color: var(--danger-ink); }
+.rollout-drift { margin-bottom: 16px; }
+
 /* Responsive shell */
 @media (max-width: 960px) {
     .app-shell { grid-template-columns: 76px minmax(0, 1fr); }
