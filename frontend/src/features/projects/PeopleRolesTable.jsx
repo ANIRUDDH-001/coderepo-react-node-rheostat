@@ -27,7 +27,8 @@ export function PeopleRolesTable({ editable }) {
 	const [failure, setFailure] = useState({});
 	const [busyId, setBusyId] = useState("");
 	if (loading && !data) return <Skeleton rows={5} />;
-	if (error && !data) return <ErrorBanner message={error.message} onRetry={reload} />;
+	if (error && !data)
+		return <ErrorBanner message={error.message} requestId={error.status >= 500 ? error.requestId : ""} onRetry={reload} />;
 	const change = async (person, role) => {
 		setBusyId(person._id);
 		setFailure((previous) => ({ ...previous, [person._id]: "" }));

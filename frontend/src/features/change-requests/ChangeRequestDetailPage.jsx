@@ -81,7 +81,8 @@ export function ChangeRequestDetailPage({ id }) {
 			/>
 		);
 	}
-	if (error && !data) return <ErrorBanner message={error.message} onRetry={reload} />;
+	if (error && !data)
+		return <ErrorBanner message={error.message} requestId={error.status >= 500 ? error.requestId : ""} onRetry={reload} />;
 
 	const changeRequest = data;
 	const environment =

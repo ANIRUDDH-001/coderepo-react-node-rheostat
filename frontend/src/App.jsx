@@ -42,6 +42,7 @@ export default function App() {
 	const [authLoading, setAuthLoading] = useState(false);
 	const [bootstrapping, setBootstrapping] = useState(true);
 	const [authError, setAuthError] = useState("");
+	const [authRetryAfter, setAuthRetryAfter] = useState(0);
 	const [profiles, setProfiles] = useState(null);
 	const [profileError, setProfileError] = useState("");
 	const [switchingFrom, setSwitchingFrom] = useState(null);
@@ -144,6 +145,7 @@ export default function App() {
 			if (own) await selectProfile(own);
 		} catch (error) {
 			setAuthError(error.message);
+			setAuthRetryAfter(error.code === "RATE_LIMITED" ? error.retryAfterSeconds || 0 : 0);
 		} finally {
 			setAuthLoading(false);
 		}
@@ -172,7 +174,7 @@ export default function App() {
 	};
 
 	if (bootstrapping) return <AppBootScreen />;
-	if (!account) return <WorkspaceLogin error={authError} loading={authLoading} onLogin={login} />;
+	if (!account) return <WorkspaceLogin error={authError} loading={authLoading} onLogin={login} retryAfterSeconds={authRetryAfter} />;
 	if (session.profile) {
 		return (
 			<SessionProvider account={account} key={session.profile._id} permissions={session.permissions} profile={session.profile}>

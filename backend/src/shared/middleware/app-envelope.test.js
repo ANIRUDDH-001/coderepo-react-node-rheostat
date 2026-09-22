@@ -17,14 +17,22 @@ afterAll(() => server.close());
 
 describe("error envelopes carry a request id", () => {
 	test("malformed JSON → 400 INVALID_JSON with the echoed request id", async () => {
-		const response = await fetch(`${base}/api/v1/auth/login`, { method: "POST", headers: { "content-type": "application/json", "x-request-id": "trace-00001234" }, body: "{not json" });
+		const response = await fetch(`${base}/api/v1/auth/login`, {
+			method: "POST",
+			headers: { "content-type": "application/json", "x-request-id": "trace-00001234" },
+			body: "{not json",
+		});
 		expect(response.status).toBe(400);
 		expect(response.headers.get("x-request-id")).toBe("trace-00001234");
 		const body = await response.json();
 		expect(body.error).toMatchObject({ code: "INVALID_JSON", requestId: "trace-00001234" });
 	});
 	test("oversized JSON → 413 PAYLOAD_TOO_LARGE with a generated request id", async () => {
-		const response = await fetch(`${base}/api/v1/auth/login`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ pad: "x".repeat(210 * 1024) }) });
+		const response = await fetch(`${base}/api/v1/auth/login`, {
+			method: "POST",
+			headers: { "content-type": "application/json" },
+			body: JSON.stringify({ pad: "x".repeat(210 * 1024) }),
+		});
 		expect(response.status).toBe(413);
 		const body = await response.json();
 		expect(body.error.code).toBe("PAYLOAD_TOO_LARGE");

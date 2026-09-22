@@ -45,7 +45,8 @@ export function DashboardPage() {
 	const { can } = useSession();
 	const { data, error, loading, reload } = useAsync(() => dashboardApi.get(project.key), [project.key]);
 	if (loading && !data) return <Skeleton rows={8} />;
-	if (error && !data) return <ErrorBanner message={error.message} onRetry={reload} />;
+	if (error && !data)
+		return <ErrorBanner message={error.message} requestId={error.status >= 500 ? error.requestId : ""} onRetry={reload} />;
 	const environmentName = (key) => project.environments.find((environment) => environment.key === key)?.name || key;
 	const flagsPath = (query) => buildPath("flags", { projectKey: project.key }, query);
 	const { flagCounts, evaluations } = data;

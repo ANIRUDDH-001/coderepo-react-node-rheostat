@@ -48,7 +48,9 @@ function ProjectDetailsForm({ editable, project, onSaved }) {
 					Key <code>{project.key}</code>
 				</span>
 			</div>
-			{errors.message && !Object.keys(errors.fields).length && <ErrorBanner message={errors.message} />}
+			{errors.message && !Object.keys(errors.fields).length && (
+				<ErrorBanner message={errors.message} requestId={errors.status >= 500 ? errors.requestId : ""} />
+			)}
 			<div className="settings-details-grid">
 				<FormField error={errors.fields.name} label="Name" required>
 					{(props) => (

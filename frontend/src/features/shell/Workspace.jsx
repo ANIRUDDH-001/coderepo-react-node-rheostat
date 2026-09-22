@@ -101,7 +101,8 @@ export function Workspace({ onLogout, onProfileSwitch }) {
 
 	let content;
 	if (loading && !projects) content = <Skeleton rows={6} />;
-	else if (error && !projects) content = <ErrorBanner message={error.message} onRetry={reload} />;
+	else if (error && !projects)
+		content = <ErrorBanner message={error.message} requestId={error.status >= 500 ? error.requestId : ""} onRetry={reload} />;
 	else if (!projects.length)
 		content = <EmptyState description="Ask an admin to create the first project." icon="layers" title="No projects yet" />;
 	else if (route.params.projectKey && !project) content = <NotFound projectKey={projects[0].key} />;

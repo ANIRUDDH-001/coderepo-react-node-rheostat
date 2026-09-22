@@ -84,7 +84,8 @@ export function FlagDetailPage({ flagKey }) {
 			/>
 		);
 	}
-	if (error && !flag) return <ErrorBanner message={error.message} onRetry={reload} />;
+	if (error && !flag)
+		return <ErrorBanner message={error.message} requestId={error.status >= 500 ? error.requestId : ""} onRetry={reload} />;
 
 	const config = flag.environments[environment.key];
 

@@ -31,7 +31,8 @@ export function RolloutDetailPage({ id }) {
 				title="Rollout not found"
 			/>
 		);
-	if (error && !plan) return <ErrorBanner message={error.message} onRetry={reload} />;
+	if (error && !plan)
+		return <ErrorBanner message={error.message} requestId={error.status >= 500 ? error.requestId : ""} onRetry={reload} />;
 	const environment = project.environments.find((candidate) => candidate.key === plan.environment) || plan.environmentPolicy;
 	const run = async (action, message) => {
 		setBusy(true);

@@ -23,7 +23,13 @@ describe("requestContext", () => {
 		expect(request.id).toMatch(/^[0-9a-f-]{36}$/);
 		expect(response.headers["x-request-id"]).toBe(request.id);
 		response.emit("finish");
-		expect(lines[0]).toMatchObject({ event: "http.request", requestId: request.id, method: "GET", path: "/api/v1/projects", status: 200 });
+		expect(lines[0]).toMatchObject({
+			event: "http.request",
+			requestId: request.id,
+			method: "GET",
+			path: "/api/v1/projects",
+			status: 200,
+		});
 		expect(typeof lines[0].durationMs).toBe("number");
 	});
 	test("accepts a well-formed client id and replaces a malformed one", () => {

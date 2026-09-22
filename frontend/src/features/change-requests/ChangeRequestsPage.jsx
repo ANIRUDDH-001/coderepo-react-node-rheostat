@@ -55,7 +55,7 @@ export function ChangeRequestsPage() {
 
 	let body;
 	if (loading && !data) body = <Skeleton rows={6} />;
-	else if (error) body = <ErrorBanner message={error.message} onRetry={reload} />;
+	else if (error) body = <ErrorBanner message={error.message} requestId={error.status >= 500 ? error.requestId : ""} onRetry={reload} />;
 	else if (!data.items.length) {
 		body = (
 			<EmptyState

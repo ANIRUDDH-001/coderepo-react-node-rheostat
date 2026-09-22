@@ -47,7 +47,9 @@ export function ProjectCreateDialog({ onClose, onCreated }) {
 					</button>
 				</header>
 				<div className="dialog-body">
-					{errors.message && !Object.keys(errors.fields).length && <ErrorBanner message={errors.message} />}
+					{errors.message && !Object.keys(errors.fields).length && (
+						<ErrorBanner message={errors.message} requestId={errors.status >= 500 ? errors.requestId : ""} />
+					)}
 					<FormField error={errors.fields.name} label="Name" required>
 						{(props) => (
 							<input

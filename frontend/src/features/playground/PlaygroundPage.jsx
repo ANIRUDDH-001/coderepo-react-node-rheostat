@@ -6,6 +6,7 @@ import { SelectMenu } from "../../shared/components/SelectMenu.jsx";
 import { Skeleton } from "../../shared/components/Skeleton.jsx";
 import { useProject } from "../../shared/context/ProjectContext.jsx";
 import { useAsync } from "../../shared/hooks/useAsync.js";
+import { useCountdown } from "../../shared/hooks/useCountdown.js";
 import { useRoute } from "../../shared/router/router.js";
 import { formatDateTime } from "../../shared/utils/date.js";
 import { flagApi } from "../flags/flag.api.js";
@@ -33,6 +34,7 @@ export function PlaygroundPage() {
 		flags.map((flag) => [flag.key, { variations: flag.variations, rules: flag.environments[environment.key]?.rules || [] }]),
 	);
 
+	const { secondsLeft, start } = useCountdown();
 	const evaluate = async (event) => {
 		event?.preventDefault();
 		setState({ result: null, loading: true, error: null });
@@ -44,6 +46,7 @@ export function PlaygroundPage() {
 			});
 			setState({ result, loading: false, error: null });
 		} catch (error) {
+			if (error.code === "RATE_LIMITED") start(error.retryAfterSeconds || 60);
 			setState({ result: null, loading: false, error });
 		}
 	};
@@ -102,8 +105,9 @@ export function PlaygroundPage() {
 					rows={rows}
 				/>
 				<div className="editor-actions">
-					<button className="primary-button" disabled={state.loading || !contextKey.trim()} type="submit">
-						<MaterialIcon size={18}>play_arrow</MaterialIcon> {state.loading ? "Evaluating…" : "Evaluate"}
+					<button className="primary-button" disabled={state.loading || secondsLeft > 0 || !contextKey.trim()} type="submit">
+						<MaterialIcon size={18}>play_arrow</MaterialIcon>{" "}
+						{state.loading ? "Evaluating…" : secondsLeft > 0 ? `Try again in ${secondsLeft}s` : "Evaluate"}
 					</button>
 				</div>
 			</form>
@@ -115,7 +119,13 @@ export function PlaygroundPage() {
 				/>
 			)}
 			{state.loading && <Skeleton rows={4} />}
-			{state.error && <ErrorBanner message={state.error.message} onRetry={evaluate} />}
+			{state.error && (
+				<ErrorBanner
+					message={state.error.message}
+					requestId={state.error.status >= 500 ? state.error.requestId : ""}
+					onRetry={evaluate}
+				/>
+			)}
 			{!state.loading && !state.error && !state.result && (
 				<EmptyState
 					description="Set a context above and press Evaluate to see what every flag would serve."

@@ -59,7 +59,7 @@ export function VersionHistory({ environment, flag, onRolledBack, onProposeRollb
 			: null;
 
 	if (loading && !data) return <Skeleton rows={4} />;
-	if (error) return <ErrorBanner message={error.message} onRetry={reload} />;
+	if (error) return <ErrorBanner message={error.message} requestId={error.status >= 500 ? error.requestId : ""} onRetry={reload} />;
 	if (!data?.length)
 		return <EmptyState description="Versions appear here as the configuration changes." icon="history" title="No history yet" />;
 	return (

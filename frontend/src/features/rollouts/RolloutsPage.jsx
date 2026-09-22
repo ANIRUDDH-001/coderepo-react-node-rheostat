@@ -29,7 +29,8 @@ export function RolloutsPage() {
 	const filters = { status: query.status || "", page, pageSize: 20 };
 	const { data, error, loading, reload } = useAsync(() => rolloutApi.list(project.key, filters), [project.key, query.status, page]);
 	if (loading && !data) return <Skeleton rows={6} />;
-	if (error && !data) return <ErrorBanner message={error.message} onRetry={reload} />;
+	if (error && !data)
+		return <ErrorBanner message={error.message} requestId={error.status >= 500 ? error.requestId : ""} onRetry={reload} />;
 	return (
 		<section className="page rollouts-page" aria-labelledby="rollouts-title">
 			<header className="page-header">

@@ -96,7 +96,11 @@ export function AuditPage() {
 			{first.loading && !first.data ? (
 				<Skeleton rows={8} />
 			) : first.error && !first.data ? (
-				<ErrorBanner message={first.error.message} onRetry={first.reload} />
+				<ErrorBanner
+					message={first.error.message}
+					requestId={first.error.status >= 500 ? first.error.requestId : ""}
+					onRetry={first.reload}
+				/>
 			) : items.length === 0 ? (
 				<EmptyState description="Nothing matches these filters yet." icon="history" title="No activity" />
 			) : (
@@ -114,7 +118,13 @@ export function AuditPage() {
 							/>
 						))}
 					</ol>
-					{extra.error && <ErrorBanner message={extra.error.message} onRetry={loadMore} />}
+					{extra.error && (
+						<ErrorBanner
+							message={extra.error.message}
+							requestId={extra.error.status >= 500 ? extra.error.requestId : ""}
+							onRetry={loadMore}
+						/>
+					)}
 					{nextBefore ? (
 						<button className="tonal-button audit-load-more" disabled={extra.loading} type="button" onClick={loadMore}>
 							{extra.loading ? "Loading…" : "Load more"}

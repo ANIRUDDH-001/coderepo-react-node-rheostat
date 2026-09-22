@@ -1,9 +1,16 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { BrandMark } from "../../shared/components/BrandMark.jsx";
+import { useCountdown } from "../../shared/hooks/useCountdown.js";
 
-export function WorkspaceLogin({ error = "", loading = false, onLogin = () => {} }) {
+export function WorkspaceLogin({ error = "", loading = false, onLogin = () => {}, retryAfterSeconds = 0 }) {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
+	const { secondsLeft, start } = useCountdown();
+	// A 429 carries Retry-After; the button counts it down instead of inviting another rejected attempt.
+	useEffect(() => {
+		if (retryAfterSeconds > 0) start(retryAfterSeconds);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [retryAfterSeconds, error]);
 	const submit = (event) => {
 		event.preventDefault();
 		onLogin(email.trim(), password);
@@ -51,8 +58,8 @@ export function WorkspaceLogin({ error = "", loading = false, onLogin = () => {}
 						</p>
 					)}
 					<div className="workspace-login-actions">
-						<button className="primary-button" disabled={loading} type="submit">
-							{loading ? "Signing in…" : "Next"}
+						<button className="primary-button" disabled={loading || secondsLeft > 0} type="submit">
+							{loading ? "Signing in…" : secondsLeft > 0 ? `Try again in ${secondsLeft}s` : "Next"}
 						</button>
 					</div>
 				</form>

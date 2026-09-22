@@ -95,7 +95,9 @@ export function EnvironmentCompare({ environment, flag, onClose, onPromoted }) {
 					)}
 					{failure && <ErrorBanner message={failure} />}
 					{loading && !data && <Skeleton rows={4} />}
-					{error && <ErrorBanner message={error.message} onRetry={reload} />}
+					{error && (
+						<ErrorBanner message={error.message} requestId={error.status >= 500 ? error.requestId : ""} onRetry={reload} />
+					)}
 					{data &&
 						(identical ? (
 							<p className="muted">

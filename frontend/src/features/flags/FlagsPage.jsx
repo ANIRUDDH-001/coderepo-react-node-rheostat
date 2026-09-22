@@ -56,7 +56,7 @@ export function FlagsPage() {
 	const filtered = Object.entries(filters).some(([key, value]) => key in DEFAULT_FILTERS && value !== DEFAULT_FILTERS[key]);
 	let body;
 	if (loading && !data) body = <Skeleton rows={8} />;
-	else if (error) body = <ErrorBanner message={error.message} onRetry={reload} />;
+	else if (error) body = <ErrorBanner message={error.message} requestId={error.status >= 500 ? error.requestId : ""} onRetry={reload} />;
 	else if (!data.items.length) {
 		body = (
 			<EmptyState

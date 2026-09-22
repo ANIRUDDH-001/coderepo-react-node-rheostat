@@ -165,7 +165,8 @@ export function SegmentEditorPage({ segmentKey }) {
 			/>
 		);
 	}
-	if (error && !segment) return <ErrorBanner message={error.message} onRetry={reload} />;
+	if (error && !segment)
+		return <ErrorBanner message={error.message} requestId={error.status >= 500 ? error.requestId : ""} onRetry={reload} />;
 	if (isNew && !canManage)
 		return (
 			<EmptyState description="Your role can view segments but not create them." icon="lock" title="Segments are read-only for you" />

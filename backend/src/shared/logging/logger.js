@@ -13,12 +13,14 @@ export const serializeError = (error) => {
 
 export function createLogger({ level = "info", write = (line) => process.stdout.write(`${line}\n`) } = {}) {
 	const threshold = LEVELS[level] ?? LEVELS.info;
-	const emit = (lineLevel) => (event, fields = {}) => {
-		if (LEVELS[lineLevel] < threshold) return;
-		const entry = { ts: new Date().toISOString(), level: lineLevel, event, ...fields };
-		if (entry.error instanceof Error) entry.error = serializeError(entry.error);
-		write(JSON.stringify(entry));
-	};
+	const emit =
+		(lineLevel) =>
+		(event, fields = {}) => {
+			if (LEVELS[lineLevel] < threshold) return;
+			const entry = { ts: new Date().toISOString(), level: lineLevel, event, ...fields };
+			if (entry.error instanceof Error) entry.error = serializeError(entry.error);
+			write(JSON.stringify(entry));
+		};
 	return { debug: emit("debug"), info: emit("info"), warn: emit("warn"), error: emit("error") };
 }
 
