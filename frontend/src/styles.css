@@ -655,6 +655,63 @@ dialog::backdrop { background: rgb(32 33 36 / 18%); }
 .people-identity .muted { font-size: 12px; }
 .people-role { width: 180px; }
 
+/* Webhooks */
+.webhook-dialog, .delivery-drawer { width: min(720px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); border-radius: 20px; }
+.form-field-heading { color: var(--muted); font-size: 12px; font-weight: 500; letter-spacing: .2px; }
+.webhook-use-sink { justify-self: start; margin-top: -8px; padding-left: 8px; }
+.event-picker { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.event-picker fieldset { min-width: 0; margin: 0; padding: 8px 12px; border: 1px solid var(--divider); border-radius: 10px; }
+.event-picker legend { padding: 0 4px; }
+.event-list { display: grid; gap: 6px; margin: 4px 0 0; padding: 0; list-style: none; }
+.check-row { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; }
+.check-row code { font-size: 12px; }
+.env-toggle-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.env-toggle { display: inline-flex; align-items: center; gap: 4px; min-height: 32px; padding: 0 12px; border: 1px solid var(--border); border-radius: 16px; background: var(--surface); color: var(--ink); font-size: 13px; }
+.env-toggle[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-tint); color: var(--accent-ink); }
+.secret-reveal-body { display: grid; gap: 12px; }
+.secret-reveal-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.secret-reveal { flex: 1 1 260px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface-muted); font-size: 13px; user-select: all; overflow-wrap: anywhere; }
+.sink-card-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.sink-url { flex: 1 1 320px; min-width: 0; padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface-muted); font-size: 13px; overflow-wrap: anywhere; }
+.sink-card-actions { display: flex; flex-wrap: wrap; gap: 4px; }
+.sink-card-actions .text-button { min-height: 36px; }
+.numeric-cell { text-align: right; font-variant-numeric: tabular-nums; }
+.danger-text { color: var(--danger); }
+.webhook-table .row-actions .text-button { min-height: 32px; padding: 0 8px; }
+.inbox { display: grid; gap: 8px; padding-top: 8px; border-top: 1px solid var(--divider); }
+.inbox-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.inbox-header h4 { margin: 0; color: var(--muted); font-size: 12px; font-weight: 500; text-transform: uppercase; }
+.inbox-list { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; }
+.inbox-row { display: grid; gap: 4px; padding: 8px 0; border-bottom: 1px solid var(--divider); }
+.inbox-row:last-child { border-bottom: 0; }
+.inbox-row-main { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 13px; }
+.inbox-body summary { color: var(--muted); font-size: 12px; cursor: pointer; }
+.delivery-payload { max-height: 320px; margin: 8px 0 0; padding: 12px; overflow: auto; border: 1px solid var(--divider); border-radius: 8px; background: var(--surface-muted); font-size: 12px; line-height: 1.5; }
+.webhook-detail-header { display: grid; gap: 8px; }
+.webhook-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; }
+.webhook-meta code { overflow-wrap: anywhere; }
+.webhook-events { display: flex; flex-wrap: wrap; gap: 6px; }
+.webhook-actions { display: flex; flex-wrap: wrap; gap: 4px; }
+.breadcrumb { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin: 0 0 4px; color: var(--muted); font-size: 13px; }
+.breadcrumb a { color: var(--accent-ink); }
+.delivery-table tbody tr { cursor: pointer; }
+.delivery-table tbody tr:hover { background: var(--hover); }
+.delivery-table .row-button { padding: 0; border: 0; background: transparent; color: var(--accent-ink); font: inherit; text-align: left; cursor: pointer; }
+.load-more { display: flex; justify-content: center; padding: 8px 0; }
+.attempt-timeline { display: grid; gap: 8px; margin: 0; padding: 0 0 0 16px; border-left: 2px solid var(--divider); list-style: none; }
+.attempt { display: grid; grid-template-columns: auto auto minmax(0, 1fr); align-items: baseline; gap: 4px 12px; font-size: 13px; }
+.attempt time { color: var(--muted); }
+.attempt-failed strong { color: var(--danger); }
+.attempt-delivered strong { color: var(--success); }
+.attempt-next, .attempt-marker { color: var(--muted); font-size: 13px; }
+.attempt-marker { grid-column: 1 / -1; padding: 4px 8px; border-radius: 6px; background: var(--warning-container); color: var(--warning-ink); font-size: 12px; }
+.attempt-dead strong { color: var(--danger); }
+.headers-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.headers-table th { width: 200px; padding: 4px 8px 4px 0; color: var(--muted); font-weight: 500; text-align: left; vertical-align: top; }
+.headers-table td { padding: 4px 0; overflow-wrap: anywhere; }
+.drawer-section { display: grid; gap: 8px; }
+.drawer-summary { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 13px; }
+
 /* Error boundaries */
 .app-error { display: grid; place-items: center; gap: 12px; min-height: 100vh; padding: 24px; text-align: center; background: var(--surface-muted); }
 .app-error h1 { margin: 0; font-size: 22px; font-weight: 400; }
@@ -698,6 +755,10 @@ dialog::backdrop { background: rgb(32 33 36 / 18%); }
     .timeline-item { grid-template-columns: 36px minmax(0, 1fr); gap: 8px; }
     .timeline-marker { width: 32px; height: 32px; font-size: 11px; }
     .dialog-header, .dialog-body, .dialog-footer { padding-right: 16px; padding-left: 16px; }
+    .event-picker { grid-template-columns: minmax(0, 1fr); }
+    .attempt { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+    .headers-table th { width: 120px; }
+    .webhook-table .row-actions { white-space: normal; }
     .editor-section { padding: 12px; }
     .project-switcher { width: 132px; }
     .dashboard-panel { padding: 12px; }

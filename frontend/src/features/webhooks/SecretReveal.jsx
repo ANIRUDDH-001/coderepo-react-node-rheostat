@@ -18,7 +18,9 @@ export function SecretReveal({ secret, onDone }) {
 			<ErrorBanner message="This is the only time the secret is shown. Store it with the receiver." tone="warning" />
 			<p className="muted">Signatures are HMAC-SHA256 over the timestamp and the exact request body, using this secret.</p>
 			<div className="secret-reveal-row">
-				<code className="secret-reveal">{secret}</code>
+				<code aria-label="Webhook secret" className="secret-reveal">
+					{secret}
+				</code>
 				<button className="tonal-button" type="button" onClick={copy}>
 					<MaterialIcon size={18}>content_copy</MaterialIcon> Copy
 				</button>

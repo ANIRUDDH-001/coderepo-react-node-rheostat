@@ -10,6 +10,7 @@ import { useAsync } from "../../shared/hooks/useAsync.js";
 import { Link } from "../../shared/router/Link.jsx";
 import { buildPath } from "../../shared/router/match.js";
 import { relativeTime } from "../../shared/utils/date.js";
+import { describeTest } from "./delivery-text.js";
 import { Inbox } from "./Inbox.jsx";
 import { StatusBadge } from "./StatusBadge.jsx";
 import { WebhookFormDialog } from "./WebhookFormDialog.jsx";
@@ -21,14 +22,6 @@ const hostOf = (url) => {
 	} catch {
 		return url;
 	}
-};
-
-// Toast text for a test delivery: the row comes back after its first attempt.
-export const describeTest = (delivery) => {
-	const attempt = delivery.lastAttempt || delivery.attempts?.at(-1);
-	if (delivery.status === "delivered") return `Test delivered (HTTP ${attempt?.responseStatus ?? 200} in ${attempt?.durationMs ?? 0} ms)`;
-	const why = attempt?.responseStatus ? `HTTP ${attempt.responseStatus}` : attempt?.error || "no response";
-	return `Test failed: ${why} — ${delivery.status === "dead" ? "dead-lettered" : "retrying"}`;
 };
 
 export function WebhooksTab() {

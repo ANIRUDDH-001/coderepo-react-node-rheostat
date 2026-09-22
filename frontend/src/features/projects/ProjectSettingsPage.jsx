@@ -13,10 +13,12 @@ import { EnvironmentPolicyTable } from "./EnvironmentPolicyTable.jsx";
 import { PeopleRolesTable } from "./PeopleRolesTable.jsx";
 import { projectApi } from "./project.api.js";
 import { ProjectCreateDialog } from "./ProjectCreateDialog.jsx";
+import { WebhooksTab } from "../webhooks/WebhooksTab.jsx";
 
 const TABS = [
 	{ value: "environments", label: "Environments" },
 	{ value: "people", label: "People" },
+	{ value: "webhooks", label: "Webhooks" },
 ];
 
 function ProjectDetailsForm({ editable, project, onSaved }) {
@@ -126,7 +128,7 @@ export function ProjectSettingsPage() {
 			<header className="page-header">
 				<div>
 					<h1 id="settings-title">Settings</h1>
-					<p className="page-subtitle">Environment policy and workspace roles for {project.name}.</p>
+					<p className="page-subtitle">Environment policy, workspace roles, and webhooks for {project.name}.</p>
 				</div>
 				{editable && (
 					<button className="tonal-button" type="button" onClick={() => setCreating(true)}>
@@ -134,7 +136,7 @@ export function ProjectSettingsPage() {
 					</button>
 				)}
 			</header>
-			{!editable && (
+			{!editable && tab !== "webhooks" && (
 				<ErrorBanner
 					message="Settings are read-only for your role. Ask an admin to change environment protection, approvals, or roles."
 					tone="info"
@@ -180,6 +182,7 @@ export function ProjectSettingsPage() {
 					<PeopleRolesTable editable={editable} />
 				</section>
 			)}
+			{tab === "webhooks" && <WebhooksTab />}
 			{creating && (
 				<ProjectCreateDialog
 					onClose={() => setCreating(false)}
